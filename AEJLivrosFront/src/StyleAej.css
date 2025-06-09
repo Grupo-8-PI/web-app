@@ -1,0 +1,220 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+body{
+  font-family: "Roboto", sans-serif;
+ 
+  margin: 0;
+  padding: 0;
+}
+
+.modalArea{
+  width: 100%;
+  height: 100vh;
+  background:#FEFDF7;
+  display: flex;
+  justify-content: center;  
+  align-items: center;
+}
+
+.modal{
+  width: 80%;
+  height: 90%;
+  background: #F6FDFF;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18), 0 1.5px 6px rgba(0,0,0,0.12);
+  border-radius: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.blue{
+  width: 380px;
+  height: 100%;
+  background: #09386B;
+  position: absolute;
+  right: 0;
+  border-radius: 16px;
+}
+.header{
+  width: 100%;
+  height: 120px;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  z-index: 10;
+}
+.logo{
+  width: 300px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.logo img{
+ width: 150px;
+}
+.loginContent{
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  display: flex;
+}
+.formArea{
+  width: 60%;
+  height: 100%;
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+}
+
+.formAlign{
+  width: 80%;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+}
+
+.formArea h1 {
+  margin: 0 0 12px 0;
+  font-size: 2rem;
+  color: #1a237e;
+}
+.formArea p {
+  margin: 0 0 24px 0;
+  color: #555;
+  font-size: 1rem;
+}
+.formArea form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+.formArea label {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 4px;
+  font-weight: 500;
+  width: 80%;
+  display: flex;
+  justify-content: space-between;
+  align-self: center;
+  text-align: left;
+  margin-left: 0;
+}
+.formArea label span {
+  font-size: 15px;
+  cursor: pointer;
+}
+.formArea input {
+  width: 80%;
+  display: flex;
+  background: #819CB6;
+  padding: 10px 12px;
+  border: 1px solid #bdbdbd;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  color: #ffffff;
+  transition: border 0.2s;
+}
+.formArea input::placeholder {
+  color: #fff;
+  opacity: 0.8;
+}
+.formArea input:focus {
+  border: 1.5px solid #1976d200;
+}
+
+.formArea button {
+  width: 80%;
+  min-width: 120px;
+  max-width: 200px;
+  align-self: center;
+  padding: 10px 0;
+  background: #09386B;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.butArea{
+  width: 92%;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+.formArea button:hover {
+  background: #539ce5;
+  transition: 0.5s;
+}
+.imageArea{
+  width: 40%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.imageArea img{
+  width: 80%;
+  height: 80%;
+  object-fit: cover;
+}
+
+.outraOp{
+  width: 100%;
+  height: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.options{
+  width: 80%;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+}
+.options .google,
+.options .facebook,
+.options .apple {
+  width: 50px;
+  height: 50px;
+  background: transparent;
+  border: 2px solid #09386B;
+  border-radius: 30px;
+  margin: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.options .google:hover,
+.options .facebook:hover,
+.options .apple:hover {
+  background: transparent;
+  box-shadow: 0 2px 8px rgba(9,56,107,0.15);
+  border-color: #539ce5;
+}
+.input-row {
+  width: 84%;
+  display: flex;
+  gap: 16px;
+  margin-bottom: 0;
+  align-self: center;
+}
+.input-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.input-row input {
+  width: 90%;
+}
