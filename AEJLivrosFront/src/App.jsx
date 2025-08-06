@@ -1,11 +1,12 @@
 
+import { Header } from './componentes/header'
 import { ModalLogin } from './componentes/modalLogin'
 import './StyleAej.css'
 
 function App() {
 
 return (
-    <ModalLogin />
+    <Header />
 )
 
 }
