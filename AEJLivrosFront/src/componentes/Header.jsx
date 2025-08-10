@@ -19,6 +19,10 @@ export function Header() {
                 <i className='bx bx-search-alt-2'></i>
                 <input type="text" placeholder="Buscar..." className="searchInput" />
             </div>
+            <div className="icons">
+                <i class='bx bxs-cart'></i>
+                <i class='bx bxs-user-circle user' ></i>
+            </div>
         </div>
     </div>
   );

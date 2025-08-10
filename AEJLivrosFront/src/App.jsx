@@ -1,12 +1,11 @@
 
-import { Header } from './componentes/header'
-import { ModalLogin } from './componentes/modalLogin'
-import './StyleAej.css'
+import React from 'react';
+import { Home } from './pages/Home';
 
 function App() {
 
 return (
-    <Header />
+    <Home/>
 )
 
 }

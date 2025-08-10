@@ -253,11 +253,11 @@ body{
   font-weight: 600;
 }
 .rightSpace {
-  width: 30%;
+  width: 25%;
   height: 100%;
-  background: green;
   display: flex;
   align-items: center;
+  justify-content: space-around;
 }
 .searchBox {
   width: 50%;
@@ -267,6 +267,7 @@ body{
   display: flex;
   align-items: center;
   padding: 0 10px;
+  box-shadow: 0 2px 8px rgba(9, 56, 107, 0.171);
 }
 .searchBox i {
   font-size: 1.5rem;
@@ -288,4 +289,21 @@ body{
 .searchBox input.searchInput::placeholder {
   color: #bdbdbd;
   opacity: 1;
+}
+.icons{
+  width: 180px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  align-items: center;
+}
+.icons i {
+  font-size: 2.5rem;
+  color: #09386B;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.icons .user{
+  color: #979797;
 }
