@@ -2,7 +2,7 @@
 
 body{
   font-family: "Roboto", sans-serif;
- 
+ background: #FEFDF7;
   margin: 0;
   padding: 0;
 }
@@ -247,6 +247,7 @@ body{
 .ops li{
   list-style: none;
   color: #09386B;
+  margin-right: 5px;
   font-size: 1.1rem;
   cursor: pointer;
   transition: color 0.3s;
@@ -332,4 +333,64 @@ body{
 
 .ops li:hover::after {
   transform: translateX(-50%) scaleX(1);
+}
+
+.primeira{
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  background-image: url('./assets/backgroundHome.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.mainCircle{
+  width: 65px;
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  cursor: pointer;
+  height: 65px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 50px;
+  border-radius: 50%;
+  background: #09386B;
+  color: #fff;
+}
+.segunda{
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.recomend{
+  width: 100%;
+  height: 60%;
+  background: red;
+}
+.recomend h2{
+  font-weight: 400;
+  padding: 0px 40px;
+}
+.recSpace{
+  width: 100%;
+  height: 85%;
+  background: lightcoral;
+}
+.cat{
+  width: 100%;
+  height: 40%;
+  background: pink;
+}
+.cat h2{
+  font-weight: 400;
+  padding: 0px 40px;
+}
+.catSpace{
+  width: 100%;
+  height: 76%;
+  background: red;
 }
