@@ -1,11 +1,14 @@
 
 import React from 'react';
-import { Home } from './pages/Home';
+// ...existing code...
+import { RouterProvider } from 'react-router-dom';
+import { routes } from './router';
 
 function App() {
 
 return (
-    <Home/>
+  <RouterProvider router={routes} />
+    
 )
 
 }

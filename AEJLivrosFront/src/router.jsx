@@ -1,6 +1,30 @@
+import Home from "./pages/Home";
+import Sobre from "./pages/Sobre";
+import MinhasReservas from "./pages/MinhasReservas";
+import Categorias from "./pages/Categorias";
+import Catalogo from "./pages/Catalogo";
+
+import { createBrowserRouter } from "react-router-dom";
+
 export const routes = createBrowserRouter([
     {
-    path: "/",
-    element: 
-    }
+        path: "/",
+        element: <Home/>,
+    },
+    {
+        path: "/sobre",
+        element: <Sobre />,
+    },
+    {
+        path: "/minhas-reservas",
+        element: <MinhasReservas/>,
+    },
+    {
+        path: "/categorias",
+        element: <Categorias/>,
+    },
+    {
+        path: "/catalogo",
+        element: <Catalogo/>,
+    },
 ]);
