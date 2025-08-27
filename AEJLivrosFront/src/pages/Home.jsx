@@ -1,10 +1,12 @@
 import React, { useEffect } from "react";
-
+import "../StyleAej.css";
 import { Acessibilidade } from "../componentes/Acessibilidade";
 import BoxBook from "../componentes/BoxBook";
 import { Header } from "../componentes/Header";
 import MiniCategorias from "../componentes/MiniCategorias";
 import AejBook from "../assets/AejBook.png";
+import { Footer } from "../componentes/Footer";
+import { Depoimentos } from "../componentes/Depoimentos";
 
 export default function Home() {
     useEffect(() => {
@@ -26,9 +28,9 @@ export default function Home() {
     }, []);
     return (
         <div>
-            <Acessibilidade/>
+            <Acessibilidade />
             <session className="primeira">
-                <Header/>
+                <Header />
                 <div className="hero-area">
                     <div className="hero-content">
                         <h1>Seu novo livro</h1>
@@ -59,10 +61,10 @@ export default function Home() {
                         </span>
                     </div>
                     <div className="catSpace">
-                        <MiniCategorias titulo={'História'} icon={<i className='bx bxs-book-open mini-categoria-icon'></i>}/>
-                        <MiniCategorias titulo={'Romance'} icon={<i className='bx bxs-heart mini-categoria-icon'></i>}/>
-                        <MiniCategorias titulo={'Ficcção'} icon={<i className='bx bxs-invader mini-categoria-icon'></i>}/>
-                        <MiniCategorias titulo={'Auto ajuda'} icon={<i className='bx bxs-donate-heart mini-categoria-icon'></i>}/>
+                        <MiniCategorias titulo={'História'} icon={<i className='bx bxs-book-open mini-categoria-icon'></i>} />
+                        <MiniCategorias titulo={'Romance'} icon={<i className='bx bxs-heart mini-categoria-icon'></i>} />
+                        <MiniCategorias titulo={'Ficcção'} icon={<i className='bx bxs-invader mini-categoria-icon'></i>} />
+                        <MiniCategorias titulo={'Auto ajuda'} icon={<i className='bx bxs-donate-heart mini-categoria-icon'></i>} />
                     </div>
                 </div>
             </session>
@@ -75,6 +77,35 @@ export default function Home() {
                     <BoxBook titulo="O Conto da Aia" autor="Margaret Atwood" />
                     <BoxBook titulo="A Paciente Silenciosa" autor="Alex Michaelides" />
                 </div>
+            </session>
+            <session className="servicos">
+                <h2>Serviços</h2>
+                <div className="comportMiniServ">
+                    <MiniCategorias titulo={'Reservas de livros'} icon={<i className='bx bxs-bookmark-star   mini-categoria-icon'></i>} />
+                    <MiniCategorias titulo={'Geração de sinopse com IA'} icon={<i className='bx bx-code-alt mini-categoria-icon'></i>} />
+                    <MiniCategorias titulo={'Sistema de notificações'} icon={<i className='bx bxs-bell mini-categoria-icon'></i>} />
+                    <MiniCategorias titulo={'Acessibilidade'} icon={<i className='bx bx-body mini-categoria-icon'></i>} />
+                </div>
+            </session>
+            <session className="depoimentos">
+                <h2>Depoimentos dos nossos clientes</h2>
+                <div className="depSpace">
+                    <Depoimentos />
+                    <Depoimentos />
+                    <Depoimentos />
+                    <Depoimentos />
+                    <Depoimentos />
+                </div>
+                <div className="depSpace">
+                    <Depoimentos />
+                    <Depoimentos />
+                    <Depoimentos />
+                    <Depoimentos />
+                    <Depoimentos />
+                </div>
+            </session>
+            <session className="footerSection">
+                <Footer />
             </session>
         </div>
     );
