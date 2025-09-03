@@ -368,6 +368,7 @@ body{
 .mainCircle{
   width: 65px;
   position: fixed;
+  border: 2px solid #f9f8f0;
   right: 10px;
   z-index: 100;
   bottom: 10px;
@@ -813,4 +814,241 @@ body{
   font-size: 15px;
   background: #09386B;
   padding: 10px 0;
+}
+
+/* Sobre */
+.primeiraSobre{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-image: url('./assets/backgroundSobre.png');
+  background-size: cover;
+}
+.sobreContent{
+  width: 100%;
+  height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 50px;
+  margin-top: 50px;
+}
+.sobreContent{
+  width: 100%;
+  height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 50px;
+  margin-top: 50px;
+  border-radius: 24px;
+  padding: 32px;
+}
+.sobreContent h1{
+  font-size: 3rem;
+  color: #09386B;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  width: 50%;
+  margin-bottom: 10%;
+}
+.sobreContent p{
+  font-size: 3rem;
+  color: #09386B;
+  font-weight: 800;
+  margin: 0;
+  position: relative;
+  left: 10%;
+}
+.sobreContent h2{
+  font-family: "Brush Script MT", "Comic Sans MS", cursive;;
+  position: relative;
+  left: 50%;
+  font-size: 4rem;
+  color:  #BF9E53;
+  margin: 0;
+  font-weight: 550;
+}
+.sobreContent img{
+  width: 40%;
+}
+.segundaSobre{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
+  background-color: #f9f8f0;
+}
+.segundaSobre h1{
+  font-size: 3rem;
+  color: #09386B;
+  font-weight: 800;
+  width: 100%;
+  text-align: center;
+}
+.carrossel-induzido{
+  width: 100%;
+}
+.carrossel-card {
+  width: 220px;
+  height: 340px;
+  background: #d6d6d6;
+  border-radius: 32px;
+  
+}
+.terceiraSobre{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 50vh;
+  background-color: #f9f8f0;
+}
+.sobreContent2{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.sobreContent2 h1{
+  font-size: 3rem;
+  color: #09386B;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  width: 50%;
+  margin-bottom: 15%;
+}
+.sobreContent2 p{
+  font-size: 1.5rem;
+  color: #09386B;
+  font-weight: 500;
+  margin: 0;
+  width: 45%;
+  text-align: justify;
+  line-height: 1.5;
+}
+.sobreContent2 h2{
+    font-family: "Brush Script MT", "Comic Sans MS", cursive;;
+  position: relative;
+  left: 10%;
+  font-size: 4rem;
+  color:  #BF9E53;
+  margin: 0;
+  font-weight: 550;
+}
+.catSpace{
+  width: 100%;
+  height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+/* Estilo para grid de categorias */
+.catGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  justify-items: center;
+  margin: 0 auto;
+  margin-bottom: 5%;
+  place-items: center;
+}
+
+.catCard {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  width: 310px;
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: 20px;
+  color: #003366;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  transition: box-shadow 0.2s;
+  cursor: pointer;
+}
+.catCard:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  border-color: #c9a44c;
+}
+.catSpace h2{
+  margin: 0;
+  position: relative;
+  top: 5%;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #09386B;
+}
+/* Modal padrão para perfil e login */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content.modal-perfil-logon {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 40px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+  min-width: 320px;
+  max-width: 90vw;
+  text-align: center;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  margin-top: 44px;
+}
+
+.modal-btn {
+  padding: 12px 0;
+  border-radius: 8px;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  background: #003366;
+  color: #fff;
+  transition: background 0.2s;
+}
+.modal-btn.perfil {
+  background: #c9a44c;
+  color: #fff;
+}
+.modal-btn.login {
+  background: #003366;
+  color: #fff;
+}
+.modal-btn:hover {
+  background: #c9a44c;
+  color: #fff;
 }
