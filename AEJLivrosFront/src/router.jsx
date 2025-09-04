@@ -3,6 +3,7 @@ import Sobre from "./pages/Sobre";
 import MinhasReservas from "./pages/MinhasReservas";
 import Categorias from "./pages/Categorias";
 import Catalogo from "./pages/Catalogo";
+import Dashboard from "./pages/Dashboard";
 
 import { createBrowserRouter } from "react-router-dom";
 
@@ -26,5 +27,9 @@ export const routes = createBrowserRouter([
     {
         path: "/catalogo",
         element: <Catalogo/>,
+    },
+    {
+        path: "/dashboard",
+        element: <Dashboard/>,
     },
 ]);

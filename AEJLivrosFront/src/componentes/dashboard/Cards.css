@@ -1,0 +1,22 @@
+.cards {
+  display: flex;
+  gap: 23px;
+  margin-bottom: 20px;
+}
+
+.card {
+  flex: 1;
+  background: white;
+  padding: 15px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  text-align: center;
+  border: 1px solid rgba(0,0,0,0.2);
+  color: #697077;
+  width: 234px;
+  border-radius: 2px;
+}
+
+.card b {
+  color: #09386B;
+  font-size: 20px;
+}
