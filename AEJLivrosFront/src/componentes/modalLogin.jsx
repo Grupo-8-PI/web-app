@@ -28,9 +28,7 @@ export function ModalLogin() {
             <div className="modal">
                 <div className="blue"></div>
                 <div className="header">
-                    <div className="logo">
-                        <img src={image} alt="Logo AEJ Livros" />
-                    </div>
+                  
                 </div>
                 <div className="loginContent">
                     <div className="formArea">

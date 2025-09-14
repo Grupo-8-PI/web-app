@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 html {
@@ -28,9 +29,13 @@ body{
   width: 100%;
   height: 100vh;
   background:#FEFDF7;
+  position: fixed;
+  z-index: -1;
+  bottom: -30px;
   display: flex;
   justify-content: center;  
   align-items: center;
+  overflow: hidden;
 }
 
 .modal{
@@ -41,7 +46,7 @@ body{
   border-radius: 16px;
    justify-content: center;
    position: relative;
-  position: relative;
+   transform: scale(0.95);
   display: flex;
   flex-direction: column;
 }
@@ -89,10 +94,12 @@ body{
 }
 
 .formAlign{
-  width: 80%;
-  height: fit-content;
-  display: flex;
-  flex-direction: column;
+    width: 93%;
+    height: fit-content;
+    display: flex;
+    transform: scale(0.97);
+    flex-direction: column;
+    margin-bottom: 15px;
 }
 
 .formArea h1 {
@@ -938,7 +945,7 @@ body{
   margin: 0;
   font-weight: 550;
 }
-.catSpace{
+.catSpace2{
   width: 100%;
   height: 90vh;
   display: flex;
@@ -1051,4 +1058,16 @@ body{
 .modal-btn:hover {
   background: #c9a44c;
   color: #fff;
+}
+/* Logo do modal login (aparece apenas no login) */
+.logo2 {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0 auto 12px 10px;
+}
+.logo2 img {
+  max-width: 120px;
+  height: auto;
+  display: block;
 }

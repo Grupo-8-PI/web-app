@@ -6,7 +6,7 @@ export default function Categorias() {
     return (
         <div>
             <Header/>
-            <div className="catSpace">
+            <div className="catSpace2">
                 <h2>Selecione uma categoria:</h2>
                 <div className="catGrid">
                     <CategoriaCard titulo="Romance" icone="😊" alt="Romance" />

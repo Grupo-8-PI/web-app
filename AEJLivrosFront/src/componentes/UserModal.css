@@ -1,0 +1,22 @@
+.user-modal {
+  position: absolute;
+  top: 50px; /* ajuste conforme necessário */
+  right: 0;
+  z-index: 1000;
+}
+.user-modal-content {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  padding: 16px;
+  margin-top: 15px;
+  min-width: 180px;
+  margin-right: 10px;
+}
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  float: right;
+  cursor: pointer;
+}
