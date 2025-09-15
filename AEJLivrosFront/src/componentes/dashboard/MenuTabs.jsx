@@ -19,10 +19,10 @@ const MenuTabs = ({ activeTab, onChange }) => {
           >
             {label}
             {key === "Inconsistencias" && (
-              <span className="tooltip">2</span>
+              <span className="tooltip">3</span>
             )}
             {key === "Reservas" && (
-              <span className="tooltip">7</span>
+              <span className="tooltip">6</span>
             )}
           </li>
         ))}
