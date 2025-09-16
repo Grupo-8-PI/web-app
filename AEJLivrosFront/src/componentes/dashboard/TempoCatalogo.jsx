@@ -48,7 +48,7 @@ function TempoCatalogo() {
         {livros.map((livro) => (
           <div key={livro.id} className="livro-item">
             <div className="livro-numero">{livro.id}.</div>
-            <img src={livro.capa} alt={livro.titulo} className="livro-capa" />
+            <img src={livro.capa} alt={livro.titulo} className="livro-capa-mini" />
             <div className="livro-info">
               <span className="label">Tempo de permanência:</span>
               <p className="dias">{livro.dias} dias</p>
