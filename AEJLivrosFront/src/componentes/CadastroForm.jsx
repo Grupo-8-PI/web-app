@@ -23,7 +23,7 @@ export function CadastroForm({ onVoltarLogin }) {
             confirmaSenha
         };
         try {
-            const response = await fetch('http://localhost:8080/api-service/usuarios', {
+            const response = await fetch('http://localhost:8080/usuarios', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
