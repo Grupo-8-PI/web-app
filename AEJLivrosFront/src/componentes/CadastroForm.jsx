@@ -13,15 +13,22 @@ export function CadastroForm({ onVoltarLogin }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (senha !== confirmaSenha) {
+            setMensagem('As senhas não coincidem.');
+            return;
+        }
+
         const data = {
             nome,
             email,
-            cpf,
-            nascimento,
             telefone,
+            tipo_usuario: "admin", // Valor fixo 
+            cpf,
             senha,
-            confirmaSenha
+            dtNascimento: nascimento 
         };
+
         try {
             const response = await fetch('http://localhost:8080/usuarios', {
                 method: 'POST',
@@ -31,7 +38,8 @@ export function CadastroForm({ onVoltarLogin }) {
             if (response.ok) {
                 setMensagem('Cadastro realizado com sucesso!');
             } else {
-                setMensagem('Erro ao cadastrar.');
+                const errorData = await response.json();
+                setMensagem(errorData.message || 'Erro ao cadastrar.');
             }
         } catch (error) {
             setMensagem('Erro de conexão com o servidor.');
