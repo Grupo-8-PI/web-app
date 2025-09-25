@@ -30,12 +30,13 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard">
-            <aside className="sidebar">
+            <div className="sidebarD">
                 <Sidebar />
-            </aside>
+            </div>
 
             <main className="content">
-                <header className="header">
+                <div className="right-cont">
+                    <header className="header">
                     <h1>Dashboard</h1>
                     <div className="rightSpace">
                         <div className="searchBox">
@@ -58,11 +59,13 @@ const Dashboard = () => {
                         {renderContent()}
                     </div>
 
-                    <aside className="painelUsuario">
+                    <div className="painelUsuario">
 
                         <PainelUsuario />
-                    </aside>
+                    </div>
                 </div>
+                </div>
+                
             </main>
         </div>
     );

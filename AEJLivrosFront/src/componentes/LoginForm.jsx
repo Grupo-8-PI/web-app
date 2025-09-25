@@ -35,8 +35,9 @@ export function LoginForm({ onCadastroClick }) {
             <form onSubmit={handleSubmit}>
                 <label htmlFor="email">E-mail</label>
                 <input id="email" type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} />
-                <label htmlFor="senha">Senha <span><u>Esqueceu a senha?</u></span></label>
+                <label htmlFor="senha">Senha</label>
                 <input id="senha" type="password" placeholder="Senha" value={senha} onChange={e => setSenha(e.target.value)} />
+                <span><u>Esqueceu a senha?</u></span>
                 <div className="butArea">
                     <button type="submit">Entrar</button>
                 </div>

@@ -3,8 +3,8 @@
   background: #f4f9ff;
   display: flex;
   flex-direction: column;
+  height: 100%;
   align-items: center;
-  padding: 15px 0;
 }
 
 .sidebar .logo {
@@ -24,7 +24,6 @@
 
 .sidebar nav li {
   font-size: 28px;
-  margin: 30px 0;
   cursor: pointer;
 }
 

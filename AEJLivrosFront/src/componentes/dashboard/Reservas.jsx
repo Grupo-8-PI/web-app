@@ -222,21 +222,23 @@ const Reservas = () => {
                   <tr className="detalhes-row">
                     <td colSpan="8">
                       <div className="detalhes-container">
-                        {reserva.detalhes.map((livro, i) => (
-                          <div key={i} className="detalhes-livro">
-                            <img src={livro.capa} alt={`Capa de ${livro.titulo}`} className="detalhes-capa" />
-                            <div className="detalhes-info">
-                              <h3>{livro.titulo}</h3>
-                              <p><strong>Autor:</strong> {livro.autor}</p>
-                              <p><strong>Ano:</strong> {livro.ano}</p>
-                              <p><strong>Idioma:</strong> {livro.idioma}</p>
-                              <p><strong>Páginas:</strong> {livro.paginas}</p>
-                              <p><strong>Conservação:</strong> {livro.conservacao}</p>
-                              <p><strong>Categoria:</strong> {livro.categoria}</p>
-                              <p className="reserva-total">Preço: R$ {livro.preco.toFixed(2)}</p>
+                        <div className="detalhes-livros-lista">
+                          {reserva.detalhes.map((livro, i) => (
+                            <div key={i} className="detalhes-livro">
+                              <img src={livro.capa} alt={`Capa de ${livro.titulo}`} className="detalhes-capa" />
+                              <div className="detalhes-info">
+                                <h3>{livro.titulo}</h3>
+                                <p><strong>Autor:</strong> {livro.autor}</p>
+                                <p><strong>Ano:</strong> {livro.ano}</p>
+                                <p><strong>Idioma:</strong> {livro.idioma}</p>
+                                <p><strong>Páginas:</strong> {livro.paginas}</p>
+                                <p><strong>Conservação:</strong> {livro.conservacao}</p>
+                                <p><strong>Categoria:</strong> {livro.categoria}</p>
+                                <p className="reserva-total">Preço: R$ {livro.preco.toFixed(2)}</p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                         <div className="detalhes-footer">
                           <p className="reserva-total"><strong>Total da Reserva:</strong> R$ {total.toFixed(2)}</p>
                           <div className="detalhes-botoes">
