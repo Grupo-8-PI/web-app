@@ -1,4 +1,5 @@
 import "./VisaoEstante.css";
+import { useNavigate } from "react-router-dom";
 
 const VisaoEstante = () => {
   const livros = [
@@ -76,6 +77,8 @@ const VisaoEstante = () => {
     },
   ];
 
+  const navigate = useNavigate();
+
   return (
     <div className="estante-container">
       <div className="livros-grid">
@@ -91,7 +94,7 @@ const VisaoEstante = () => {
                 Ano: {livro.ano}<br />
                 Conservação: {livro.conservacao}
               </p>
-              <button className="editar-btn">Editar</button>
+              <button className="editar-btn" onClick={() => navigate("/editar-livro")}>Editar</button>
             </div>
           </div>
         ))}

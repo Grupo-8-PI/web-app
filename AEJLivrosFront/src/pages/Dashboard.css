@@ -4,6 +4,21 @@
   font-family: Arial, sans-serif;
 }
 
+.btn-cadastrar {
+  background-color: #09386B;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 450px;
+}
+
+.btn-cadastrar:hover {
+  background-color: #07294f;
+}
+
 .sidebarD {
   width: 70px;
   background: #333;

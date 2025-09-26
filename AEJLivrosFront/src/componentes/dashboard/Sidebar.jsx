@@ -1,10 +1,10 @@
 import "./Sidebar.css";
-import AejLogo from "../../assets/AejLogo.png";
+import AejLogo from "../../assets/AejLivro.png";
 
 function Sidebar() {
   return (
     <div className="sidebar">
-      <div className="logo"><img src={AejLogo} alt="" /></div>
+      <div className="logo-header"><img src={AejLogo} alt="" /></div>
       <nav>
         <ul>
           <li>

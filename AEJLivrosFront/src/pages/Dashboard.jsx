@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import Sidebar from "../componentes/dashboard/Sidebar";
 import PainelUsuario from "../componentes/dashboard/PainelUsuario";
@@ -12,6 +13,7 @@ import VisaoEstante from "../componentes/dashboard/VisaoEstante";
 
 const Dashboard = () => {
     const [activeTab, setActiveTab] = useState("Geral");
+    const navigate = useNavigate();
 
     const renderContent = () => {
         switch (activeTab) {
@@ -37,35 +39,36 @@ const Dashboard = () => {
             <main className="content">
                 <div className="right-cont">
                     <header className="header">
-                    <h1>Dashboard</h1>
-                    <div className="rightSpace">
-                        <div className="searchBox">
-                            <i className="bx bx-search-alt-2"></i>
-                            <input
-                                type="text"
-                                placeholder="Buscar..."
-                                className="searchInput"
-                            />
+                        <h1>Dashboard</h1>
+                        <div className="rightSpace">
+                            <div className="searchBox">
+                                <i className="bx bx-search-alt-2"></i>
+                                <input
+                                    type="text"
+                                    placeholder="Buscar..."
+                                    className="searchInput"
+                                />
+                            </div>
+                        </div>
+                        <button className="btn-cadastrar" onClick={() => navigate("/cadastrar-livro")}>+ Cadastrar Livro</button>
+                    </header>
+
+                    <div className="menu-tabs-section">
+                        <MenuTabs activeTab={activeTab} onChange={setActiveTab} />
+                    </div>
+
+                    <div className="main-layout">
+                        <div className="main-content">
+                            {renderContent()}
+                        </div>
+
+                        <div className="painelUsuario">
+
+                            <PainelUsuario />
                         </div>
                     </div>
-                </header>
-
-                <div className="menu-tabs-section">
-                    <MenuTabs activeTab={activeTab} onChange={setActiveTab} />
                 </div>
 
-                <div className="main-layout">
-                    <div className="main-content">
-                        {renderContent()}
-                    </div>
-
-                    <div className="painelUsuario">
-
-                        <PainelUsuario />
-                    </div>
-                </div>
-                </div>
-                
             </main>
         </div>
     );
