@@ -6,6 +6,7 @@ import Catalogo from "./pages/Catalogo";
 import Dashboard from "./pages/Dashboard";
 import CadastrarLivro from "./pages/CadastrarLivro";
 import EditarLivro from "./pages/EditarLivro";
+import Configuracoes from "./pages/Configuracoes";
 
 import { createBrowserRouter } from "react-router-dom";
 import Login from "./pages/Login";
@@ -46,5 +47,9 @@ export const routes = createBrowserRouter([
     {
         path: "/editar-livro",
         element: <EditarLivro/>,
+    },
+    {
+        path: "/configuracoes",
+        element: <Configuracoes/>,
     },
 ]);

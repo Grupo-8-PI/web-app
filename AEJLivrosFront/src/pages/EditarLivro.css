@@ -134,10 +134,10 @@
   width: 650px;
 }
 
-.btn-cancelar {
+.btn-cancelar-edicao {
   background: none;
   border: 1px solid #E29D3E;
-  border-radius: 6px;
+  border-radius: 10px;
   color: #E29D3E;
   padding: 0.7rem 1.5rem;
   cursor: pointer;
@@ -145,7 +145,7 @@
   transition: all 0.2s ease;
 }
 
-.btn-cancelar:hover {
+.btn-cancelar-edicao:hover {
   background: #c58935;
   color: white;
 }
@@ -153,7 +153,7 @@
 .btn-salvar-livro {
   background: #0a3161;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   color: white;
   padding: 0.7rem 1.5rem;
   cursor: pointer;

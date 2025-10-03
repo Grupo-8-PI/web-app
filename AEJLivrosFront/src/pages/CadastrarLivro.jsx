@@ -80,7 +80,7 @@ export default function CadastrarLivro() {
                                     </div>
 
                                     <div className="form-buttons">
-                                        <button type="button" className="btn-cancelar">
+                                        <button type="button" className="btn-cancelar-cadastro">
                                             Cancelar
                                         </button>
                                         <button type="submit" className="btn-cadastrar-livro">

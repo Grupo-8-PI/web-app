@@ -1,0 +1,337 @@
+.config-container {
+    padding: 1rem;
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: #F6FDFF;
+    border-radius: 20px;
+    height: 650px;
+}
+
+.config-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.config-content {
+    display: flex;
+    gap: 1rem;
+}
+
+.config-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 150px;
+  align-items: stretch; 
+  padding: 12px;        
+  box-sizing: border-box;
+}
+
+.config-menu button {
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: background 0.3s;
+    color: #09386B
+}
+
+.config-menu button.active {
+    background-color: #dce7ff;
+    font-weight: bold;
+}
+
+.config-details {
+    flex: 1;
+    background: #F6FDFF;
+    border-radius: 10px;
+}
+
+.perfil-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 10px;
+    border: 1px solid #09386b5b;
+    border-radius: 20px;
+    padding: 5px;
+    color: #09386B;
+}
+
+.perfil-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.perfil-info {
+    border: 1px solid #09386b5b;
+    border-radius: 20px;
+    padding: 5px;
+    font-size: 14px;
+}
+
+.perfil-info-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    color: #09386B;
+}
+
+.perfil-info span {
+    color: rgba(0, 0, 0, 0.608);
+}
+
+.perfil-info h4 {
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 5px;
+    margin-top: 10px;
+}
+
+.perfil-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.btn-editar-info {
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #09386ba9;
+    border-radius: 20px;
+    cursor: pointer;
+    color: #09386ba9;
+    height: 35px;
+    margin-top: 5px;
+    background-color: #F6FDFF;
+}
+
+.btn-editar-info:hover,
+.btn-editar-info:focus {
+    background: rgba(9, 56, 107, 0.06);
+    transform: translateY(-1px);
+}
+
+.bx-pencil {
+    color: #09386ba9;
+}
+
+.config-menu .btn-delete {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: none;
+  color: #FF0000;                
+  border: 1px solid #FF0000;
+  padding: 0.6rem 0.9rem;
+  border-radius: 20px;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.18s ease, transform 0.12s ease;
+  box-shadow: none;
+}
+
+.config-menu .btn-delete:hover,
+.config-menu .btn-delete:focus {
+  background: rgba(255, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.config-menu .btn-delete.override-important {
+  background: none !important;
+  color: #FF0000 !important;
+  border: 1px solid #FF0000 !important;
+}
+
+.perfil-historico {
+    border: 1px solid #09386b5b;
+    border-radius: 20px;
+    padding: 5px;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.perfil-historico-header {
+    font-size: 18px;
+    color: #09386B;
+}
+
+.tabela-compras {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1rem;
+    background: #F6FDFF;
+    border: 1px solid #09386b5b;
+    border-radius: 12px;
+    overflow: hidden;
+    font-size: 0.95rem;
+    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.tabela-compras thead {
+    background-color: #dce7ff;
+}
+
+.tabela-compras th {
+    text-align: left;
+    font-weight: 600;
+    color: #09386B;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #09386b3a;
+}
+
+.tabela-compras td {
+    padding: 0.8rem 1rem;
+    color: #333;
+    border-bottom: 1px solid #09386b1e;
+}
+
+.tabela-compras tr:last-child td {
+    border-bottom: none;
+}
+
+.tabela-compras tbody tr:hover {
+    background-color: #f1f7ff;
+    transition: background 0.2s ease-in-out;
+}
+
+.tabela-compras td:nth-child(3) {
+    font-weight: bold;
+    color: #09386B;
+}
+
+.tabela-compras td:nth-child(4) {
+    font-weight: 600;
+    color: #2E7D32;
+}
+
+.seguranca-section {
+    border: 1px solid #09386b5b;
+    border-radius: 20px;
+    padding: 15px;
+    margin-top: 10px;
+    font-size: 14px;
+    background-color: #F6FDFF;
+    color: #09386B;
+}
+
+.seguranca-section h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    margin-top: 15px;
+}
+
+.form-senha {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 20px;
+}
+
+.form-senha label {
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.form-senha input {
+    padding: 0.5rem;
+    border: 1px solid #09386b5b;
+    border-radius: 10px;
+    font-size: 1rem;
+    outline: none;
+    transition: border 0.2s ease;
+}
+
+.form-senha input:focus {
+    border-color: #09386B;
+    box-shadow: 0px 0px 3px #09386b4d;
+}
+
+.btn-salvar-senha {
+    align-self: flex-start;
+    background-color: #09386B;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.btn-salvar-senha:hover {
+    background-color: #07294f;
+    transform: translateY(-1px);
+}
+
+.dicas-lista {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.dicas-lista li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.dicas-lista li::before {
+    content: "✔";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #2E7D32;
+    font-weight: bold;
+}
+
+.ajuda-section {
+    border: 1px solid #09386b5b;
+    border-radius: 20px;
+    padding: 15px;
+    margin-top: 10px;
+    font-size: 14px;
+    background-color: #F6FDFF;
+    color: #09386B;
+}
+
+.ajuda-section h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.ajuda-section h3 {
+    margin-top: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #07294f;
+}
+
+.ajuda-section p {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.faq-lista {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 15px 0;
+}
+
+.faq-lista li {
+    margin-bottom: 10px;
+    background: #eef4ff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: #09386B;
+}

@@ -44,15 +44,15 @@ export default function EditarLivro() {
                             </div>
 
                             <div className="livro-form">
-                                <h2>Insira o ISBN</h2>
+                                <h2>Editar Livro</h2>
                                 <p>
-                                    Insira o ISBN e as informações serão preenchidas de forma automática.
+                                    Edite apenas os campos que não estão bloqueados.
                                 </p>
 
                                 <form>
                                     <div className="form-group">
                                         <label>ISBN</label>
-                                        <input type="text" placeholder="Digite o ISBN" />
+                                        <input type="text" placeholder="Digite o ISBN" disabled/>
                                     </div>
 
                                     <div className="form-group">
@@ -80,7 +80,7 @@ export default function EditarLivro() {
                                     </div>
 
                                     <div className="form-buttons">
-                                        <button type="button" className="btn-cancelar">
+                                        <button type="button" className="btn-cancelar-edicao">
                                             Cancelar
                                         </button>
                                         <button type="submit" className="btn-salvar-livro">
