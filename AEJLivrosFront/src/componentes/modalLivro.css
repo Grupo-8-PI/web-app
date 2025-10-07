@@ -1,0 +1,146 @@
+.modalLivro-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgb(255, 255, 255);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modalLivro {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    position: relative;
+}
+
+.modalLivro-close {
+    position: absolute;
+    top: 77px;
+    left: 24px;
+    background: none;
+    border: none;
+    font-size: 3rem;
+    color: #888;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.modalLivro-content {
+    display: flex;
+    gap: 36px;
+    align-items: flex-start;
+    transform: scale(1.2);
+}
+
+.modalLivro-img {
+    min-width: 240px;
+    max-width: 260px;
+    width: 260px;
+    height: 370px;
+    background: #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px #0001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.modalLivro-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.mock-imagem {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e0e0e0;
+    border-radius: 10px;
+    font-size: 3rem;
+    color: #bdbdbd;
+}
+
+.modalLivro-info {
+    flex: 1;
+    min-width: 220px;
+    color: #222;
+    font-family: inherit;
+}
+
+.modalLivro-info h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+}
+
+.modalLivro-info h3 {
+    font-size: 1.3rem;
+    color: #222;
+    margin: 0 0 18px 0;
+    font-weight: 500;
+}
+
+.modalLivro-info p {
+    font-size: 1.08rem;
+    margin: 0 0 4px 0;
+}
+
+.modalLivro-info b {
+    font-weight: 600;
+}
+
+.buttonsArea {
+    margin-top: 20%;
+    display: flex;
+    gap: 12px;
+}
+
+.buttonsArea button {
+    padding: 10px 16px;
+    background: #09386B;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+@media (max-width: 700px) {
+    .modalLivro {
+        padding: 16px 4px 12px 4px;
+        max-width: 98vw;
+    }
+
+    .modalLivro-content {
+        flex-direction: column;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .modalLivro-img {
+        width: 180px;
+        height: 260px;
+        min-width: 120px;
+        max-width: 200px;
+    }
+
+    .modalLivro-info h2 {
+        font-size: 1.2rem;
+    }
+}

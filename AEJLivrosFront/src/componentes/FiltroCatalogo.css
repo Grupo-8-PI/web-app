@@ -1,0 +1,60 @@
+.filtro-catalogo {
+  background: #f5f4f0;
+  padding: 24px 16px 16px 16px;
+  border-radius: 8px;
+  width: 90%;
+  height: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  color: #444;
+}
+.filtro-catalogo h2 {
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.filtro-bloco {
+  margin-bottom: 20px;
+}
+.filtro-bloco span {
+  display: block;
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+  font-weight: 400;
+}
+.filtro-bloco label {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  margin-bottom: 4px;
+  gap: 6px;
+  cursor: pointer;
+}
+.filtro-select {
+  width: 100%;
+  padding: 10px 0px 10px;
+  display: flex;
+  align-items: center;
+  outline: none;
+  border-radius: 6px;
+  border: none;
+  background: #ffffff;
+  color: #888;
+  font-size: 0.78rem;
+  margin-top: 4px;
+}
+.filtro-limpar {
+  transform: translate(15px, 200px);
+  padding: 8px 18px;
+  border: 1.5px solid #e09c3d;
+  background: transparent;
+  color: #e09c3d;
+  border-radius: 16px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.filtro-limpar:hover {
+  background: #e09c3d;
+  color: #fff;
+}

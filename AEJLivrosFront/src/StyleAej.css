@@ -248,6 +248,8 @@ body{
   height: 80px;
   display: flex;
   justify-content: space-between;
+  position: relative;
+  z-index: 2001;
 }
 .leftSpace {
   width: 50%;
@@ -643,6 +645,10 @@ body{
 .hero-btn:hover {
   background: #539ce5;
   transform: translateY(-2px) scale(1.04);
+}
+
+.hero-3d-container{
+  transform: scale(0.95);
 }
 
 .hero-3d-concave {

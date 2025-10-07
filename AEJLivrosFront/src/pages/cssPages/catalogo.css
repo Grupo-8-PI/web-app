@@ -1,0 +1,34 @@
+.cat-cont{
+    width: 100%;
+    height: 89vh;
+    display: flex;
+}
+.filtroEsp{
+    width: 15%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.catEsp{
+    width: 85%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 12px;
+}
+.catEsp::-webkit-scrollbar {
+    width: 8px;
+    background: #f1f1f1;
+    border-radius: 20px;
+}
+.catEsp::-webkit-scrollbar-thumb {
+    background: #09386B;
+    border-radius: 20px;
+     }
+.catEsp h2{
+    margin: 0;
+}
