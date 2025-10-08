@@ -1,4 +1,4 @@
-.cadastrar-livro-container {
+.editar-livro-container {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -9,10 +9,10 @@
   color: #555;
 }
 
-.cadastrar-livro-content {
+.editar-livro-content {
   display: flex;
   gap: 2rem;
-  margin-top: 1rem;
+  padding: 10px;
 }
 
 .livro-preview {
@@ -130,7 +130,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin-top: 2rem;
+  margin-top: 1rem;
   width: 650px;
 }
 
@@ -207,7 +207,7 @@
   background-color: #07294f;
 }
 
-.cadastrar-livro-container {
+.editar-livro-container {
   flex: 1;
   min-width: 0;
   border-radius: 10px;

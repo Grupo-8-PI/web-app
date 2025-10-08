@@ -12,7 +12,7 @@
 .cadastrar-livro-content {
   display: flex;
   gap: 2rem;
-  margin-top: 1rem;
+  padding: 10px;
 }
 
 .livro-preview {
@@ -130,7 +130,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin-top: 2rem;
+  margin-top: 1rem;
   width: 650px;
 }
 
@@ -205,11 +205,4 @@
 
 .btn-cadastrar1:hover {
   background-color: #07294f;
-}
-
-.cadastrar-livro-container {
-  flex: 1;
-  min-width: 0;
-  border-radius: 10px;
-  padding: 0 20px;
-}
+} 

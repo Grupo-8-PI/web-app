@@ -26,10 +26,10 @@ export default function EditarLivro() {
                 <div className="dashboard-content">
                     <PainelUsuario />
 
-                    <div className="cadastrar-livro-container">
+                    <div className="editar-livro-container">
                         <div className="breadcrumb">Visão Estante &gt; Cadastrar Livro</div>
 
-                        <div className="cadastrar-livro-content">
+                        <div className="editar-livro-content">
                             <div className="livro-preview">
                                 <div className="miniaturas">
                                     <img src="https://m.media-amazon.com/images/I/81ZuLJhV04L._SY425_.jpg" alt="miniatura" className="miniatura" />
