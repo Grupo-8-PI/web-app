@@ -79,3 +79,13 @@
 .editar-btn:hover {
   background-color: #002244;
 }
+
+.carregando, .erro {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-top: 20px;
+}
+
+.erro {
+  color: red;
+}

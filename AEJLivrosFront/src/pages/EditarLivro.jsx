@@ -71,6 +71,11 @@ export default function EditarLivro() {
                                     </div>
 
                                     <div className="form-group">
+                                        <label>Preço</label>
+                                        <input type="text" placeholder="Digite o preço do livro"  />
+                                    </div>
+
+                                    <div className="form-group">
                                         <label>Estado do Livro</label>
                                         <select>
                                             <option>Novo</option>
