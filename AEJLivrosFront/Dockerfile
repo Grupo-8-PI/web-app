@@ -9,11 +9,12 @@ COPY package.json package-lock.json ./
 # Instalar dependências
 RUN npm install
 
+# Build da aplicação
+RUN npm run build
+
 # Copiar todo o código
 COPY . .
 
-# Build com Vite
-RUN npm run build
 
 # Etapa 2: Servir a aplicação
 FROM node:18-slim
