@@ -1,0 +1,62 @@
+.paginacao {
+  list-style: none;
+  display: flex;
+  gap: 8px;
+  padding: 0;
+  margin: 16px 0;
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+.paginacao button {
+  background: #fff;
+  border: 1px solid #ddd;
+  color: #333;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  min-width: 40px;
+  transition: all 0.15s ease-in-out;
+  font-weight: 600;
+}
+
+.paginacao button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+}
+
+.paginacao button:active {
+  transform: translateY(0);
+}
+
+.paginacao button[aria-current="page"],
+.paginacao .active {
+  background: linear-gradient(90deg,#09386B,#35669a);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 8px 20px rgba(108,92,231,0.18);
+}
+
+/* disabled state */
+.paginacao button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
+}
+.paginacao i{
+    font-size: 20px;
+}
+/* small screens */
+@media (max-width: 480px) {
+  .paginacao {
+    gap: 6px;
+    margin: 12px 0;
+  }
+  .paginacao button {
+    padding: 6px 8px;
+    min-width: 34px;
+    font-size: 14px;
+  }
+}

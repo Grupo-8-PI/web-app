@@ -32,3 +32,10 @@
 .catEsp h2{
     margin: 0;
 }
+.espPag{
+    width: 82vw;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

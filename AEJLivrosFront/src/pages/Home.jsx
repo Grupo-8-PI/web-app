@@ -7,6 +7,7 @@ import MiniCategorias from "../componentes/MiniCategorias";
 import AejBook from "../assets/AejBook.png";
 import { Footer } from "../componentes/Footer";
 import { Depoimentos } from "../componentes/Depoimentos";
+import { Link } from "react-router-dom";
 
 export default function Home() {
     useEffect(() => {
@@ -56,9 +57,10 @@ export default function Home() {
                 <div className="cat">
                     <div className="cat-header">
                         <h2>Categorias</h2>
-                        <span className="ver-todos">
+                        <Link to="/categorias"><span className="ver-todos">
                             Ver todos <i className='bx bx-chevron-right'></i>
-                        </span>
+                            </span>
+                        </Link>
                     </div>
                     <div className="catSpace">
                         <MiniCategorias titulo={'História'} icon={<i className='bx bxs-book-open mini-categoria-icon'></i>} />

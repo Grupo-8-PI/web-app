@@ -1,0 +1,103 @@
+.reservaCont {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.reservaCard {
+    width: 90%;
+    background: #faf9f6;
+    border-radius: 12px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    padding: 26px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.reservaThumb {
+    width: 80px;
+    height: 120px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reservaThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover
+}
+
+.thumb-mock {
+    font-size: 1.8rem;
+    color: #777
+}
+
+.reservaInfo {
+    flex: 1
+}
+
+.reservaInfo h3 {
+    font-size: 1rem;
+    margin: 0 0 6px 0
+}
+
+.reservaDates {
+    font-size: 0.85rem;
+    color: #666;
+    margin: 2px 0
+}
+
+.reservaActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px
+}
+
+.reservaPrice {
+    font-weight: 600
+}
+
+.reservaButtons {
+    display: flex;
+    gap: 10px
+}
+
+.btn-outline {
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid #09386B;
+    background: transparent;
+    color: #09386B;
+    cursor: pointer
+}
+.btn-outline:hover {
+    transition: 0.5s ease;
+    background: #09386B;
+    color: #fff;
+}
+
+.btn-primary {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: none;
+    background: #09386B;
+    color: #fff;
+    cursor: pointer
+}
+.btn-primary:hover {
+    transition: 0.5s ease;
+    background: #2672c3;
+    color: #fff;
+}
+.reservaStatus{
+    color: #f65757;
+}

@@ -6,6 +6,7 @@ import { Header } from "../componentes/Header";
 import "./cssPages/Catalogo.css";
 
 import React, { useState } from 'react';
+import Paginacao from "../componentes/Paginacao";
 
 export default function Catalogo() {
     const [modalLivro, setModalLivro] = useState(null);
@@ -104,6 +105,9 @@ export default function Catalogo() {
                     {livros.map((livro, idx) => (
                         <CardLivro key={idx} {...livro} onVerDetalhes={() => setModalLivro(livro)} />
                     ))}
+                    <div className="espPag">
+                    <Paginacao />
+                    </div>
                 </div>
             </div>
             <ModalLivro livro={modalLivro} onClose={() => setModalLivro(null)} />
