@@ -45,7 +45,7 @@ export const routes = createBrowserRouter([
         element: <CadastrarLivro/>,
     },
     {
-        path: "/editar-livro",
+        path: "/editar-livro/:id",
         element: <EditarLivro/>,
     },
     {

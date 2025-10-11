@@ -206,3 +206,43 @@
 .btn-cadastrar1:hover {
   background-color: #07294f;
 } 
+
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 8px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.radio-label:hover {
+    border-color: #539ce5;
+    background: #f0f8ff;
+}
+
+.radio-label input[type="radio"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: #539ce5;
+}
+
+.radio-label input[type="radio"]:checked + span {
+    font-weight: 600;
+    color: #539ce5;
+}
+
+.radio-label span {
+    font-size: 14px;
+    user-select: none;
+}

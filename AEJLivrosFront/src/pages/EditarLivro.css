@@ -213,3 +213,104 @@
   border-radius: 10px;
   padding: 0 20px;
 }
+
+.mensagem {
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.mensagem-sucesso {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.mensagem-erro {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.mensagem-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.erro-input {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 8px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.radio-label:hover {
+    border-color: #0a3161;
+    background: #f0f8ff;
+}
+
+.radio-label input[type="radio"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: #0a3161;
+}
+
+.radio-label input[type="radio"]:checked + span {
+    font-weight: 600;
+    color: #0a3161;
+}
+
+.radio-label span {
+    font-size: 14px;
+    user-select: none;
+}
+
+.btn-deletar {
+    background: #dc3545;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 0.7rem 1.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    margin-right: auto; 
+}
+
+.btn-deletar:hover {
+    background: #c82333;
+}
+
+.btn-deletar:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    width: 650px;
+}

@@ -1,5 +1,5 @@
 import "./CadastrarLivro.css";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../componentes/dashboard/Sidebar";
 import PainelUsuario from "../componentes/dashboard/PainelUsuario";
@@ -8,46 +8,22 @@ import api from "../services/api";
 
 export default function CadastrarLivro() {
     const navigate = useNavigate();
-    
+
     const [salvando, setSalvando] = useState(false);
     const [mensagem, setMensagem] = useState({ tipo: '', texto: '' });
-    const [conservacoes, setConservacoes] = useState([]);
-    const [acabamentos, setAcabamentos] = useState([]);
-    
+
     const isbn = useSafeInput('', 'text');
     const titulo = useSafeInput('', 'text');
     const autor = useSafeInput('', 'text');
     const editora = useSafeInput('', 'text');
-    
+
     const [anoPublicacao, setAnoPublicacao] = useState('');
     const [paginas, setPaginas] = useState('');
     const [preco, setPreco] = useState('');
-    const [categoria, setCategoria] = useState(''); 
-    const [conservacaoId, setConservacaoId] = useState(''); 
-    const [acabamentoId, setAcabamentoId] = useState(''); 
+    const [categoria, setCategoria] = useState('');
+    const [conservacaoId, setConservacaoId] = useState('');
+    const [acabamentoId, setAcabamentoId] = useState('');
     const [imagemUrl, setImagemUrl] = useState('');
-
-    useEffect(() => {
-        const buscarDados = async () => {
-            try {
-                const [resConservacoes, resAcabamentos] = await Promise.all([
-                    api.get('/conservacoes'),
-                    api.get('/acabamentos')
-                ]);
-
-                setConservacoes(resConservacoes.data);
-                setAcabamentos(resAcabamentos.data);
-            } catch (error) {
-                console.error('Erro ao buscar dados:', error);
-                setMensagem({ 
-                    tipo: 'erro', 
-                    texto: 'Erro ao carregar conservações e acabamentos' 
-                });
-            }
-        };
-
-        buscarDados();
-    }, []);
 
     const buscarPorISBN = async () => {
         if (!isbn.value) {
@@ -56,11 +32,11 @@ export default function CadastrarLivro() {
         }
 
         const isbnLimpo = isbn.value.replace(/[-\s]/g, '');
-        
+
         if (!/^\d{10}(\d{3})?$/.test(isbnLimpo)) {
-            setMensagem({ 
-                tipo: 'erro', 
-                texto: 'ISBN inválido. Use 10 ou 13 dígitos.' 
+            setMensagem({
+                tipo: 'erro',
+                texto: 'ISBN inválido. Use 10 ou 13 dígitos.'
             });
             return;
         }
@@ -70,14 +46,14 @@ export default function CadastrarLivro() {
         try {
             console.log('Buscando no Google Books:', isbnLimpo);
             const googleResponse = await fetch(
-                `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbnLimpo}&key=AIzaSyDummyKey123`
+                `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbnLimpo}`
             );
             const googleData = await googleResponse.json();
 
             if (googleData.items && googleData.items.length > 0) {
                 const livro = googleData.items[0].volumeInfo;
                 console.log('Livro encontrado no Google:', livro);
-                
+
                 preencherDados(livro);
                 return;
             }
@@ -87,37 +63,37 @@ export default function CadastrarLivro() {
                 `https://openlibrary.org/api/books?bibkeys=ISBN:${isbnLimpo}&format=json&jscmd=data`
             );
             const openLibData = await openLibResponse.json();
-            
+
             const livroKey = `ISBN:${isbnLimpo}`;
             if (openLibData[livroKey]) {
                 const livro = openLibData[livroKey];
                 console.log('Livro encontrado no Open Library:', livro);
-                
+
                 titulo.setValue(livro.title || '');
                 autor.setValue(livro.authors?.[0]?.name || '');
                 editora.setValue(livro.publishers?.[0]?.name || '');
                 setAnoPublicacao(livro.publish_date?.match(/\d{4}/)?.[0] || '');
                 setPaginas(livro.number_of_pages?.toString() || '');
                 setImagemUrl(livro.cover?.large || livro.cover?.medium || '');
-                
-                setMensagem({ 
-                    tipo: 'sucesso', 
-                    texto: 'Dados preenchidos pelo Open Library!' 
+
+                setMensagem({
+                    tipo: 'sucesso',
+                    texto: 'Dados preenchidos pelo Open Library!'
                 });
                 return;
             }
 
             console.log('ISBN não encontrado em nenhuma API');
-            setMensagem({ 
-                tipo: 'aviso', 
-                texto: `ISBN ${isbnLimpo} não encontrado nas bases de dados. Preencha manualmente.` 
+            setMensagem({
+                tipo: 'aviso',
+                texto: `ISBN ${isbnLimpo} não encontrado nas bases de dados. Preencha manualmente.`
             });
 
         } catch (error) {
             console.error('Erro ao buscar ISBN:', error);
-            setMensagem({ 
-                tipo: 'erro', 
-                texto: 'Erro na busca. Verifique sua conexão e tente novamente.' 
+            setMensagem({
+                tipo: 'erro',
+                texto: 'Erro na busca. Verifique sua conexão e tente novamente.'
             });
         }
     };
@@ -128,13 +104,13 @@ export default function CadastrarLivro() {
         editora.setValue(livro.publisher || '');
         setAnoPublicacao(livro.publishedDate?.substring(0, 4) || '');
         setPaginas(livro.pageCount?.toString() || '');
-        
+
         const imagem = livro.imageLinks?.thumbnail?.replace('&zoom=1', '&zoom=2') || '';
         setImagemUrl(imagem);
-        
-        setMensagem({ 
-            tipo: 'sucesso', 
-            texto: 'Dados preenchidos automaticamente!' 
+
+        setMensagem({
+            tipo: 'sucesso',
+            texto: 'Dados preenchidos automaticamente!'
         });
     };
 
@@ -143,37 +119,37 @@ export default function CadastrarLivro() {
         if (!titulo.validate()) return false;
         if (!autor.validate()) return false;
         if (!editora.validate()) return false;
-        
+
         if (!anoPublicacao) {
             setMensagem({ tipo: 'erro', texto: 'Ano de publicação é obrigatório' });
             return false;
         }
-        
+
         if (!paginas || paginas < 1) {
             setMensagem({ tipo: 'erro', texto: 'Número de páginas inválido' });
             return false;
         }
-        
+
         if (!preco || preco <= 0) {
             setMensagem({ tipo: 'erro', texto: 'Preço inválido' });
             return false;
         }
-        
+
         if (!categoria.trim()) {
             setMensagem({ tipo: 'erro', texto: 'Digite a categoria' });
             return false;
         }
-        
+
         if (!conservacaoId) {
             setMensagem({ tipo: 'erro', texto: 'Selecione o estado de conservação' });
             return false;
         }
-        
+
         if (!acabamentoId) {
             setMensagem({ tipo: 'erro', texto: 'Selecione o tipo de acabamento' });
             return false;
         }
-        
+
         return true;
     };
 
@@ -194,10 +170,10 @@ export default function CadastrarLivro() {
                 anoPublicacao: parseInt(anoPublicacao),
                 paginas: parseInt(paginas),
                 preco: parseFloat(preco),
-                capa: imagemUrl || 'https://via.placeholder.com/300x400?text=Sem+Capa',
-                categoria: categoria.trim(), 
-                estadoConservacao: { id: parseInt(conservacaoId) }, 
-                acabamento: { id: parseInt(acabamentoId) } 
+                nomeCategoria: categoria.trim(),
+                conservacaoId: parseInt(conservacaoId),
+                acabamentoId: parseInt(acabamentoId),
+                capa: imagemUrl || 'https://via.placeholder.com/300x400?text=Sem+Capa' 
             };
 
             console.log('Enviando:', livroData);
@@ -206,23 +182,23 @@ export default function CadastrarLivro() {
 
             console.log('Resposta:', response.data);
 
-            setMensagem({ 
-                tipo: 'sucesso', 
-                texto: 'Livro cadastrado com sucesso!' 
+            setMensagem({
+                tipo: 'sucesso',
+                texto: 'Livro cadastrado com sucesso!'
             });
 
             setTimeout(() => {
-                navigate('/estante');
+                navigate('/dashboard');
             }, 2000);
 
         } catch (error) {
             console.error('Erro ao cadastrar:', error);
-            
-            const errorMsg = error.response?.data?.message || 
-                           error.response?.data?.error ||
-                           error.message ||
-                           'Erro ao cadastrar livro';
-            
+
+            const errorMsg = error.response?.data?.message ||
+                error.response?.data?.error ||
+                error.message ||
+                'Erro ao cadastrar livro';
+
             setMensagem({ tipo: 'erro', texto: errorMsg });
         } finally {
             setSalvando(false);
@@ -246,8 +222,8 @@ export default function CadastrarLivro() {
                             />
                         </div>
                     </div>
-                    <button 
-                        className="btn-cadastrar1" 
+                    <button
+                        className="btn-cadastrar1"
                         onClick={() => navigate("/cadastrar-livro")}
                     >
                         + Cadastrar Livro
@@ -288,16 +264,16 @@ export default function CadastrarLivro() {
                                     <div className="form-group">
                                         <label>ISBN *</label>
                                         <div style={{ display: 'flex', gap: '10px' }}>
-                                            <input 
-                                                type="text" 
-                                                placeholder="Digite o ISBN" 
+                                            <input
+                                                type="text"
+                                                placeholder="Digite o ISBN"
                                                 value={isbn.value}
                                                 onChange={isbn.handleChange}
                                                 onBlur={isbn.handleBlur}
                                                 disabled={salvando}
                                             />
-                                            <button 
-                                                type="button" 
+                                            <button
+                                                type="button"
                                                 onClick={buscarPorISBN}
                                                 className="btn-buscar-isbn"
                                                 disabled={salvando}
@@ -310,9 +286,9 @@ export default function CadastrarLivro() {
 
                                     <div className="form-group">
                                         <label>Nome do Livro *</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="Digite o título" 
+                                        <input
+                                            type="text"
+                                            placeholder="Digite o título"
                                             value={titulo.value}
                                             onChange={titulo.handleChange}
                                             onBlur={titulo.handleBlur}
@@ -323,9 +299,9 @@ export default function CadastrarLivro() {
 
                                     <div className="form-group">
                                         <label>Autor do Livro *</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="Digite o autor" 
+                                        <input
+                                            type="text"
+                                            placeholder="Digite o autor"
                                             value={autor.value}
                                             onChange={autor.handleChange}
                                             onBlur={autor.handleBlur}
@@ -336,9 +312,9 @@ export default function CadastrarLivro() {
 
                                     <div className="form-group">
                                         <label>Editora *</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="Digite a editora" 
+                                        <input
+                                            type="text"
+                                            placeholder="Digite a editora"
                                             value={editora.value}
                                             onChange={editora.handleChange}
                                             onBlur={editora.handleBlur}
@@ -349,9 +325,9 @@ export default function CadastrarLivro() {
 
                                     <div className="form-group">
                                         <label>Ano de Publicação *</label>
-                                        <input 
-                                            type="number" 
-                                            placeholder="2024" 
+                                        <input
+                                            type="number"
+                                            placeholder="2024"
                                             value={anoPublicacao}
                                             onChange={(e) => setAnoPublicacao(e.target.value)}
                                             min="1000"
@@ -362,9 +338,9 @@ export default function CadastrarLivro() {
 
                                     <div className="form-group">
                                         <label>Número de Páginas *</label>
-                                        <input 
-                                            type="number" 
-                                            placeholder="300" 
+                                        <input
+                                            type="number"
+                                            placeholder="300"
                                             value={paginas}
                                             onChange={(e) => setPaginas(e.target.value)}
                                             min="1"
@@ -374,19 +350,20 @@ export default function CadastrarLivro() {
 
                                     <div className="form-group">
                                         <label>Preço *</label>
-                                        <input 
-                                            type="number" 
+                                        <input
+                                            type="number"
                                             step="0.01"
-                                            placeholder="45.90" 
+                                            placeholder="45.90"
                                             value={preco}
                                             onChange={(e) => setPreco(e.target.value)}
                                             min="0"
                                             disabled={salvando}
                                         />
                                     </div>
+
                                     <div className="form-group">
                                         <label>Categoria *</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="Ex: Ficção, Romance, Técnico"
                                             value={categoria}
@@ -397,41 +374,92 @@ export default function CadastrarLivro() {
                                             Se não existir, será criada automaticamente
                                         </small>
                                     </div>
+
+                                    {/* ✅ RADIO BUTTONS - Conservação */}
                                     <div className="form-group">
                                         <label>Estado do Livro *</label>
-                                        <select 
-                                            value={conservacaoId}
-                                            onChange={(e) => setConservacaoId(e.target.value)}
-                                            disabled={salvando}
-                                        >
-                                            <option value="">Selecione o estado</option>
-                                            {conservacoes.map(cons => (
-                                                <option key={cons.id} value={cons.id}>
-                                                    {cons.descricao || cons.nome}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <div className="radio-group">
+                                            <label className="radio-label">
+                                                <input
+                                                    type="radio"
+                                                    name="conservacao"
+                                                    value="1"
+                                                    checked={conservacaoId === '1'}
+                                                    onChange={(e) => setConservacaoId(e.target.value)}
+                                                    disabled={salvando}
+                                                />
+                                                <span>Excelente</span>
+                                            </label>
+                                            <label className="radio-label">
+                                                <input
+                                                    type="radio"
+                                                    name="conservacao"
+                                                    value="2"
+                                                    checked={conservacaoId === '2'}
+                                                    onChange={(e) => setConservacaoId(e.target.value)}
+                                                    disabled={salvando}
+                                                />
+                                                <span>Bom</span>
+                                            </label>
+                                            <label className="radio-label">
+                                                <input
+                                                    type="radio"
+                                                    name="conservacao"
+                                                    value="3"
+                                                    checked={conservacaoId === '3'}
+                                                    onChange={(e) => setConservacaoId(e.target.value)}
+                                                    disabled={salvando}
+                                                />
+                                                <span>Razoável</span>
+                                            </label>
+                                            <label className="radio-label">
+                                                <input
+                                                    type="radio"
+                                                    name="conservacao"
+                                                    value="4"
+                                                    checked={conservacaoId === '4'}
+                                                    onChange={(e) => setConservacaoId(e.target.value)}
+                                                    disabled={salvando}
+                                                />
+                                                <span>Degradado</span>
+                                            </label>
+                                        </div>
                                     </div>
+
+                                    {/* ✅ RADIO BUTTONS - Acabamento */}
                                     <div className="form-group">
                                         <label>Acabamento *</label>
-                                        <select 
-                                            value={acabamentoId}
-                                            onChange={(e) => setAcabamentoId(e.target.value)}
-                                            disabled={salvando}
-                                        >
-                                            <option value="">Selecione o acabamento</option>
-                                            {acabamentos.map(acab => (
-                                                <option key={acab.id} value={acab.id}>
-                                                    {acab.descricao || acab.nome}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <div className="radio-group">
+                                            <label className="radio-label">
+                                                <input
+                                                    type="radio"
+                                                    name="acabamento"
+                                                    value="1"
+                                                    checked={acabamentoId === '1'}
+                                                    onChange={(e) => setAcabamentoId(e.target.value)}
+                                                    disabled={salvando}
+                                                />
+                                                <span>Capa Dura</span>
+                                            </label>
+                                            <label className="radio-label">
+                                                <input
+                                                    type="radio"
+                                                    name="acabamento"
+                                                    value="2"
+                                                    checked={acabamentoId === '2'}
+                                                    onChange={(e) => setAcabamentoId(e.target.value)}
+                                                    disabled={salvando}
+                                                />
+                                                <span>Brochura</span>
+                                            </label>
+                                        </div>
                                     </div>
+
                                     <div className="form-group">
                                         <label>URL da Capa (opcional)</label>
-                                        <input 
-                                            type="url" 
-                                            placeholder="https://exemplo.com/capa.jpg" 
+                                        <input
+                                            type="url"
+                                            placeholder="https://exemplo.com/capa.jpg"
                                             value={imagemUrl}
                                             onChange={(e) => setImagemUrl(e.target.value)}
                                             disabled={salvando}
@@ -440,17 +468,18 @@ export default function CadastrarLivro() {
                                             Temporário - Será substituído pelo bucket futuramente
                                         </small>
                                     </div>
+
                                     <div className="form-buttons">
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             className="btn-cancelar-cadastro"
                                             onClick={() => navigate('/estante')}
                                             disabled={salvando}
                                         >
                                             Cancelar
                                         </button>
-                                        <button 
-                                            type="submit" 
+                                        <button
+                                            type="submit"
                                             className="btn-cadastrar-livro"
                                             disabled={salvando}
                                         >
