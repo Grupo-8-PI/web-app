@@ -15,13 +15,11 @@ export default function EditarLivro() {
     const [salvando, setSalvando] = useState(false);
     const [mensagem, setMensagem] = useState({ tipo: '', texto: '' });
 
-    // Inputs seguros
     const titulo = useSafeInput('', 'text');
     const autor = useSafeInput('', 'text');
     const editora = useSafeInput('', 'text');
 
-    // Estados simples
-    const [isbn, setIsbn] = useState(''); // Somente leitura
+    const [isbn, setIsbn] = useState(''); 
     const [anoPublicacao, setAnoPublicacao] = useState('');
     const [paginas, setPaginas] = useState('');
     const [preco, setPreco] = useState('');
@@ -30,7 +28,6 @@ export default function EditarLivro() {
     const [acabamentoId, setAcabamentoId] = useState('');
     const [imagemUrl, setImagemUrl] = useState('');
 
-    // Buscar livro ao carregar
     useEffect(() => {
         if (!authService.isAuthenticated()) {
             navigate('/');
@@ -44,7 +41,6 @@ export default function EditarLivro() {
 
                 console.log('Livro carregado:', livro);
 
-                // Preencher formulário
                 setIsbn(livro.isbn || '');
                 titulo.setValue(livro.titulo || '');
                 autor.setValue(livro.autor || '');
@@ -55,8 +51,6 @@ export default function EditarLivro() {
                 setCategoria(livro.nomeCategoria || '');
                 setImagemUrl(livro.capa || '');
 
-                // Converter conservação e acabamento de volta para IDs
-                // Se o back-end retornar os enums, precisamos mapear
                 setConservacaoId(livro.conservacaoId?.toString() || livro.estadoConservacao || '');
                 setAcabamentoId(livro.acabamentoId?.toString() || livro.tipoAcabamento || '');
 
@@ -125,7 +119,6 @@ export default function EditarLivro() {
         setSalvando(true);
 
         try {
-            // Montar objeto de atualização
             const livroData = {
                 titulo: titulo.value,
                 autor: autor.value,
@@ -273,7 +266,6 @@ export default function EditarLivro() {
                                 <p>Edite as informações do livro. ISBN não pode ser alterado.</p>
 
                                 <form onSubmit={handleSubmit}>
-                                    {/* ISBN - Somente leitura */}
                                     <div className="form-group">
                                         <label>ISBN</label>
                                         <input
@@ -284,7 +276,6 @@ export default function EditarLivro() {
                                         />
                                     </div>
 
-                                    {/* Título */}
                                     <div className="form-group">
                                         <label>Nome do Livro *</label>
                                         <input
@@ -298,7 +289,6 @@ export default function EditarLivro() {
                                         {titulo.error && <span className="erro-input">{titulo.error}</span>}
                                     </div>
 
-                                    {/* Autor */}
                                     <div className="form-group">
                                         <label>Autor do Livro *</label>
                                         <input
@@ -312,7 +302,6 @@ export default function EditarLivro() {
                                         {autor.error && <span className="erro-input">{autor.error}</span>}
                                     </div>
 
-                                    {/* Editora */}
                                     <div className="form-group">
                                         <label>Editora *</label>
                                         <input
@@ -326,7 +315,6 @@ export default function EditarLivro() {
                                         {editora.error && <span className="erro-input">{editora.error}</span>}
                                     </div>
 
-                                    {/* Ano de Publicação */}
                                     <div className="form-group">
                                         <label>Ano de Publicação *</label>
                                         <input
@@ -340,7 +328,6 @@ export default function EditarLivro() {
                                         />
                                     </div>
 
-                                    {/* Páginas */}
                                     <div className="form-group">
                                         <label>Número de Páginas *</label>
                                         <input
@@ -353,7 +340,6 @@ export default function EditarLivro() {
                                         />
                                     </div>
 
-                                    {/* Preço */}
                                     <div className="form-group">
                                         <label>Preço *</label>
                                         <input
@@ -367,7 +353,6 @@ export default function EditarLivro() {
                                         />
                                     </div>
 
-                                    {/* Categoria */}
                                     <div className="form-group">
                                         <label>Categoria *</label>
                                         <input
@@ -382,7 +367,6 @@ export default function EditarLivro() {
                                         </small>
                                     </div>
 
-                                    {/* Estado de Conservação - Radio */}
                                     <div className="form-group">
                                         <label>Estado do Livro *</label>
                                         <div className="radio-group">
@@ -433,7 +417,6 @@ export default function EditarLivro() {
                                         </div>
                                     </div>
 
-                                    {/* Acabamento - Radio */}
                                     <div className="form-group">
                                         <label>Acabamento *</label>
                                         <div className="radio-group">
@@ -462,7 +445,6 @@ export default function EditarLivro() {
                                         </div>
                                     </div>
 
-                                    {/* URL da Capa */}
                                     <div className="form-group">
                                         <label>URL da Capa (opcional)</label>
                                         <input
@@ -474,7 +456,6 @@ export default function EditarLivro() {
                                         />
                                     </div>
 
-                                    {/* Botões */}
                                     <div className="form-buttons">
                                         <button
                                             type="button"

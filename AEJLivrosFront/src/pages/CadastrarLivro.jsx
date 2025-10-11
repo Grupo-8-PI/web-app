@@ -188,7 +188,7 @@ export default function CadastrarLivro() {
             });
 
             setTimeout(() => {
-                navigate('/dashboard');
+                navigate('/estante');
             }, 2000);
 
         } catch (error) {
@@ -238,6 +238,7 @@ export default function CadastrarLivro() {
                             Visão Estante &gt; Cadastrar Livro
                         </div>
 
+                        {/* Mensagem com estilo padrão */}
                         {mensagem.texto && (
                             <div className={`mensagem mensagem-${mensagem.tipo}`}>
                                 {mensagem.texto}
@@ -375,7 +376,6 @@ export default function CadastrarLivro() {
                                         </small>
                                     </div>
 
-                                    {/* ✅ RADIO BUTTONS - Conservação */}
                                     <div className="form-group">
                                         <label>Estado do Livro *</label>
                                         <div className="radio-group">
@@ -426,7 +426,6 @@ export default function CadastrarLivro() {
                                         </div>
                                     </div>
 
-                                    {/* ✅ RADIO BUTTONS - Acabamento */}
                                     <div className="form-group">
                                         <label>Acabamento *</label>
                                         <div className="radio-group">
