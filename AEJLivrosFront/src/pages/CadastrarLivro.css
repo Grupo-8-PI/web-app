@@ -298,3 +298,44 @@
     font-size: 14px;
     user-select: none;
 }
+
+.btn-buscar-isbn {
+    background: #09386B;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.7rem 1.5rem;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-width: 100px;
+}
+
+.btn-buscar-isbn:hover {
+    background: #07294f;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(9, 56, 107, 0.3);
+}
+
+.btn-buscar-isbn:active {
+    transform: translateY(0);
+}
+
+.btn-buscar-isbn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.form-group > div[style*="display: flex"] {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.form-group > div[style*="display: flex"] input {
+    flex: 1;
+}
