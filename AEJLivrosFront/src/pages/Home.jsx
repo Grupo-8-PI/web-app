@@ -1,7 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "../StyleAej.css";
 import { Acessibilidade } from "../componentes/Acessibilidade";
 import BoxBook from "../componentes/BoxBook";
+import ModalLivro from "../componentes/ModalLivro";
+import api from "../services/api";
 import { Header } from "../componentes/Header";
 import MiniCategorias from "../componentes/MiniCategorias";
 import AejBook from "../assets/AejBook.png";
@@ -10,6 +12,11 @@ import { Depoimentos } from "../componentes/Depoimentos";
 import { Link } from "react-router-dom";
 
 export default function Home() {
+    const [recomendados, setRecomendados] = useState([]);
+    const [recentes, setRecentes] = useState([]);
+    const [loadingRec, setLoadingRec] = useState(false);
+    const [recError, setRecError] = useState(null);
+    const [selectedLivro, setSelectedLivro] = useState(null);
     useEffect(() => {
         const revealOnScroll = () => {
             const elements = document.querySelectorAll(".primeira, .segunda, .recomend, .cat, section");
@@ -26,6 +33,69 @@ export default function Home() {
         window.addEventListener("scroll", revealOnScroll);
         revealOnScroll();
         return () => window.removeEventListener("scroll", revealOnScroll);
+    }, []);
+
+    useEffect(() => {
+        const fetchRecomendados = async () => {
+            setLoadingRec(true);
+            setRecError(null);
+            try {
+                const res = await api.get('/livros/recomendados');
+                // assume response data is an array of livros
+                // map backend fields to the ones ModalLivro expects
+                const data = Array.isArray(res.data) ? res.data : [];
+                const mapped = data.map(l => ({
+                    id: l.id,
+                    titulo: l.titulo,
+                    autor: l.autor,
+                    imagem: l.capa || l.imagem || null,
+                    preco: l.preco,
+                    ano: l.anoPublicacao || l.ano,
+                    categoria: l.nomeCategoria || l.categoria || null,
+                    conservacao: l.estadoConservacao || l.conservacao || null,
+                    editora: l.editora,
+                    paginas: l.paginas,
+                    descricao: l.descricao || null
+                }));
+                setRecomendados(mapped);
+            } catch (err) {
+                console.error('Erro ao buscar recomendados', err);
+                setRecError('Não foi possível carregar recomendações');
+            } finally {
+                setLoadingRec(false);
+            }
+        };
+        fetchRecomendados();
+    }, []);
+       useEffect(() => {
+        const fetchRecentes = async () => {
+            setLoadingRec(true);
+            setRecError(null);
+            try {
+                const res = await api.get('/livros/recentes');
+                const data = Array.isArray(res.data) ? res.data : [];
+                const mapped = data.map(l => ({
+                    id: l.id,
+                    titulo: l.titulo,
+                    autor: l.autor,
+                    imagem: l.capa || l.imagem || null,
+                    preco: l.preco,
+                    ano: l.anoPublicacao || l.ano,
+                    categoria: l.nomeCategoria || l.categoria || null,
+                    conservacao: l.estadoConservacao || l.conservacao || null,
+                    editora: l.editora,
+                    paginas: l.paginas,
+                    descricao: l.descricao || null
+                }));
+                setRecentes(mapped);
+            } catch (err) {
+                console.error('Erro ao buscar recentes', err);
+                setRecError('Não foi possível carregar recentes');
+            } finally {
+                setLoadingRec(false);
+            }
+        };
+        fetchRecentes();
     }, []);
     return (
         <div>
@@ -48,11 +118,22 @@ export default function Home() {
             <session className="segunda">
                 <div className="recomend">
                     <h2>Recomendações</h2>
-                    <div className="recSpace">
-                        <BoxBook titulo="Harry Potter e a Pedra Filosofal" autor="J.K. Rowling" />
-                        <BoxBook titulo="Saga Crepúsculo Eclipse" autor="Stephenie Meyer" />
-                        <BoxBook titulo="Os Sete Maridos de Evelyn Hugo" autor="Taylor Jenkins Reid" />
-                    </div>
+                        <div className="recSpace">
+                            {loadingRec && <div>Carregando recomendações...</div>}
+                            {recError && <div className="error-msg">{recError}</div>}
+                            {!loadingRec && recomendados.map((livro) => (
+                                <BoxBook
+                                    key={livro.id}
+                                    titulo={livro.titulo}
+                                    autor={livro.autor}
+                                    imagem={livro.imagem}
+                                    onVer={() => setSelectedLivro(livro)}
+                                />
+                            ))}
+                        </div>
+                        {selectedLivro && (
+                            <ModalLivro livro={selectedLivro} onClose={() => setSelectedLivro(null)} />
+                        )}
                 </div>
                 <div className="cat">
                     <div className="cat-header">
@@ -75,9 +156,21 @@ export default function Home() {
                     <h2>Recentemente adicionados</h2>
                 </div>
                 <div className="recentSpace">
-                    <BoxBook titulo="A Biblioteca da Meia-Noite" autor="Matt Haig" />
-                    <BoxBook titulo="O Conto da Aia" autor="Margaret Atwood" />
-                    <BoxBook titulo="A Paciente Silenciosa" autor="Alex Michaelides" />
+                      {loadingRec && <div>Carregando recentes...</div>}
+                            {recError && <div className="error-msg">{recError}</div>}
+                            {!loadingRec && recentes.map((livro) => (
+                                <BoxBook
+                                    key={livro.id}
+                                    titulo={livro.titulo}
+                                    autor={livro.autor}
+                                    imagem={livro.imagem}
+                                    onVer={() => setSelectedLivro(livro)}
+                                />
+                            ))}
+
+                              {selectedLivro && (
+                            <ModalLivro livro={selectedLivro} onClose={() => setSelectedLivro(null)} />
+                        )}
                 </div>
             </session>
             <session className="servicos">

@@ -1,11 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import './modalLivro.css';
+import { Header } from './Header';
 
 const ModalLivro = ({ livro, onClose }) => {
+
+
+
+    useEffect(() => {
+        if (!livro) return;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [livro]);
+
     if (!livro) return null;
-    return (
+
+    const modalContent = (
         <div className="modalLivro-overlay" onClick={onClose}>
             <div className="modalLivro" onClick={e => e.stopPropagation()}>
+                <div className="headerSpace">
+                <Header/>
+
+                </div>
                 <button className="modalLivro-close" onClick={onClose}>×</button>
                 <div className="modalLivro-content">
                     <div className="modalLivro-img">
@@ -35,6 +53,8 @@ const ModalLivro = ({ livro, onClose }) => {
             </div>
         </div>
     );
+
+    return ReactDOM.createPortal(modalContent, document.body);
 };
 
 export default ModalLivro;

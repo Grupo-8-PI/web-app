@@ -38,6 +38,31 @@ export default function Sobre() {
                         </div>
                     </div>
                 </session>
+                 <session className="servicosSobre">
+                <h1>Serviços</h1>
+                <div className="servicosContent" style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'start', gap: '32px', padding: '32px 0' }}>
+                    <div className="servicoItem" style={{ textAlign: 'center', maxWidth: '200px' }}>
+                        <i className="bx bx-bookmark" style={{ fontSize: '48px', color: '#c9a44c' }}></i>
+                        <h2>Reservas de livros</h2>
+                        <p>Facilitamos o acesso ao nosso acervo com um sistema de reservas simples e eficiente.</p>
+                    </div>
+                    <div className="servicoItem" style={{ textAlign: 'center', maxWidth: '200px' }}>
+                        <i className="bx bx-code-alt" style={{ fontSize: '48px', color: '#c9a44c' }}></i>
+                        <h2>Geração de sinopse com IA</h2>
+                        <p>Utilizamos inteligência artificial para criar sinopses personalizadas e criativas.</p>
+                    </div>
+                    <div className="servicoItem" style={{ textAlign: 'center', maxWidth: '200px' }}>
+                        <i className="bx bx-bell" style={{ fontSize: '48px', color: '#c9a44c' }}></i>
+                        <h2>Sistema de notificações</h2>
+                        <p>Receba atualizações sobre novos livros e eventos diretamente no seu dispositivo.</p>
+                    </div>
+                    <div className="servicoItem" style={{ textAlign: 'center', maxWidth: '200px' }}>
+                        <i className="bx bx-accessibility" style={{ fontSize: '48px', color: '#c9a44c' }}></i>
+                        <h2>Acessibilidade</h2>
+                        <p>Garantimos que todos possam acessar nossos serviços com facilidade e inclusão.</p>
+                    </div>
+                </div>
+            </session>
 
                 <session className="terceiraSobre">
                     <div className="sobreContent2">

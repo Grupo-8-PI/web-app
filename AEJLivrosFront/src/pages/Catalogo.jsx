@@ -5,94 +5,48 @@ import ModalLivro from "../componentes/ModalLivro";
 import { Header } from "../componentes/Header";
 import "./cssPages/Catalogo.css";
 
-import React, { useState } from 'react';
+// ...existing code...
 import Paginacao from "../componentes/Paginacao";
+
+import React, { useState, useEffect } from 'react';
+import api from "../services/api";
 
 export default function Catalogo() {
     const [modalLivro, setModalLivro] = useState(null);
-    const livros = [
-        {
-            categoria: "Ficção",
-            titulo: "O Senhor dos Anéis",
-            autor: "J.R.R. Tolkien",
-            imagem: "",
-            preco: "49,90",
-            ano: "1954",
-            conservacao: "Ótimo"
-        },
-        {
-            categoria: "Romance",
-            titulo: "Orgulho e Preconceito",
-            autor: "Jane Austen",
-            imagem: "",
-            preco: "39,90",
-            ano: "1813",
-            conservacao: "Bom"
-        },
-        {
-            categoria: "Aventura",
-            titulo: "A Ilha do Tesouro",
-            autor: "R.L. Stevenson",
-            imagem: "",
-            preco: "29,90",
-            ano: "1883",
-            conservacao: "Usado"
-        },
-        {
-            categoria: "Fantasia",
-            titulo: "Harry Potter e a Pedra Filosofal",
-            autor: "J.K. Rowling",
-            imagem: "",
-            preco: "59,90",
-            ano: "1997",
-            conservacao: "Novo"
-        },
-        {
-            categoria: "Drama",
-            titulo: "O Pequeno Príncipe",
-            autor: "Antoine de Saint-Exupéry",
-            imagem: "",
-            preco: "34,90",
-            ano: "1943",
-            conservacao: "Ótimo"
-        },
-        {
-            categoria: "Suspense",
-            titulo: "O Código Da Vinci",
-            autor: "Dan Brown",
-            imagem: "",
-            preco: "44,90",
-            ano: "2003",
-            conservacao: "Bom"
-        },
-        {
-            categoria: "Biografia",
-            titulo: "Steve Jobs",
-            autor: "Walter Isaacson",
-            imagem: "",
-            preco: "54,90",
-            ano: "2011",
-            conservacao: "Ótimo"
-        },
-        {
-            categoria: "História",
-            titulo: "Sapiens: Uma Breve História da Humanidade",
-            autor: "Yuval Noah Harari",
-            imagem: "",
-            preco: "64,90",
-            ano: "2011",
-            conservacao: "Novo"
-        },
-        {
-            categoria: "Autoajuda",
-            titulo: "O Poder do Hábito",
-            autor: "Charles Duhigg",
-            imagem: "",
-            preco: "32,90",
-            ano: "2012",
-            conservacao: "Bom"
-        }
-    ];
+    const [livros, setLivros] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchLivros = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const res = await api.get('/livros');
+                const data = Array.isArray(res.data) ? res.data : [];
+                // mapeia campos do backend para CardLivro
+                const mapped = data.map(l => ({
+                    id: l.id,
+                    titulo: l.titulo,
+                    autor: l.autor,
+                    imagem: l.capa || l.imagem || null,
+                    preco: l.preco,
+                    ano: l.anoPublicacao || l.ano,
+                    categoria: l.nomeCategoria || l.categoria || null,
+                    conservacao: l.estadoConservacao || l.conservacao || null,
+                    editora: l.editora,
+                    paginas: l.paginas,
+                    descricao: l.descricao || null
+                }));
+                setLivros(mapped);
+            } catch {
+                setError('Não foi possível carregar os livros');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchLivros();
+    }, []);
 
     return (
         <div>
@@ -102,11 +56,13 @@ export default function Catalogo() {
                     <FiltroCatalogo />
                 </div>
                 <div className="catEsp">
-                    {livros.map((livro, idx) => (
-                        <CardLivro key={idx} {...livro} onVerDetalhes={() => setModalLivro(livro)} />
+                    {loading && <div>Carregando livros...</div>}
+                    {error && <div className="error-msg">{error}</div>}
+                    {!loading && livros.map((livro) => (
+                        <CardLivro key={livro.id} {...livro} onVerDetalhes={() => setModalLivro(livro)} />
                     ))}
                     <div className="espPag">
-                    <Paginacao />
+                        <Paginacao />
                     </div>
                 </div>
             </div>
