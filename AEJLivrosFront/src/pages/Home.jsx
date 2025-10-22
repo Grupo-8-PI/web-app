@@ -6,6 +6,7 @@ import ModalLivro from "../componentes/ModalLivro";
 import api from "../services/api";
 import { Header } from "../componentes/Header";
 import MiniCategorias from "../componentes/MiniCategorias";
+import MiniCategoriasList from "../componentes/MiniCategoriasList";
 import AejBook from "../assets/AejBook.png";
 import { Footer } from "../componentes/Footer";
 import { Depoimentos } from "../componentes/Depoimentos";
@@ -144,10 +145,7 @@ export default function Home() {
                         </Link>
                     </div>
                     <div className="catSpace">
-                        <MiniCategorias titulo={'História'} icon={<i className='bx bxs-book-open mini-categoria-icon'></i>} />
-                        <MiniCategorias titulo={'Romance'} icon={<i className='bx bxs-heart mini-categoria-icon'></i>} />
-                        <MiniCategorias titulo={'Ficcção'} icon={<i className='bx bxs-invader mini-categoria-icon'></i>} />
-                        <MiniCategorias titulo={'Auto ajuda'} icon={<i className='bx bxs-donate-heart mini-categoria-icon'></i>} />
+                        <MiniCategoriasList />
                     </div>
                 </div>
             </session>
@@ -176,7 +174,7 @@ export default function Home() {
             <session className="servicos">
                 <h2>Serviços</h2>
                 <div className="comportMiniServ">
-                    <MiniCategorias titulo={'Reservas de livros'} icon={<i className='bx bxs-bookmark-star   mini-categoria-icon'></i>} />
+                     <Link to="/sobre"><MiniCategorias titulo={'Reservas de livros'} icon={<i className='bx bxs-bookmark-star   mini-categoria-icon'></i>} /></Link>
                     <MiniCategorias titulo={'Geração de sinopse com IA'} icon={<i className='bx bx-code-alt mini-categoria-icon'></i>} />
                     <MiniCategorias titulo={'Sistema de notificações'} icon={<i className='bx bxs-bell mini-categoria-icon'></i>} />
                     <MiniCategorias titulo={'Acessibilidade'} icon={<i className='bx bx-body mini-categoria-icon'></i>} />
