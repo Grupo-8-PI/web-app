@@ -55,13 +55,16 @@ export default function Catalogo() {
                 <div className="filtroEsp">
                     <FiltroCatalogo />
                 </div>
-                <div className="catEsp">
+                <div className="catAll">
+                     <div className="catEsp">
                     {loading && <div>Carregando livros...</div>}
                     {error && <div className="error-msg">{error}</div>}
                     {!loading && livros.map((livro) => (
                         <CardLivro key={livro.id} {...livro} onVerDetalhes={() => setModalLivro(livro)} />
                     ))}
-                    <div className="espPag">
+                   
+                </div>
+                 <div className="espPag">
                         <Paginacao />
                     </div>
                 </div>
