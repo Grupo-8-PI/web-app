@@ -3,6 +3,7 @@ import { Header } from "../componentes/Header";
 import '../StyleAej.css';
 import CategoriaCard from "../componentes/CategoriaCard";
 import api from "../services/api";
+import { useNavigate } from 'react-router-dom';
 
 export default function Categorias() {
     const [categorias, setCategorias] = useState([]);
@@ -32,6 +33,8 @@ export default function Categorias() {
         return () => { mounted = false; };
     }, []);
 
+    const navigate = useNavigate();
+
     return (
         <div>
             <Header />
@@ -48,8 +51,14 @@ export default function Categorias() {
                         const titulo = cat.nome || cat.titulo || cat.name || 'Categoria';
                         const icone = cat.icone || cat.iconeEmoji || '📚';
                         const alt = cat.descricao || titulo;
+                        const handleClick = () => {
+                            // navegar para /catalogo com query param categoria=id
+                            const id = cat.id || cat._id || cat.codigo;
+                            if (id) navigate(`/catalogo?categoria=${encodeURIComponent(id)}`);
+                            else navigate('/catalogo');
+                        };
                         return (
-                            <CategoriaCard key={cat.id || titulo} titulo={titulo} icone={icone} alt={alt} />
+                            <CategoriaCard key={cat.id || titulo} titulo={titulo} icone={icone} alt={alt} onClick={handleClick} />
                         );
                     })}
                 </div>
