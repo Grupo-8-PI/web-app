@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Header } from "../componentes/Header"; 
+import { Header } from "../componentes/Header";  
 import '../StyleAej.css';
 import CategoriaCard from "../componentes/CategoriaCard";
 import api from "../services/api";

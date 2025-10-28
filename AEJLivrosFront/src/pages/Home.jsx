@@ -174,7 +174,7 @@ export default function Home() {
             <session className="servicos">
                 <h2>Serviços</h2>
                 <div className="comportMiniServ">
-                     <Link to="/sobre"><MiniCategorias titulo={'Reservas de livros'} icon={<i className='bx bxs-bookmark-star   mini-categoria-icon'></i>} /></Link>
+                    <MiniCategorias titulo={'Reservas de livros'} icon={<i className='bx bxs-bookmark-star   mini-categoria-icon'></i>} />
                     <MiniCategorias titulo={'Geração de sinopse com IA'} icon={<i className='bx bx-code-alt mini-categoria-icon'></i>} />
                     <MiniCategorias titulo={'Sistema de notificações'} icon={<i className='bx bxs-bell mini-categoria-icon'></i>} />
                     <MiniCategorias titulo={'Acessibilidade'} icon={<i className='bx bx-body mini-categoria-icon'></i>} />
