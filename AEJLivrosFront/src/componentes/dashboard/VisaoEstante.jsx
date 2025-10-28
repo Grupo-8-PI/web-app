@@ -19,7 +19,19 @@ const VisaoEstante = () => {
     const buscarLivros = async () => {
       try {
         const response = await api.get('/livros');
-        setLivros(response.data);
+        
+        console.log('Resposta da API:', response.data);
+        
+        if (response.data.livros) {
+          setLivros(response.data.livros);
+        } else if (Array.isArray(response.data.data)) {
+          setLivros(response.data.data);
+        } else if (Array.isArray(response.data)) {
+          setLivros(response.data);
+        } else {
+          console.error("Estrutura de resposta não reconhecida:", response.data);
+          setLivros([]);
+        }
       } catch (erro) {
         console.error("Erro ao carregar livros:", erro);
         setErro("Não foi possível carregar os livros.");  
@@ -41,13 +53,13 @@ const VisaoEstante = () => {
           <div key={livro.id || index} className="livro-card">
             <img
               src={livro.capa}
-              alt={`Capa de ${livro.titulo}`}
+              alt={"Capa de " + livro.titulo}
               className="livro-capa"
             />
             <div className="livro-info">
               <span className="livro-categoria">Livro › {livro.nomeCategoria}</span>
               <h3 className="livro-titulo">{livro.titulo}</h3>
-              <p className="livro-preco">R$ {livro.preco.toFixed(2) || "0,00"}</p>
+              <p className="livro-preco">R$ {livro.preco?.toFixed(2) || "0,00"}</p>
               <p className="livro-meta">
                 Por: {livro.autor}<br />
                 Ano: {livro.anoPublicacao}<br />
@@ -56,7 +68,7 @@ const VisaoEstante = () => {
               </p>
               <button
                 className="editar-btn"
-                onClick={() => navigate(`/editar-livro/${livro.id}`)}
+                onClick={() => navigate("/editar-livro/" + livro.id)}
               >
                 Editar
               </button>
