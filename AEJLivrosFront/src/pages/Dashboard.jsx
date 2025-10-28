@@ -34,6 +34,7 @@ const Dashboard = () => {
         <div className="dashboard">
             <div className="sidebarD">
                 <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+            
             </div>
 
             <main className="content">

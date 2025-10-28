@@ -188,7 +188,7 @@ export default function CadastrarLivro() {
             });
 
             setTimeout(() => {
-                navigate('/estante');
+                navigate('/dashboard');
             }, 2000);
 
         } catch (error) {
@@ -472,7 +472,7 @@ export default function CadastrarLivro() {
                                         <button
                                             type="button"
                                             className="btn-cancelar-cadastro"
-                                            onClick={() => navigate('/estante')}
+                                            onClick={() => navigate('/dashboard')}
                                             disabled={salvando}
                                         >
                                             Cancelar
