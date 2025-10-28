@@ -207,7 +207,7 @@ export default function CadastrarLivro() {
 
     return (
         <div className="dashboard-container">
-            <Sidebar />
+            <Sidebar mode="routes" />
 
             <div className="dashboard-main">
                 <header className="header">

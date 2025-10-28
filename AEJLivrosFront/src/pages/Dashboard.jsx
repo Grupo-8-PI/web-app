@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./Dashboard.css";
 import Sidebar from "../componentes/dashboard/Sidebar";
 import PainelUsuario from "../componentes/dashboard/PainelUsuario";
@@ -14,6 +14,16 @@ import VisaoEstante from "../componentes/dashboard/VisaoEstante";
 const Dashboard = () => {
     const [activeTab, setActiveTab] = useState("Geral");
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // 🎯 Detecta se veio de uma navegação com tab específica
+    useEffect(() => {
+        if (location.state?.activeTab) {
+            setActiveTab(location.state.activeTab);
+            // Limpa o state para não interferir em futuras navegações
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
 
     const renderContent = () => {
         switch (activeTab) {
@@ -34,7 +44,6 @@ const Dashboard = () => {
         <div className="dashboard">
             <div className="sidebarD">
                 <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-            
             </div>
 
             <main className="content">
@@ -64,12 +73,10 @@ const Dashboard = () => {
                         </div>
 
                         <div className="painelUsuario">
-
                             <PainelUsuario />
                         </div>
                     </div>
                 </div>
-
             </main>
         </div>
     );

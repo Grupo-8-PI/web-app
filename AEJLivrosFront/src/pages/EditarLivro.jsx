@@ -194,7 +194,7 @@ export default function EditarLivro() {
     if (carregando) {
         return (
             <div className="dashboard-container">
-                <Sidebar />
+                <Sidebar mode="routes" />
                 <div className="dashboard-main">
                     <p style={{ padding: '2rem', textAlign: 'center' }}>
                         Carregando dados do livro...
@@ -206,7 +206,7 @@ export default function EditarLivro() {
 
     return (
         <div className="dashboard-container">
-            <Sidebar />
+            <Sidebar mode="routes" />
 
             <div className="dashboard-main">
                 <header className="header">
