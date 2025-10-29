@@ -68,7 +68,7 @@ export default function Home() {
         };
         fetchRecomendados();
     }, []);
-       useEffect(() => {
+    useEffect(() => {
         const fetchRecentes = async () => {
             setLoadingRec(true);
             setRecError(null);
@@ -119,29 +119,29 @@ export default function Home() {
             <session className="segunda">
                 <div className="recomend">
                     <h2>Recomendações</h2>
-                        <div className="recSpace">
-                            {loadingRec && <div>Carregando recomendações...</div>}
-                            {recError && <div className="error-msg">{recError}</div>}
-                            {!loadingRec && recomendados.map((livro) => (
-                                <BoxBook
-                                    key={livro.id}
-                                    titulo={livro.titulo}
-                                    autor={livro.autor}
-                                    imagem={livro.imagem}
-                                    onVer={() => setSelectedLivro(livro)}
-                                />
-                            ))}
-                        </div>
-                        {selectedLivro && (
-                            <ModalLivro livro={selectedLivro} onClose={() => setSelectedLivro(null)} />
-                        )}
+                    <div className="recSpace">
+                        {loadingRec && <div>Carregando recomendações...</div>}
+                        {recError && <div className="error-msg">{recError}</div>}
+                        {!loadingRec && recomendados.map((livro) => (
+                            <BoxBook
+                                key={livro.id}
+                                titulo={livro.titulo}
+                                autor={livro.autor}
+                                imagem={livro.imagem}
+                                onVer={() => setSelectedLivro(livro)}
+                            />
+                        ))}
+                    </div>
+                    {selectedLivro && (
+                        <ModalLivro livro={selectedLivro} onClose={() => setSelectedLivro(null)} />
+                    )}
                 </div>
                 <div className="cat">
                     <div className="cat-header">
                         <h2>Categorias</h2>
                         <Link to="/categorias"><span className="ver-todos">
                             Ver todos <i className='bx bx-chevron-right'></i>
-                            </span>
+                        </span>
                         </Link>
                     </div>
                     <div className="catSpace">
@@ -154,21 +154,21 @@ export default function Home() {
                     <h2>Recentemente adicionados</h2>
                 </div>
                 <div className="recentSpace">
-                      {loadingRec && <div>Carregando recentes...</div>}
-                            {recError && <div className="error-msg">{recError}</div>}
-                            {!loadingRec && recentes.map((livro) => (
-                                <BoxBook
-                                    key={livro.id}
-                                    titulo={livro.titulo}
-                                    autor={livro.autor}
-                                    imagem={livro.imagem}
-                                    onVer={() => setSelectedLivro(livro)}
-                                />
-                            ))}
+                    {loadingRec && <div>Carregando recentes...</div>}
+                    {recError && <div className="error-msg">{recError}</div>}
+                    {!loadingRec && recentes.map((livro) => (
+                        <BoxBook
+                            key={livro.id}
+                            titulo={livro.titulo}
+                            autor={livro.autor}
+                            imagem={livro.imagem}
+                            onVer={() => setSelectedLivro(livro)}
+                        />
+                    ))}
 
-                              {selectedLivro && (
-                            <ModalLivro livro={selectedLivro} onClose={() => setSelectedLivro(null)} />
-                        )}
+                    {selectedLivro && (
+                        <ModalLivro livro={selectedLivro} onClose={() => setSelectedLivro(null)} />
+                    )}
                 </div>
             </session>
             <session className="servicos">
@@ -182,21 +182,18 @@ export default function Home() {
             </session>
             <session className="depoimentos">
                 <h2>Depoimentos dos nossos clientes</h2>
-                <div className="depSpace">
-                    <Depoimentos />
-                    <Depoimentos />
-                    <Depoimentos />
-                    <Depoimentos />
-                    <Depoimentos />
-                </div>
-                <div className="depSpace">
-                    <Depoimentos />
-                    <Depoimentos />
-                    <Depoimentos />
-                    <Depoimentos />
-                    <Depoimentos />
-                </div>
+
+                <Depoimentos
+                    depoimentos={[
+                        { nome: "João Silva", texto: "Excelente serviço! Encontrei livros incríveis e a plataforma é super fácil de usar." },
+                        { nome: "Maria Oliveira", texto: "A entrega foi super rápida e o atendimento é maravilhoso!" },
+                        { nome: "Carlos Santos", texto: "A variedade de livros é impressionante, recomendo para todos os amantes da leitura!" },
+                        { nome: "Ana Costa", texto: "O sistema de recomendações me surpreendeu! Encontrei livros que eu nem sabia que queria ler." },
+                        { nome: "Pedro Lima", texto: "Interface intuitiva, atendimento excelente e livros em ótimo estado!" }
+                    ]}
+                />
             </session>
+
             <session className="footerSection">
                 <Footer />
             </session>

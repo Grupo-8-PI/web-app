@@ -1200,3 +1200,15 @@ body {
   height: auto;
   display: block;
 }
+.depoimento-texto {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 0 20px;
+}
+.depoimento-texto i {
+  font-size: 4rem;
+  color: #333;
+  margin: 0;
+  text-align: center;
+}
