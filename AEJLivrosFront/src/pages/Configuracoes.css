@@ -4,7 +4,7 @@
     margin: 0 auto;
     background-color: #F6FDFF;
     border-radius: 20px;
-    height: 650px;
+    min-height: 650px;
 }
 
 .config-title {
@@ -51,6 +51,61 @@
     border-radius: 10px;
 }
 
+/* Alerts */
+.alert {
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert i {
+    font-size: 1.5rem;
+}
+
+.alert-error {
+    background-color: #fee;
+    color: #c33;
+    border-left: 4px solid #c33;
+}
+
+.alert-success {
+    background-color: #efe;
+    color: #3c3;
+    border-left: 4px solid #3c3;
+}
+
+/* Loading */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    color: #666;
+}
+
+.loading-spinner i {
+    font-size: 3rem;
+    color: #09386B;
+    margin-bottom: 1rem;
+}
+
 .perfil-header {
     display: flex;
     align-items: center;
@@ -80,6 +135,7 @@
     flex-direction: row;
     justify-content: space-between;
     color: #09386B;
+    align-items: center;
 }
 
 .perfil-info span {
@@ -100,15 +156,65 @@
     margin-bottom: 1rem;
 }
 
-.btn-editar-info {
+/* Form de Edição */
+.perfil-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #09386B;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    padding: 0.6rem;
+    border: 1px solid #09386b5b;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #09386B;
+    box-shadow: 0 0 0 3px rgba(9, 56, 107, 0.1);
+}
+
+.form-group input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.btn-editar-info,
+.btn-salvar-info,
+.btn-cancelar-info {
     padding: 0.4rem 0.8rem;
     border: 1px solid #09386ba9;
     border-radius: 20px;
     cursor: pointer;
-    color: #09386ba9;
     height: 35px;
     margin-top: 5px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.3s ease;
+}
+
+.btn-editar-info {
     background-color: #F6FDFF;
+    color: #09386ba9;
 }
 
 .btn-editar-info:hover,
@@ -117,8 +223,35 @@
     transform: translateY(-1px);
 }
 
-.bx-pencil {
-    color: #09386ba9;
+.btn-salvar-info {
+    background-color: #09386B;
+    color: white;
+    border-color: #09386B;
+}
+
+.btn-salvar-info:hover:not(:disabled) {
+    background-color: #07294f;
+    transform: translateY(-1px);
+}
+
+.btn-salvar-info:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-cancelar-info {
+    background-color: #95a5a6;
+    color: white;
+    border-color: #95a5a6;
+}
+
+.btn-cancelar-info:hover:not(:disabled) {
+    background-color: #7f8c8d;
+}
+
+.bx-pencil,
+.bx-save {
+    font-size: 1rem;
 }
 
 .config-menu .btn-delete {
@@ -142,10 +275,102 @@
   transform: translateY(-1px);
 }
 
-.config-menu .btn-delete.override-important {
-  background: none !important;
-  color: #FF0000 !important;
-  border: 1px solid #FF0000 !important;
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content h3 {
+    color: #333;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.modal-content p {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.modal-content strong {
+    color: #e74c3c;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-modal-cancel,
+.btn-modal-delete {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-modal-cancel {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.btn-modal-cancel:hover {
+    background-color: #7f8c8d;
+}
+
+.btn-modal-delete {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-modal-delete:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
 }
 
 .perfil-historico {
@@ -159,6 +384,88 @@
 .perfil-historico-header {
     font-size: 18px;
     color: #09386B;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+}
+
+.total-compras {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.loading-compras {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #09386B;
+}
+
+.loading-compras i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.sem-compras {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #666;
+}
+
+.sem-compras i {
+    font-size: 3rem;
+    color: #09386b5b;
+    margin-bottom: 1rem;
+}
+
+.sem-compras p {
+    font-size: 1rem;
+}
+
+.ver-mais-compras {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+    border-top: 1px solid #09386b1e;
+}
+
+.btn-ver-mais {
+    padding: 0.5rem 1.5rem;
+    background-color: #09386B;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.btn-ver-mais:hover {
+    background-color: #07294f;
+    transform: translateY(-2px);
+}
+
+/* Status das compras */
+.status-concluido {
+    color: #2E7D32 !important;
+    font-weight: 600;
+}
+
+.status-pendente {
+    color: #F57C00 !important;
+    font-weight: 600;
+}
+
+.status-cancelado {
+    color: #C62828 !important;
+    font-weight: 600;
 }
 
 .tabela-compras {
@@ -265,11 +572,19 @@
     transition: background 0.3s ease, transform 0.2s ease;
     font-size: 0.9rem;
     margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.btn-salvar-senha:hover {
+.btn-salvar-senha:hover:not(:disabled) {
     background-color: #07294f;
     transform: translateY(-1px);
+}
+
+.btn-salvar-senha:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .dicas-lista {
@@ -334,4 +649,33 @@
     padding: 8px 12px;
     border-radius: 8px;
     color: #09386B;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .config-content {
+        flex-direction: column;
+    }
+
+    .config-menu {
+        width: 100%;
+    }
+
+    .perfil-grid,
+    .perfil-form {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+
+    .modal-actions button {
+        width: 100%;
+    }
 }

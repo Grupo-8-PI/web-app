@@ -6,35 +6,37 @@ function Sidebar({ activeTab, setActiveTab, mode = "auto" }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Detecta automaticamente se está em modo tabs ou routes
   const isTabMode = mode === "tabs" || (mode === "auto" && setActiveTab !== undefined);
   const isRouteMode = mode === "routes" || (mode === "auto" && !setActiveTab);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('auth_token');
+    sessionStorage.removeItem('auth_user');
     navigate('/');
   };
 
-  // Função unificada para lidar com cliques
   const handleItemClick = (tab) => {
     if (isTabMode) {
-      // Modo tabs: muda a tab dentro da Dashboard
       setActiveTab(tab);
     } else {
-      // Modo routes: navega para /dashboard com state indicando a tab
       navigate('/dashboard', { state: { activeTab: tab } });
     }
   };
 
-  // Verifica se um item está ativo
+  const handleConfigClick = () => {
+    navigate('/configuracoes');
+  };
+
   const isActive = (tab) => {
     if (isTabMode) {
       return activeTab === tab;
     } else {
-      // No modo routes, verifica se está na dashboard e compara com a última tab conhecida
       return location.pathname === '/dashboard';
     }
+  };
+
+  const isConfigActive = () => {
+    return location.pathname === '/configuracoes';
   };
 
   return (
@@ -71,6 +73,16 @@ function Sidebar({ activeTab, setActiveTab, mode = "auto" }) {
               title="Visão Estante"
             >
               <i className="bx bx-show icon"></i>
+            </i>
+          </li>
+
+          <li>
+            <i 
+              onClick={handleConfigClick}
+              className={isConfigActive() ? "active" : ""}
+              title="Configurações"
+            >
+              <i className="bx bxs-cog icon"></i>
             </i>
           </li>
           

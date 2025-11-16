@@ -112,6 +112,25 @@ class AuthService {
     this.clearAuth();
     window.location.href = '/';
   }
+
+  getUserId() {
+    const user = this.getUser();
+    if (user && user.id) {
+        return user.id;
+    }
+
+    const token = this.getToken();
+    if (token) {
+        try {
+            const payload = this.decodeToken(token);
+            return payload.id || payload.sub || payload.userId || null;
+        } catch {
+            return null;
+        }
+    }
+
+    return null;
+}
 }
 
 export const authService = new AuthService();
