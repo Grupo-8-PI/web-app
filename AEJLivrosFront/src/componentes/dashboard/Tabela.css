@@ -195,3 +195,38 @@
   align-items: center;
   justify-content: end;
 }
+
+.status-pendente {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-concluida {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-cancelada {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-rejeitada {
+  background: #f5c6cb;
+  color: #721c24;
+}
+
+.cancelar-btn:disabled,
+.concluir-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancelar-btn:disabled:hover,
+.concluir-btn:disabled:hover {
+  background: transparent;
+}
+
+.concluir-btn:disabled:hover {
+  background: #123b64;
+}
