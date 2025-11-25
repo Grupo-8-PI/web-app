@@ -51,11 +51,10 @@ const dashboardService = {
         }
     },
 
-    async getDashboardStats() {
+    async getDashboardStats(filters = {}) {
         try {
             const livrosResponse = await this.getAllLivros(0, 1000);
             
-            // Backend retorna: { livros: [...], currentPage: 0, totalElements: 3, totalPages: 1 }
             let livros = [];
             if (livrosResponse.livros && Array.isArray(livrosResponse.livros)) {
                 livros = livrosResponse.livros;
@@ -67,7 +66,6 @@ const dashboardService = {
 
             const reservasResponse = await this.getAllReservas(0, 1000);
             
-            // Backend pode retornar: { reservas: [...] } ou { content: [...] }
             let reservas = [];
             if (reservasResponse.reservas && Array.isArray(reservasResponse.reservas)) {
                 reservas = reservasResponse.reservas;
@@ -77,18 +75,53 @@ const dashboardService = {
                 reservas = reservasResponse;
             }
 
-            return this.calculateStats(livros, reservas);
+            // Aplicar filtros
+            const livrosFiltrados = this.applyFilters(livros, filters);
+            const reservasFiltradas = this.applyReservaFilters(reservas, filters);
+
+            return this.calculateStats(livrosFiltrados, reservasFiltradas, filters);
         } catch (error) {
             console.error('Erro ao buscar estatísticas:', error);
             throw error;
         }
     },
 
-    calculateStats(livros, reservas) {
-        // Valor total do estoque
+    applyFilters(livros, filters) {
+        let filtered = [...livros];
+
+        if (filters.categoria) {
+            filtered = filtered.filter(livro => 
+                livro.nomeCategoria === filters.categoria
+            );
+        }
+
+        return filtered;
+    },
+
+    applyReservaFilters(reservas, filters) {
+        let filtered = [...reservas];
+
+        if (filters.mes !== null && filters.mes !== undefined) {
+            filtered = filtered.filter(reserva => {
+                if (!reserva.dtReserva) return false;
+                const data = new Date(reserva.dtReserva);
+                return data.getMonth() === filters.mes && 
+                       data.getFullYear() === filters.ano;
+            });
+        } else if (filters.ano) {
+            filtered = filtered.filter(reserva => {
+                if (!reserva.dtReserva) return false;
+                const data = new Date(reserva.dtReserva);
+                return data.getFullYear() === filters.ano;
+            });
+        }
+
+        return filtered;
+    },
+
+    calculateStats(livros, reservas, filters = {}) {
         const valorEstoque = livros.reduce((sum, livro) => sum + (livro.preco || 0), 0);
 
-        // Contagem por conservação
         const conservacaoCounts = {
             excelente: 0,
             bom: 0,
@@ -119,7 +152,6 @@ const dashboardService = {
         const percentRazoavel = totalLivros > 0 ? ((conservacaoCounts.razoavel / totalLivros) * 100).toFixed(0) : 0;
         const percentDegradado = totalLivros > 0 ? ((conservacaoCounts.degradado / totalLivros) * 100).toFixed(0) : 0;
 
-        // Contagem por categoria
         const categoriaMap = {};
         livros.forEach(livro => {
             const categoria = livro.nomeCategoria || 'Sem Categoria';
@@ -131,10 +163,8 @@ const dashboardService = {
             value
         }));
 
-        // Calcular valor arrecadado por mês
-        const valorPorMes = this.calculateValorPorMes(reservas);
+        const valorPorMes = this.calculateValorPorMes(reservas, filters);
 
-        // Taxa de retirada e desistência
         const totalReservas = reservas.length;
         const reservasRetiradas = reservas.filter(r => 
             r.statusReserva && r.statusReserva.toLowerCase().includes('retirad')
@@ -144,7 +174,6 @@ const dashboardService = {
         const taxaRetirada = totalReservas > 0 ? ((reservasRetiradas / totalReservas) * 100).toFixed(0) : 0;
         const taxaDesistencia = totalReservas > 0 ? ((reservasNaoRetiradas / totalReservas) * 100).toFixed(0) : 0;
 
-        // Tempo de permanência no catálogo
         const tempoCatalogo = this.calculateTempoCatalogo(livros);
 
         return {
@@ -162,11 +191,12 @@ const dashboardService = {
             totalReservas,
             reservasRetiradas,
             reservasNaoRetiradas,
-            tempoCatalogo
+            tempoCatalogo,
+            totalLivrosFiltrados: livros.length
         };
     },
 
-    calculateValorPorMes(reservas) {
+    calculateValorPorMes(reservas, filters = {}) {
         const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
         const valorPorMes = meses.map(mes => ({ name: mes, valor: 0 }));
 
@@ -175,8 +205,15 @@ const dashboardService = {
                 try {
                     const data = new Date(reserva.dtReserva);
                     const mesIndex = data.getMonth();
-                    if (mesIndex >= 0 && mesIndex < 12) {
-                        valorPorMes[mesIndex].valor += reserva.totalReserva;
+                    
+                    if (filters.mes !== null && filters.mes !== undefined) {
+                        if (mesIndex === filters.mes) {
+                            valorPorMes[mesIndex].valor += reserva.totalReserva;
+                        }
+                    } else {
+                        if (mesIndex >= 0 && mesIndex < 12) {
+                            valorPorMes[mesIndex].valor += reserva.totalReserva;
+                        }
                     }
                 } catch (error) {
                     console.warn('Erro ao processar data:', reserva.dtReserva);
