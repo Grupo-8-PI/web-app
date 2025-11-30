@@ -94,7 +94,7 @@ const Geral = () => {
           color: '#09386B',
           fontWeight: '500'
         }}>
-          📊 Exibindo dados de <strong>{stats.totalLivrosFiltrados}</strong> livro(s)
+            Exibindo dados de <strong>{stats.totalLivrosFiltrados}</strong> livro(s)
           {filters.categoria && <span> da categoria <strong>{filters.categoria}</strong></span>}
           {filters.mes !== null && <span> do mês filtrado</span>}
         </div>

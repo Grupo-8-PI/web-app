@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import "./Cards.css";
 
 function Cards({ stats, loading }) {
@@ -24,11 +23,6 @@ function Cards({ stats, loading }) {
   return (
     <div className="cards">
       <div className="card">
-        Valor estimado do estoque atual
-        <br />
-        <b>R$ {stats.valorEstoque}</b>
-      </div>
-      <div className="card">
         Conservação excelente
         <br />
         <b>{stats.conservacao.excelente}%</b>
@@ -42,6 +36,11 @@ function Cards({ stats, loading }) {
         Conservação razoável
         <br />
         <b>{stats.conservacao.razoavel}%</b>
+      </div>
+      <div className="card">
+        Conservação degradada
+        <br />
+        <b>{stats.conservacao.degradado}%</b>
       </div>
     </div>
   );

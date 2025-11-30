@@ -1,14 +1,17 @@
 .dashboard-filters {
   background: white;
   padding: 15px 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
   margin-bottom: 20px;
+  color: #697077;
+  width: 1098px;
 }
 
 .filters-container {
   display: flex;
-  gap: 15px;
+  gap: 23px;
   align-items: flex-end;
   flex-wrap: wrap;
 }
@@ -16,25 +19,26 @@
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
   min-width: 180px;
+  flex: 1;
 }
 
 .filter-group label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: #09386B;
+  color: #697077;
 }
 
 .filter-select {
-  padding: 8px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
   font-size: 14px;
-  color: #333;
+  color: #697077;
   background-color: white;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .filter-select:hover {
@@ -44,7 +48,7 @@
 .filter-select:focus {
   outline: none;
   border-color: #09386B;
-  box-shadow: 0 0 0 3px rgba(9, 56, 107, 0.1);
+  box-shadow: 0 0 0 2px rgba(9, 56, 107, 0.1);
 }
 
 .filter-select:disabled {
@@ -54,22 +58,23 @@
 }
 
 .btn-limpar-filtros {
-  padding: 8px 16px;
-  background-color: #f44336;
+  padding: 10px 16px;
+  background-color: #09386B;
   color: white;
   border: none;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: 2px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   align-self: flex-end;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .btn-limpar-filtros:hover {
-  background-color: #d32f2f;
+  background-color: #07294f;
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+  box-shadow: 0 2px 4px rgba(9, 56, 107, 0.3);
 }
 
 .btn-limpar-filtros:active {
@@ -86,28 +91,29 @@
   display: flex;
   gap: 8px;
   align-items: center;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e0e0e0;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
   flex-wrap: wrap;
 }
 
 .filter-label {
   font-size: 13px;
   font-weight: 600;
-  color: #666;
+  color: #697077;
 }
 
 .filter-tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 6px 12px;
   background-color: #09386B;
   color: white;
-  border-radius: 20px;
+  border-radius: 2px;
   font-size: 12px;
   font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .filter-tag button {
