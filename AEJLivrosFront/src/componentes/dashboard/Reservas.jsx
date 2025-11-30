@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import reservaService from "../../services/reservaService";
+import livroService from "../../services/livroService";
+import usuarioService from "../../services/usuarioService";
 import "./Tabela.css";
 
 const Reservas = () => {
@@ -22,29 +24,115 @@ const Reservas = () => {
       setLoading(true);
       setError(null);
       
-      let response;
-      if (filtroStatus === 'TODOS') {
-        response = await reservaService.listarReservas(0, 100);
-      } else {
-        response = await reservaService.buscarPorStatus(filtroStatus);
-      }
+      console.log('🚀 Carregando reservas (ADMIN)...');
       
-      // Garantir que response seja sempre um array
-      console.log('Resposta da API:', response);
+      // Buscar TODAS as reservas (ADMIN)
+      const response = await reservaService.listarReservas(0, 100);
       
-      // Seu backend retorna estrutura paginada: { content: [], totalElements: X, ... }
-      if (response && Array.isArray(response.content)) {
-        setReservas(response.content);
+      console.log('📦 Resposta do backend:', response);
+      
+      // Backend retorna: { reservas: [], page, size, totalElements, totalPages }
+      let reservasDoBackend = [];
+      
+      if (response && Array.isArray(response.reservas)) {
+        reservasDoBackend = response.reservas;
+      } else if (Array.isArray(response.content)) {
+        reservasDoBackend = response.content;
       } else if (Array.isArray(response)) {
-        setReservas(response);
-      } else if (response && typeof response === 'object') {
-        setReservas([response]);
-      } else {
-        setReservas([]);
+        reservasDoBackend = response;
       }
+
+      console.log('📚 Total de reservas encontradas:', reservasDoBackend.length);
+
+      // Para cada reserva, buscar dados do livro e do usuário
+      const reservasCompletas = await Promise.all(
+        reservasDoBackend.map(async (reserva) => {
+          try {
+            // Buscar livro
+            let livro = null;
+            if (reserva.livroId) {
+              try {
+                livro = await livroService.buscarPorId(reserva.livroId);
+                console.log(`✅ Livro ${reserva.livroId} encontrado:`, livro.titulo);
+              } catch (err) {
+                console.warn(`⚠️ Erro ao buscar livro ${reserva.livroId}:`, err);
+              }
+            }
+
+            // Buscar dados do cliente
+            let cliente = {
+              nome: 'Cliente não identificado',
+              email: 'Sem email',
+              telefone: 'N/A'
+            };
+
+            // Tentar buscar pelo endpoint de reservas que deve retornar dados do usuário
+            // Ou buscar usuário se o backend retornar usuarioId
+            if (reserva.usuarioId) {
+              try {
+                const usuarioData = await usuarioService.getUsuarioById(reserva.usuarioId);
+                cliente = {
+                  nome: usuarioData.nome || 'Cliente não identificado',
+                  email: usuarioData.email || 'Sem email',
+                  telefone: usuarioData.telefone || 'N/A'
+                };
+                console.log(`✅ Cliente ${reserva.usuarioId} encontrado:`, cliente.nome);
+              } catch (err) {
+                console.warn(`⚠️ Erro ao buscar cliente ${reserva.usuarioId}:`, err);
+              }
+            }
+
+            return {
+              id: reserva.id,
+              cliente: cliente,
+              livros: livro ? [{
+                titulo: livro.titulo,
+                autor: livro.autor,
+                isbn: livro.isbn,
+                editora: livro.editora,
+                anoPublicacao: livro.anoPublicacao,
+                numeroPaginas: livro.paginas,
+                categoria: livro.nomeCategoria,
+                preco: livro.preco,
+                imagemUrl: livro.capa
+              }] : [],
+              dataReserva: reserva.dtReserva,
+              dataRetirada: reserva.dtLimite,
+              status: reserva.statusReserva,
+              valorTotal: reserva.totalReserva,
+              livroId: reserva.livroId
+            };
+          } catch (error) {
+            console.error(`❌ Erro ao processar reserva ${reserva.id}:`, error);
+            return {
+              id: reserva.id,
+              cliente: {
+                nome: 'Erro ao carregar',
+                email: 'Erro',
+                telefone: 'N/A'
+              },
+              livros: [],
+              dataReserva: reserva.dtReserva,
+              dataRetirada: reserva.dtLimite,
+              status: reserva.statusReserva,
+              valorTotal: reserva.totalReserva
+            };
+          }
+        })
+      );
+
+      console.log('✅ Reservas processadas:', reservasCompletas);
+
+      // Filtrar por status se necessário
+      let reservasFiltradas = reservasCompletas;
+      if (filtroStatus !== 'TODOS') {
+        reservasFiltradas = reservasCompletas.filter(r => r.status === filtroStatus);
+      }
+
+      setReservas(reservasFiltradas);
     } catch (err) {
       setError('Erro ao carregar reservas. Tente novamente mais tarde.');
-      console.error('Erro ao carregar reservas:', err);
+      console.error('❌ Erro ao carregar reservas:', err);
       setReservas([]);
     } finally {
       setLoading(false);
@@ -103,25 +191,42 @@ const Reservas = () => {
     }
   };
 
-  const calcularDiasRestantes = (dataReserva) => {
-    const hoje = new Date();
-    const dataReservaObj = new Date(dataReserva);
-    const diffTime = dataReservaObj - hoje;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const calcularDiasRestantes = (dataRetirada) => {
+    if (!dataRetirada) return 'N/A';
     
-    if (diffDays < 0) return 'Vencida';
-    if (diffDays === 0) return 'Hoje';
-    if (diffDays === 1) return '1 dia';
-    return `${diffDays} dias`;
+    try {
+      const hoje = new Date();
+      const dataRetiradaObj = new Date(dataRetirada);
+      
+      if (isNaN(dataRetiradaObj.getTime())) return 'Data inválida';
+      
+      const diffTime = dataRetiradaObj - hoje;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 0) return 'Vencida';
+      if (diffDays === 0) return 'Hoje';
+      if (diffDays === 1) return '1 dia';
+      return `${diffDays} dias`;
+    } catch (error) {
+      return 'N/A';
+    }
   };
 
   const formatarData = (data) => {
-    return new Date(data).toLocaleDateString('pt-BR');
+    if (!data) return 'Invalid Date';
+    
+    try {
+      const dataObj = new Date(data);
+      if (isNaN(dataObj.getTime())) return 'Invalid Date';
+      return dataObj.toLocaleDateString('pt-BR');
+    } catch (error) {
+      return 'Invalid Date';
+    }
   };
 
   const getStatusBadgeClass = (status) => {
     const statusMap = {
-      'PENDENTE': 'status-inconsistente', // Usando classe existente
+      'PENDENTE': 'status-inconsistente',
       'APROVADA': 'status-ok',
       'CONCLUIDA': 'status-ok',
       'CANCELADA': 'status-inconsistente',
@@ -141,7 +246,7 @@ const Reservas = () => {
     return labelMap[status] || status;
   };
 
-  // Paginação - garantir que reservas seja array
+  // Paginação
   const reservasArray = Array.isArray(reservas) ? reservas : [];
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -205,7 +310,10 @@ const Reservas = () => {
           <label style={{ fontWeight: 600, color: '#2c3e50' }}>Filtrar por Status:</label>
           <select 
             value={filtroStatus} 
-            onChange={(e) => setFiltroStatus(e.target.value)}
+            onChange={(e) => {
+              setFiltroStatus(e.target.value);
+              setCurrentPage(1);
+            }}
             style={{
               padding: '8px 12px',
               border: '1px solid #ddd',
@@ -336,73 +444,61 @@ const Reservas = () => {
                                 </div>
                               </div>
 
-                              {reserva.livros?.map((livro, i) => (
-                                <div key={i} className="detalhes-livro">
-                                  <img 
-                                    src={livro.imagemUrl || 'https://via.placeholder.com/150x200?text=Sem+Capa'} 
-                                    alt={`Capa de ${livro.titulo}`} 
-                                    className="detalhes-capa"
-                                    onError={(e) => {
-                                      e.target.src = 'https://via.placeholder.com/150x200?text=Sem+Capa';
-                                    }}
-                                  />
-                                  <div className="detalhes-info">
-                                    <h3>{livro.titulo}</h3>
-                                    <p><strong>Autor:</strong> {livro.autor}</p>
-                                    <p><strong>ISBN:</strong> {livro.isbn || 'N/A'}</p>
-                                    <p><strong>Editora:</strong> {livro.editora || 'N/A'}</p>
-                                    <p><strong>Ano:</strong> {livro.anoPublicacao || 'N/A'}</p>
-                                    <p><strong>Páginas:</strong> {livro.numeroPaginas || 'N/A'}</p>
-                                    <p><strong>Idioma:</strong> {livro.idioma || 'N/A'}</p>
-                                    <p><strong>Categoria:</strong> {livro.categoria || 'N/A'}</p>
-                                    <p className="reserva-total">
-                                      Preço: R$ {(livro.preco || 0).toFixed(2)}
-                                    </p>
+                              {reserva.livros && reserva.livros.length > 0 ? (
+                                reserva.livros.map((livro, i) => (
+                                  <div key={i} className="detalhes-livro">
+                                    <img 
+                                      src={livro.imagemUrl || 'https://via.placeholder.com/150x200?text=Sem+Capa'} 
+                                      alt={`Capa de ${livro.titulo}`} 
+                                      className="detalhes-capa"
+                                      onError={(e) => {
+                                        e.target.src = 'https://via.placeholder.com/150x200?text=Sem+Capa';
+                                      }}
+                                    />
+                                    <div className="detalhes-info">
+                                      <h3>{livro.titulo}</h3>
+                                      <p><strong>Autor:</strong> {livro.autor}</p>
+                                      <p><strong>ISBN:</strong> {livro.isbn || 'N/A'}</p>
+                                      <p><strong>Editora:</strong> {livro.editora || 'N/A'}</p>
+                                      <p><strong>Ano:</strong> {livro.anoPublicacao || 'N/A'}</p>
+                                      <p><strong>Páginas:</strong> {livro.numeroPaginas || 'N/A'}</p>
+                                      <p><strong>Categoria:</strong> {livro.categoria || 'N/A'}</p>
+                                      <p className="reserva-total">
+                                        Preço: R$ {(livro.preco || 0).toFixed(2)}
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
+                                ))
+                              ) : (
+                                <p style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
+                                  Nenhum livro associado a esta reserva.
+                                </p>
+                              )}
                             </div>
 
                             <div className="detalhes-footer">
-                              {reserva.observacoes && (
-                                <div style={{ 
-                                  backgroundColor: '#f8f9fa', 
-                                  padding: '15px', 
-                                  borderRadius: '8px', 
-                                  marginBottom: '15px',
-                                  width: '100%'
-                                }}>
-                                  <p style={{ margin: 0, color: '#555', fontSize: '14px', lineHeight: '1.6' }}>
-                                    <strong>Observações:</strong> {reserva.observacoes}
-                                  </p>
-                                </div>
-                              )}
                               <p className="reserva-total">
                                 <strong>Total da Reserva:</strong> R$ {valorTotal.toFixed(2)}
                               </p>
-                              <div className="detalhes-botoes">
-                                <button 
-                                  className="cancelar-btn"
-                                  onClick={() => handleCancelarReserva(reserva.id)}
-                                  disabled={reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA'}
-                                  style={{ 
-                                    opacity: (reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA') ? 0.5 : 1,
-                                    cursor: (reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA') ? 'not-allowed' : 'pointer'
-                                  }}
-                                >
-                                  Cancelar Reserva
-                                </button>
-                                <button 
-                                  className="concluir-btn"
-                                  onClick={() => handleConcluirReserva(reserva.id)}
-                                  disabled={reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA'}
-                                  style={{ 
-                                    opacity: (reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA') ? 0.5 : 1,
-                                    cursor: (reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA') ? 'not-allowed' : 'pointer'
-                                  }}
-                                >
-                                  Concluir Reserva
-                                </button>
+                              
+                              {/* TEMPORÁRIO: Botões desabilitados até backend implementar endpoint ADMIN */}
+                              <div style={{ 
+                                padding: '20px', 
+                                backgroundColor: '#fff3cd', 
+                                borderRadius: '8px',
+                                color: '#856404',
+                                textAlign: 'center',
+                                marginTop: '15px'
+                              }}>
+                                <i className='bx bx-info-circle' style={{ fontSize: '32px', marginBottom: '10px' }}></i>
+                                <p style={{ margin: '0', fontSize: '16px' }}>
+                                  <strong>Ações de Atualização Indisponíveis</strong>
+                                </p>
+                                <p style={{ margin: '10px 0 0 0', fontSize: '14px' }}>
+                                  O backend precisa implementar endpoint específico para ADMIN atualizar status de reservas.
+                                  <br />
+                                  Veja o arquivo <code>ERRO_403_SOLUCAO.md</code> para detalhes.
+                                </p>
                               </div>
                             </div>
                           </div>
