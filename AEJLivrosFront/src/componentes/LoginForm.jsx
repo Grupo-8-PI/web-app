@@ -66,7 +66,7 @@ export function LoginForm({ onCadastroClick }) {
             loginRateLimiter.reset(email.value);
 
             setTimeout(() => {
-                window.location.href = '/dashboard';
+                window.location.href = '/';
             }, 500);
 
         } catch (error) {

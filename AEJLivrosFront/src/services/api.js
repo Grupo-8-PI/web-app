@@ -31,4 +31,24 @@ api.interceptors.response.use(
   }
 );
 
+// Reservas
+export const criarReserva = (dtReserva, dtLimite, statusReserva, totalReserva, dadosLivro) => {
+  return api.post('/reservas', {
+    dtReserva,
+    dtLimite,
+    statusReserva,
+    totalReserva,
+    ...dadosLivro
+  });
+};
+
+export const listarReservasUsuario = (userId) => {
+  return api.get(`/reservas/user/${userId}`);
+};
+
+// Livros
+export const buscarLivroPorId = (livroId) => {
+  return api.get(`/livros/${livroId}`);
+};
+
 export default api;

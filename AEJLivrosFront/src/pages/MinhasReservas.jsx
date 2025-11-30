@@ -13,7 +13,6 @@ export default function MinhasReservas() {
                 </div>
                 <div className="reservEsp">
                     <Reservas />
-                    <Reservas />
                     </div>
 
             </div>

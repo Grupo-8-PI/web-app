@@ -23,7 +23,7 @@ export function CadastroForm({ onVoltarLogin }) {
             nome,
             email,
             telefone,
-            tipo_usuario: "admin", // Valor fixo 
+            tipo_usuario: "cliente", // Valor fixo 
             cpf,
             senha,
             dtNascimento: nascimento 

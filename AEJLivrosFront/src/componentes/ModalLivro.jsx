@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import './modalLivro.css';
 import { Header } from './Header';
+import { criarReserva } from '../services/api';
 
 const ModalLivro = ({ livro, onClose }) => {
-
-
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (!livro) return;
@@ -14,6 +14,50 @@ const ModalLivro = ({ livro, onClose }) => {
             document.body.style.overflow = '';
         };
     }, [livro]);
+
+    const handleReservarLivro = async () => {
+        setLoading(true);
+        try {
+            // Obter data atual e calcular data limite (14 dias depois)
+            const dtReserva = new Date().toISOString();
+            const dtLimite = new Date();
+            dtLimite.setDate(dtLimite.getDate() + 14);
+            const dtLimiteFormatada = dtLimite.toISOString();
+
+            // Chamada para criar reserva com dados completos do livro
+            const dadosLivro = {
+                idLivro: livro.id,
+                titulo: livro.titulo,
+                autor: livro.autor,
+                preco: livro.preco,
+                categoria: livro.categoria,
+                editora: livro.editora,
+                ano: livro.ano,
+                conservacao: livro.conservacao,
+                paginas: livro.paginas,
+                descricao: livro.descricao,
+                imagem: livro.imagem
+            };
+
+            console.log('Dados do livro enviados:', dadosLivro); // DEBUG
+
+            await criarReserva(
+                dtReserva,
+                dtLimiteFormatada,
+                'Confirmada',
+                livro.preco || 150,
+                dadosLivro
+            );
+
+            alert('Reserva criada com sucesso!');
+            onClose();
+        } catch (erro) {
+            console.error('Erro ao criar reserva:', erro);
+            alert('Erro ao criar reserva. Tente novamente.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (!livro) return null;
 
@@ -45,7 +89,9 @@ const ModalLivro = ({ livro, onClose }) => {
                         <p><b>Páginas:</b> {livro.paginas || 'N/A'}</p>
                         <p><b>Sinopse com IA:</b> {livro.descricao || 'Descrição não disponível.'}</p>
                     <div className="buttonsArea">
-                        <button>Reservar Livro</button>
+                        <button onClick={handleReservarLivro} disabled={loading}>
+                            {loading ? 'Reservando...' : 'Reservar Livro'}
+                        </button>
                         <button>Gerar Sinopse com IA</button>
                     </div>
                     </div>
