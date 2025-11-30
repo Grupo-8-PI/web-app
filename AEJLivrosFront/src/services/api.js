@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { authService } from './authService';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: API_URL,  
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -30,5 +32,7 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+console.log('🔗 API URL configurada:', API_URL);
 
 export default api;
