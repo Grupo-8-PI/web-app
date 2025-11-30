@@ -24,6 +24,10 @@ export default function CadastrarLivro() {
     const [conservacaoId, setConservacaoId] = useState('');
     const [acabamentoId, setAcabamentoId] = useState('');
     const [imagemUrl, setImagemUrl] = useState('');
+    
+    // NOVO: Estado para upload de arquivo
+    const [arquivoImagem, setArquivoImagem] = useState(null);
+    const [previewImagem, setPreviewImagem] = useState('');
 
     const buscarPorISBN = async () => {
         if (!isbn.value) {
@@ -75,6 +79,7 @@ export default function CadastrarLivro() {
                 setAnoPublicacao(livro.publish_date?.match(/\d{4}/)?.[0] || '');
                 setPaginas(livro.number_of_pages?.toString() || '');
                 setImagemUrl(livro.cover?.large || livro.cover?.medium || '');
+                setPreviewImagem(livro.cover?.large || livro.cover?.medium || '');
 
                 setMensagem({
                     tipo: 'sucesso',
@@ -107,11 +112,43 @@ export default function CadastrarLivro() {
 
         const imagem = livro.imageLinks?.thumbnail?.replace('&zoom=1', '&zoom=2') || '';
         setImagemUrl(imagem);
+        setPreviewImagem(imagem);
 
         setMensagem({
             tipo: 'sucesso',
             texto: 'Dados preenchidos automaticamente!'
         });
+    };
+
+    // NOVO: Função para lidar com seleção de arquivo
+    const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        console.log('📁 Arquivo selecionado:', file.name, file.type, file.size);
+
+        // Validar tipo de arquivo
+        if (!file.type.startsWith('image/')) {
+            setMensagem({ tipo: 'erro', texto: 'Selecione apenas arquivos de imagem' });
+            return;
+        }
+
+        // Validar tamanho (máx 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            setMensagem({ tipo: 'erro', texto: 'Imagem muito grande. Máximo: 5MB' });
+            return;
+        }
+
+        setArquivoImagem(file);
+
+        // Criar preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPreviewImagem(reader.result);
+        };
+        reader.readAsDataURL(file);
+
+        setMensagem({ tipo: 'sucesso', texto: 'Imagem carregada! Será enviada ao salvar o livro.' });
     };
 
     const validarFormulario = () => {
@@ -162,6 +199,7 @@ export default function CadastrarLivro() {
         setSalvando(true);
 
         try {
+            // PASSO 1: Cadastrar livro SEM capa
             const livroData = {
                 isbn: isbn.value,
                 titulo: titulo.value,
@@ -173,36 +211,85 @@ export default function CadastrarLivro() {
                 nomeCategoria: categoria.trim(),
                 conservacaoId: parseInt(conservacaoId),
                 acabamentoId: parseInt(acabamentoId),
-                capa: imagemUrl || 'https://via.placeholder.com/300x400?text=Sem+Capa' 
+                capa: imagemUrl || 'https://via.placeholder.com/300x400?text=Sem+Capa'
             };
 
-            console.log('Enviando:', livroData);
+            console.log('📦 PASSO 1: Cadastrando livro...', livroData);
+            const responseLivro = await api.post('/livros', livroData);
+            console.log('✅ Livro cadastrado:', responseLivro.data);
 
-            const response = await api.post('/livros', livroData);
+            const livroId = responseLivro.data.id;
 
-            console.log('Resposta:', response.data);
+            // PASSO 2: Se tem arquivo de imagem, fazer upload
+            if (arquivoImagem) {
+                console.log('📤 PASSO 2: Fazendo upload da capa...');
+                setMensagem({ tipo: 'info', texto: 'Livro cadastrado! Enviando capa...' });
 
-            setMensagem({
-                tipo: 'sucesso',
-                texto: 'Livro cadastrado com sucesso!'
-            });
+                const formData = new FormData();
+                formData.append('arquivo', arquivoImagem);  // ← Backend espera "arquivo"
+
+                console.log('📁 FormData criado:', {
+                    fileName: arquivoImagem.name,
+                    fileType: arquivoImagem.type,
+                    fileSize: arquivoImagem.size
+                });
+
+                const responseUpload = await api.patch(`/livros/${livroId}/imagem`, formData, {  // ← PATCH /imagem
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+
+                console.log('✅ Capa enviada com sucesso:', responseUpload.data);
+                setMensagem({
+                    tipo: 'sucesso',
+                    texto: 'Livro cadastrado e capa enviada com sucesso!'
+                });
+            } else {
+                setMensagem({
+                    tipo: 'sucesso',
+                    texto: 'Livro cadastrado com sucesso!'
+                });
+            }
 
             setTimeout(() => {
                 navigate('/dashboard');
             }, 2000);
 
         } catch (error) {
-            console.error('Erro ao cadastrar:', error);
+            console.error('❌ Erro ao cadastrar:', error);
+            console.error('Response data:', error.response?.data);
+            console.error('Response status:', error.response?.status);
 
-            const errorMsg = error.response?.data?.message ||
-                error.response?.data?.error ||
-                error.message ||
-                'Erro ao cadastrar livro';
-
+            const errorMsg = tratarErro(error);
             setMensagem({ tipo: 'erro', texto: errorMsg });
         } finally {
             setSalvando(false);
         }
+    };
+
+    const tratarErro = (error) => {
+        console.error('❌ Erro ao cadastrar livro:', error);
+        
+        if (error.response) {
+            const status = error.response.status;
+            switch (status) {
+                case 400: return 'Dados inválidos. Verifique os campos e tente novamente.';
+                case 401: return 'Sessão expirada. Faça login novamente.';
+                case 403: return 'Você não tem permissão para cadastrar livros.';
+                case 409: return 'Este livro já está cadastrado no sistema.';
+                case 422: return 'Alguns campos estão preenchidos incorretamente.';
+                case 500: return 'Erro no servidor. Tente novamente mais tarde.';
+                case 503: return 'Serviço temporariamente indisponível. Tente novamente.';
+                default: return 'Erro ao cadastrar livro. Tente novamente.';
+            }
+        }
+        
+        if (error.request) {
+            return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+        }
+        
+        return 'Erro inesperado. Tente novamente.';
     };
 
     return (
@@ -238,7 +325,6 @@ export default function CadastrarLivro() {
                             Visão Estante &gt; Cadastrar Livro
                         </div>
 
-                        {/* Mensagem com estilo padrão */}
                         {mensagem.texto && (
                             <div className={`mensagem mensagem-${mensagem.tipo}`}>
                                 {mensagem.texto}
@@ -248,7 +334,7 @@ export default function CadastrarLivro() {
                         <div className="cadastrar-livro-content">
                             <div className="livro-preview">
                                 <img
-                                    src={imagemUrl || "https://via.placeholder.com/300x400?text=Sem+Capa"}
+                                    src={previewImagem || "https://via.placeholder.com/300x400?text=Sem+Capa"}
                                     alt="Preview do livro"
                                     className="imagem-principal"
                                 />
@@ -455,17 +541,32 @@ export default function CadastrarLivro() {
                                     </div>
 
                                     <div className="form-group">
-                                        <label>URL da Capa (opcional)</label>
+                                        <label>Imagem da Capa</label>
+                                        <label 
+                                            htmlFor="file-upload" 
+                                            className="btn-upload-capa"
+                                        >
+                                            📤Escolher Imagem
+                                        </label>
                                         <input
-                                            type="url"
-                                            placeholder="https://exemplo.com/capa.jpg"
-                                            value={imagemUrl}
-                                            onChange={(e) => setImagemUrl(e.target.value)}
+                                            id="file-upload"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFileSelect}
+                                            style={{ display: 'none' }}
                                             disabled={salvando}
                                         />
-                                        <small style={{ color: '#666', fontSize: '12px' }}>
-                                            Temporário - Será substituído pelo bucket futuramente
-                                        </small>
+                                        {arquivoImagem && (
+                                            <span style={{ 
+                                                fontSize: '12px', 
+                                                color: '#27ae60',
+                                                fontWeight: 'bold',
+                                                marginTop: '8px',
+                                                display: 'block'
+                                            }}>
+                                                ✓ {arquivoImagem.name}
+                                            </span>
+                                        )}
                                     </div>
 
                                     <div className="form-buttons">
