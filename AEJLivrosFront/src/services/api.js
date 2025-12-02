@@ -31,22 +31,18 @@ api.interceptors.response.use(
   }
 );
 
-// Reservas
-export const criarReserva = (dtReserva, dtLimite, statusReserva, totalReserva, dadosLivro) => {
-  return api.post('/reservas', {
-    dtReserva,
-    dtLimite,
-    statusReserva,
-    totalReserva,
-    ...dadosLivro
-  });
+export const criarReserva = (payload) => {
+  return api.post('/reservas', payload);
 };
 
-export const listarReservasUsuario = (userId) => {
-  return api.get(`/reservas/user/${userId}`);
+export const listarReservasUsuario = (idUsuario) => {
+  return api.get(`/reservas/user/${idUsuario}`);
 };
 
-// Livros
+export const cancelarReserva = (id) => {
+  return api.delete(`/reservas/${id}`);
+};
+
 export const buscarLivroPorId = (livroId) => {
   return api.get(`/livros/${livroId}`);
 };

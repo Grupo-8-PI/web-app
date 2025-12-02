@@ -18,42 +18,29 @@ const ModalLivro = ({ livro, onClose }) => {
     const handleReservarLivro = async () => {
         setLoading(true);
         try {
-            // Obter data atual e calcular data limite (14 dias depois)
             const dtReserva = new Date().toISOString();
+
             const dtLimite = new Date();
             dtLimite.setDate(dtLimite.getDate() + 14);
             const dtLimiteFormatada = dtLimite.toISOString();
 
-            // Chamada para criar reserva com dados completos do livro
-            const dadosLivro = {
-                idLivro: livro.id,
-                titulo: livro.titulo,
-                autor: livro.autor,
-                preco: livro.preco,
-                categoria: livro.categoria,
-                editora: livro.editora,
-                ano: livro.ano,
-                conservacao: livro.conservacao,
-                paginas: livro.paginas,
-                descricao: livro.descricao,
-                imagem: livro.imagem
+            const payload = {
+                dtReserva: dtReserva,
+                dtLimite: dtLimiteFormatada,
+                statusReserva: "Confirmada",
+                totalReserva: livro.preco || 150,
+                livroId: livro.id,
             };
 
-            console.log('Dados do livro enviados:', dadosLivro); // DEBUG
+            console.log("Enviando payload:", payload);
 
-            await criarReserva(
-                dtReserva,
-                dtLimiteFormatada,
-                'Confirmada',
-                livro.preco || 150,
-                dadosLivro
-            );
+            await criarReserva(payload);
 
             alert('Reserva criada com sucesso!');
             onClose();
         } catch (erro) {
             console.error('Erro ao criar reserva:', erro);
-            alert('Erro ao criar reserva. Tente novamente.');
+            alert('Erro ao criar reserva. Verifique os dados ou tente novamente.');
         } finally {
             setLoading(false);
         }
@@ -65,10 +52,10 @@ const ModalLivro = ({ livro, onClose }) => {
         <div className="modalLivro-overlay" onClick={onClose}>
             <div className="modalLivro" onClick={e => e.stopPropagation()}>
                 <div className="headerSpace">
-                <Header/>
-
+                    <Header />
                 </div>
                 <button className="modalLivro-close" onClick={onClose}>×</button>
+
                 <div className="modalLivro-content">
                     <div className="modalLivro-img">
                         {livro.imagem ? (
@@ -77,6 +64,7 @@ const ModalLivro = ({ livro, onClose }) => {
                             <div className="mock-imagem"><i className='bx bx-image'></i></div>
                         )}
                     </div>
+
                     <div className="modalLivro-info">
                         <h2>{livro.titulo}</h2>
                         <h3>R$ {livro.preco}</h3>
@@ -84,18 +72,19 @@ const ModalLivro = ({ livro, onClose }) => {
                         <p><b>Ano:</b> {livro.ano}</p>
                         <p><b>Categoria:</b> {livro.categoria}</p>
                         <p><b>Conservação:</b> {livro.conservacao}</p>
-                        {/* Campos extras */}
                         <p><b>Editora:</b> {livro.editora || 'Desconhecida'}</p>
                         <p><b>Páginas:</b> {livro.paginas || 'N/A'}</p>
                         <p><b>Sinopse com IA:</b> {livro.descricao || 'Descrição não disponível.'}</p>
-                    <div className="buttonsArea">
-                        <button onClick={handleReservarLivro} disabled={loading}>
-                            {loading ? 'Reservando...' : 'Reservar Livro'}
-                        </button>
-                        <button>Gerar Sinopse com IA</button>
-                    </div>
+
+                        <div className="buttonsArea">
+                            <button onClick={handleReservarLivro} disabled={loading}>
+                                {loading ? 'Reservando...' : 'Reservar Livro'}
+                            </button>
+                            <button>Gerar Sinopse com IA</button>
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
     );
