@@ -33,6 +33,20 @@ api.interceptors.response.use(
   }
 );
 
-console.log('🔗 API URL configurada:', API_URL);
+export const criarReserva = (payload) => {
+  return api.post('/reservas', payload);
+};
+
+export const listarReservasUsuario = (idUsuario) => {
+  return api.get(`/reservas/user/${idUsuario}`);
+};
+
+export const cancelarReserva = (id) => {
+  return api.delete(`/reservas/${id}`);
+};
+
+export const buscarLivroPorId = (livroId) => {
+  return api.get(`/livros/${livroId}`);
+};
 
 export default api;
