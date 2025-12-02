@@ -1,265 +1,445 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import reservaService from "../../services/reservaService";
 import "./Tabela.css";
 
 const Reservas = () => {
   const [expandedIndex, setExpandedIndex] = useState(null);
+  const [reservas, setReservas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedReservas, setSelectedReservas] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filtroStatus, setFiltroStatus] = useState('TODOS');
+  const itemsPerPage = 10;
 
-  const reservas = [
-    {
-      autor: "Cliente 1",
-      titulo: "Uma Vida Pequena",
-      data: "10/09/2025",
-      faltam: "2 dias",
-      quantidade: 1,
-      status: "Ok",
-      detalhes: [
-        {
-          capa: "https://m.media-amazon.com/images/I/41B6dmnbL7S._SY445_SX342_.jpg",
-          titulo: "Uma Vida Pequena",
-          autor: "Hanya Yanagihara",
-          ano: 2016,
-          idioma: "Português",
-          paginas: 784,
-          conservacao: "Média",
-          categoria: "Ficção",
-          preco: 16.5,
-        },
-      ],
-    },
-    {
-      autor: "Cliente 2",
-      titulo: "Mistborn: O Império Final",
-      data: "15/09/2025",
-      faltam: "5 dias",
-      quantidade: 1,
-      status: "Ok",
-      detalhes: [
-        {
-          capa: "https://uploads.coppermind.net/thumb/Mistborn.png/200px-Mistborn.png",
-          titulo: "Mistborn: O Império Final",
-          autor: "Brandon Sanderson",
-          ano: 2020,
-          idioma: "Português",
-          paginas: 608,
-          conservacao: "Nova",
-          categoria: "Fantasia",
-          preco: 25.0,
-        },
-      ],
-    },
-    {
-      autor: "Cliente 3",
-      titulo: "1984 + A Revolução dos Bichos",
-      data: "12/09/2025",
-      faltam: "3 dias",
-      quantidade: 2,
-      status: "Ok",
-      detalhes: [
-        {
-          capa: "https://m.media-amazon.com/images/I/51CIEO1yFnL._SY445_SX342_.jpg",
-          titulo: "1984",
-          autor: "George Orwell",
-          ano: 1949,
-          idioma: "Português",
-          paginas: 416,
-          conservacao: "Boa",
-          categoria: "Distopia",
-          preco: 32.9,
-        },
-        {
-          capa: "https://m.media-amazon.com/images/I/91BsZhxCRjL._AC_UY327_FMwebp_QL65_.jpg",
-          titulo: "A Revolução dos Bichos",
-          autor: "George Orwell",
-          ano: 1945,
-          idioma: "Português",
-          paginas: 152,
-          conservacao: "Boa",
-          categoria: "Fábula Política",
-          preco: 18.5,
-        },
-      ],
-    },
-    {
-      autor: "Cliente 4",
-      titulo: "O Hobbit",
-      data: "17/09/2025",
-      faltam: "7 dias",
-      quantidade: 1,
-      status: "Ok",
-      detalhes: [
-        {
-          capa: "https://m.media-amazon.com/images/I/91M9xPIf10L._SY425_.jpg",
-          titulo: "O Hobbit",
-          autor: "J. R. R. Tolkien",
-          ano: 1937,
-          idioma: "Português",
-          paginas: 320,
-          conservacao: "Nova",
-          categoria: "Fantasia",
-          preco: 29.9,
-        },
-      ],
-    },
-    {
-      autor: "Cliente 5",
-      titulo: "Dom Casmurro",
-      data: "09/09/2025",
-      faltam: "1 dia",
-      quantidade: 1,
-      status: "Ok",
-      detalhes: [
-        {
-          capa: "https://m.media-amazon.com/images/I/61Z2bMhGicL._SY425_.jpg",
-          titulo: "Dom Casmurro",
-          autor: "Machado de Assis",
-          ano: 1899,
-          idioma: "Português",
-          paginas: 288,
-          conservacao: "Antigo",
-          categoria: "Romance",
-          preco: 18.7,
-        },
-      ],
-    },
-    {
-      autor: "Cliente 6",
-      titulo: "A Menina que Roubava Livros + O Diário de Anne Frank + Coraline",
-      data: "20/09/2025",
-      faltam: "10 dias",
-      quantidade: 3,
-      status: "Ok",
-      detalhes: [
-        {
-          capa: "https://m.media-amazon.com/images/I/61L+4OBhm-L._SY425_.jpg",
-          titulo: "A Menina que Roubava Livros",
-          autor: "Markus Zusak",
-          ano: 2005,
-          idioma: "Português",
-          paginas: 480,
-          conservacao: "Média",
-          categoria: "Drama",
-          preco: 34.5,
-        },
-        {
-          capa: "https://m.media-amazon.com/images/I/91RMqWB-CTL._AC_UY327_FMwebp_QL65_.jpg",
-          titulo: "O Diário de Anne Frank",
-          autor: "Anne Frank",
-          ano: 1947,
-          idioma: "Português",
-          paginas: 352,
-          conservacao: "Boa",
-          categoria: "Biografia",
-          preco: 27.0,
-        },
-        {
-          capa: "https://m.media-amazon.com/images/I/91DZobBc1BL._AC_UY327_FMwebp_QL65_.jpg",
-          titulo: "Coraline",
-          autor: "Neil Gaiman",
-          ano: 2002,
-          idioma: "Português",
-          paginas: 176,
-          conservacao: "Nova",
-          categoria: "Fantasia Sombria",
-          preco: 22.3,
-        },
-      ],
-    },
-  ];
+  // Carregar reservas ao montar o componente
+  useEffect(() => {
+    carregarReservas();
+  }, [filtroStatus]);
+
+  const carregarReservas = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      let response;
+      if (filtroStatus === 'TODOS') {
+        response = await reservaService.listarReservas(0, 100);
+      } else {
+        response = await reservaService.buscarPorStatus(filtroStatus);
+      }
+      
+      // Garantir que response seja sempre um array
+      console.log('Resposta da API:', response);
+      
+      // Seu backend retorna estrutura paginada: { content: [], totalElements: X, ... }
+      if (response && Array.isArray(response.content)) {
+        setReservas(response.content);
+      } else if (Array.isArray(response)) {
+        setReservas(response);
+      } else if (response && typeof response === 'object') {
+        setReservas([response]);
+      } else {
+        setReservas([]);
+      }
+    } catch (err) {
+      setError('Erro ao carregar reservas. Tente novamente mais tarde.');
+      console.error('Erro ao carregar reservas:', err);
+      setReservas([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleExpand = (index) => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
+  const handleSelectReserva = (reservaId) => {
+    setSelectedReservas(prev => 
+      prev.includes(reservaId) 
+        ? prev.filter(id => id !== reservaId)
+        : [...prev, reservaId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedReservas.length === reservasArray.length) {
+      setSelectedReservas([]);
+    } else {
+      setSelectedReservas(reservasArray.map(r => r.id));
+    }
+  };
+
+  const handleCancelarReserva = async (reservaId) => {
+    if (!window.confirm('Tem certeza que deseja cancelar esta reserva?')) {
+      return;
+    }
+
+    try {
+      await reservaService.cancelarReserva(reservaId);
+      alert('Reserva cancelada com sucesso!');
+      carregarReservas();
+      setExpandedIndex(null);
+    } catch (err) {
+      alert('Erro ao cancelar reserva. Tente novamente.');
+      console.error('Erro ao cancelar reserva:', err);
+    }
+  };
+
+  const handleConcluirReserva = async (reservaId) => {
+    if (!window.confirm('Tem certeza que deseja concluir esta reserva?')) {
+      return;
+    }
+
+    try {
+      await reservaService.concluirReserva(reservaId);
+      alert('Reserva concluída com sucesso!');
+      carregarReservas();
+      setExpandedIndex(null);
+    } catch (err) {
+      alert('Erro ao concluir reserva. Tente novamente.');
+      console.error('Erro ao concluir reserva:', err);
+    }
+  };
+
+  const calcularDiasRestantes = (dataReserva) => {
+    const hoje = new Date();
+    const dataReservaObj = new Date(dataReserva);
+    const diffTime = dataReservaObj - hoje;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return 'Vencida';
+    if (diffDays === 0) return 'Hoje';
+    if (diffDays === 1) return '1 dia';
+    return `${diffDays} dias`;
+  };
+
+  const formatarData = (data) => {
+    return new Date(data).toLocaleDateString('pt-BR');
+  };
+
+  const getStatusBadgeClass = (status) => {
+    const statusMap = {
+      'PENDENTE': 'status-inconsistente', // Usando classe existente
+      'APROVADA': 'status-ok',
+      'CONCLUIDA': 'status-ok',
+      'CANCELADA': 'status-inconsistente',
+      'REJEITADA': 'status-inconsistente'
+    };
+    return statusMap[status] || 'status-ok';
+  };
+
+  const getStatusLabel = (status) => {
+    const labelMap = {
+      'PENDENTE': 'Pendente',
+      'APROVADA': 'Aprovada',
+      'CONCLUIDA': 'Concluída',
+      'CANCELADA': 'Cancelada',
+      'REJEITADA': 'Rejeitada'
+    };
+    return labelMap[status] || status;
+  };
+
+  // Paginação - garantir que reservas seja array
+  const reservasArray = Array.isArray(reservas) ? reservas : [];
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentReservas = reservasArray.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(reservasArray.length / itemsPerPage);
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+      setExpandedIndex(null);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      setExpandedIndex(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="tabela-container">
+        <div style={{ textAlign: 'center', padding: '40px', fontSize: '18px', color: '#666' }}>
+          Carregando reservas...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="tabela-container">
+        <div style={{ textAlign: 'center', padding: '40px', color: '#e74c3c', backgroundColor: '#fee', borderRadius: '8px', margin: '20px' }}>
+          {error}
+          <button 
+            onClick={carregarReservas} 
+            style={{
+              marginTop: '15px',
+              padding: '10px 20px',
+              backgroundColor: '#4a90e2',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="tabela-container">
-      <table className="tabela">
-        <thead>
-          <tr>
-            <th><input type="checkbox" /></th>
-            <th>Autor</th>
-            <th>Título</th>
-            <th>Data</th>
-            <th>Faltam</th>
-            <th>Quantidade</th>
-            <th>Status de Aprovação</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {reservas.map((reserva, index) => {
-            const total = reserva.detalhes.reduce((acc, livro) => acc + livro.preco, 0);
-            return (
-              <>
-                <tr key={index}>
-                  <td><input type="checkbox" /></td>
-                  <td>
-                    <div className="autor-cell">
-                      <i className="bx bx-user"></i>
-                      <div className="autor-info">
-                        <span className="autor-nome">{reserva.autor}</span>
-                        <span className="sub">Requerente</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>{reserva.titulo}</td>
-                  <td>{reserva.data}</td>
-                  <td>{reserva.faltam}</td>
-                  <td>{reserva.quantidade}</td>
-                  <td>
-                    <span className="status-badge status-ok">{reserva.status}</span>
-                  </td>
-                  <td>
-                    <button
-                      className={`arrow-btn ${expandedIndex === index ? "open" : ""}`}
-                      onClick={() => toggleExpand(index)}
-                    >
-                      <i className="bx bx-chevron-down"></i>
-                    </button>
-                  </td>
-                </tr>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2 style={{ margin: 0, color: '#2c3e50', fontSize: '24px' }}>Gerenciamento de Reservas</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <label style={{ fontWeight: 600, color: '#2c3e50' }}>Filtrar por Status:</label>
+          <select 
+            value={filtroStatus} 
+            onChange={(e) => setFiltroStatus(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '6px',
+              fontSize: '14px',
+              backgroundColor: 'white',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="TODOS">Todos</option>
+            <option value="PENDENTE">Pendente</option>
+            <option value="APROVADA">Aprovada</option>
+            <option value="CONCLUIDA">Concluída</option>
+            <option value="CANCELADA">Cancelada</option>
+          </select>
+        </div>
+      </div>
 
-                {expandedIndex === index && (
-                  <tr className="detalhes-row">
-                    <td colSpan="8">
-                      <div className="detalhes-container">
-                        <div className="detalhes-livros-lista">
-                          {reserva.detalhes.map((livro, i) => (
-                            <div key={i} className="detalhes-livro">
-                              <img src={livro.capa} alt={`Capa de ${livro.titulo}`} className="detalhes-capa" />
-                              <div className="detalhes-info">
-                                <h3>{livro.titulo}</h3>
-                                <p><strong>Autor:</strong> {livro.autor}</p>
-                                <p><strong>Ano:</strong> {livro.ano}</p>
-                                <p><strong>Idioma:</strong> {livro.idioma}</p>
-                                <p><strong>Páginas:</strong> {livro.paginas}</p>
-                                <p><strong>Conservação:</strong> {livro.conservacao}</p>
-                                <p><strong>Categoria:</strong> {livro.categoria}</p>
-                                <p className="reserva-total">Preço: R$ {livro.preco.toFixed(2)}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="detalhes-footer">
-                          <p className="reserva-total"><strong>Total da Reserva:</strong> R$ {total.toFixed(2)}</p>
-                          <div className="detalhes-botoes">
-                            <button className="cancelar-btn">Cancelar Reserva</button>
-                            <button className="concluir-btn">Concluir Reserva</button>
+      {reservasArray.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: '#999', fontSize: '18px' }}>
+          <p>Nenhuma reserva encontrada.</p>
+        </div>
+      ) : (
+        <>
+          <table className="tabela">
+            <thead>
+              <tr>
+                <th>
+                  <input 
+                    type="checkbox" 
+                    checked={selectedReservas.length === reservasArray.length && reservasArray.length > 0}
+                    onChange={handleSelectAll}
+                  />
+                </th>
+                <th>Cliente</th>
+                <th>Livros</th>
+                <th>Data da Reserva</th>
+                <th>Data de Retirada</th>
+                <th>Faltam</th>
+                <th>Quantidade</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentReservas.map((reserva, index) => {
+                const totalLivros = reserva.livros?.length || 0;
+                const titulosLivros = reserva.livros?.map(l => l.titulo).join(' + ') || 'N/A';
+                const valorTotal = reserva.valorTotal || 0;
+                
+                return (
+                  <React.Fragment key={reserva.id || `reserva-${index}`}>
+                    <tr>
+                      <td>
+                        <input 
+                          type="checkbox" 
+                          checked={selectedReservas.includes(reserva.id)}
+                          onChange={() => handleSelectReserva(reserva.id)}
+                        />
+                      </td>
+                      <td>
+                        <div className="autor-cell">
+                          <i className="bx bx-user"></i>
+                          <div className="autor-info">
+                            <span className="autor-nome">
+                              {reserva.cliente?.nome || 'Cliente não identificado'}
+                            </span>
+                            <span className="sub">
+                              {reserva.cliente?.email || 'Sem email'}
+                            </span>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </>
-            );
-          })}
-        </tbody>
-      </table>
+                      </td>
+                      <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {titulosLivros}
+                      </td>
+                      <td>{formatarData(reserva.dataReserva)}</td>
+                      <td>{formatarData(reserva.dataRetirada)}</td>
+                      <td>{calcularDiasRestantes(reserva.dataRetirada)}</td>
+                      <td>{totalLivros}</td>
+                      <td>
+                        <span className={`status-badge ${getStatusBadgeClass(reserva.status)}`}>
+                          {getStatusLabel(reserva.status)}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className={`arrow-btn ${expandedIndex === index ? "open" : ""}`}
+                          onClick={() => toggleExpand(index)}
+                        >
+                          <i className="bx bx-chevron-down"></i>
+                        </button>
+                      </td>
+                    </tr>
 
-      <div className="tabela-pagination">
-        <span>&lt;</span>
-        <span>&gt;</span>
-      </div>
+                    {expandedIndex === index && (
+                      <tr className="detalhes-row">
+                        <td colSpan="9">
+                          <div className="detalhes-container">
+                            <div className="detalhes-livros-lista">
+                              <div style={{ marginBottom: '20px', paddingBottom: '15px', borderBottom: '2px solid #e0e0e0' }}>
+                                <h3 style={{ margin: '0 0 15px 0', color: '#2c3e50', fontSize: '20px' }}>
+                                  Detalhes da Reserva #{reserva.id}
+                                </h3>
+                                <div style={{ 
+                                  display: 'grid', 
+                                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                                  gap: '10px', 
+                                  backgroundColor: '#f8f9fa', 
+                                  padding: '15px', 
+                                  borderRadius: '8px' 
+                                }}>
+                                  <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
+                                    <strong>Cliente:</strong> {reserva.cliente?.nome}
+                                  </p>
+                                  <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
+                                    <strong>Email:</strong> {reserva.cliente?.email}
+                                  </p>
+                                  <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
+                                    <strong>Telefone:</strong> {reserva.cliente?.telefone || 'N/A'}
+                                  </p>
+                                  <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
+                                    <strong>Data de Criação:</strong> {formatarData(reserva.dataReserva)}
+                                  </p>
+                                  <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
+                                    <strong>Data de Retirada:</strong> {formatarData(reserva.dataRetirada)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {reserva.livros?.map((livro, i) => (
+                                <div key={i} className="detalhes-livro">
+                                  <img 
+                                    src={livro.imagemUrl || 'https://via.placeholder.com/150x200?text=Sem+Capa'} 
+                                    alt={`Capa de ${livro.titulo}`} 
+                                    className="detalhes-capa"
+                                    onError={(e) => {
+                                      e.target.src = 'https://via.placeholder.com/150x200?text=Sem+Capa';
+                                    }}
+                                  />
+                                  <div className="detalhes-info">
+                                    <h3>{livro.titulo}</h3>
+                                    <p><strong>Autor:</strong> {livro.autor}</p>
+                                    <p><strong>ISBN:</strong> {livro.isbn || 'N/A'}</p>
+                                    <p><strong>Editora:</strong> {livro.editora || 'N/A'}</p>
+                                    <p><strong>Ano:</strong> {livro.anoPublicacao || 'N/A'}</p>
+                                    <p><strong>Páginas:</strong> {livro.numeroPaginas || 'N/A'}</p>
+                                    <p><strong>Idioma:</strong> {livro.idioma || 'N/A'}</p>
+                                    <p><strong>Categoria:</strong> {livro.categoria || 'N/A'}</p>
+                                    <p className="reserva-total">
+                                      Preço: R$ {(livro.preco || 0).toFixed(2)}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="detalhes-footer">
+                              {reserva.observacoes && (
+                                <div style={{ 
+                                  backgroundColor: '#f8f9fa', 
+                                  padding: '15px', 
+                                  borderRadius: '8px', 
+                                  marginBottom: '15px',
+                                  width: '100%'
+                                }}>
+                                  <p style={{ margin: 0, color: '#555', fontSize: '14px', lineHeight: '1.6' }}>
+                                    <strong>Observações:</strong> {reserva.observacoes}
+                                  </p>
+                                </div>
+                              )}
+                              <p className="reserva-total">
+                                <strong>Total da Reserva:</strong> R$ {valorTotal.toFixed(2)}
+                              </p>
+                              <div className="detalhes-botoes">
+                                <button 
+                                  className="cancelar-btn"
+                                  onClick={() => handleCancelarReserva(reserva.id)}
+                                  disabled={reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA'}
+                                  style={{ 
+                                    opacity: (reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA') ? 0.5 : 1,
+                                    cursor: (reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA') ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  Cancelar Reserva
+                                </button>
+                                <button 
+                                  className="concluir-btn"
+                                  onClick={() => handleConcluirReserva(reserva.id)}
+                                  disabled={reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA'}
+                                  style={{ 
+                                    opacity: (reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA') ? 0.5 : 1,
+                                    cursor: (reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA') ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  Concluir Reserva
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+
+          <div className="tabela-pagination">
+            <span 
+              onClick={prevPage}
+              style={{ 
+                opacity: currentPage === 1 ? 0.5 : 1,
+                cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+              }}
+            >
+              &lt;
+            </span>
+            <span style={{ fontSize: '14px', color: '#666', padding: '0 15px' }}>
+              Página {currentPage} de {totalPages} ({reservasArray.length} reservas)
+            </span>
+            <span 
+              onClick={nextPage}
+              style={{ 
+                opacity: currentPage === totalPages ? 0.5 : 1,
+                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+              }}
+            >
+              &gt;
+            </span>
+          </div>
+        </>
+      )}
     </div>
   );
 };
