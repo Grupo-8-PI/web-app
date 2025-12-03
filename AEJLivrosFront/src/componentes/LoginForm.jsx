@@ -4,6 +4,7 @@ import { authService } from '../services/authService';
 import { loginRateLimiter } from '../utils/securityUtils';
 import { handleHttpError, validateForm } from '../utils/errorHandler';
 import api from '../services/api';
+import usuarioService from '../services/usuarioService';
 
 export function LoginForm({ onCadastroClick }) {
     const [mensagem, setMensagem] = useState({ text: "", type: "" });
@@ -80,6 +81,25 @@ export function LoginForm({ onCadastroClick }) {
                 throw new Error('Erro ao processar autenticação');
             }
 
+            console.log('[LoginForm] Buscando dados do usuário para obter tipo...');
+            
+            const usuario = await usuarioService.getUsuarioById(dados.userId);
+            
+            console.log('✅ Dados do usuário:', usuario);
+            console.log('✅ Tipo de usuário:', usuario.tipo_usuario);
+
+            const tipoUsuario = usuario.tipo_usuario;
+
+            let rotaDestino;
+            
+            if (tipoUsuario === 'admin') {
+                rotaDestino = '/dashboard';
+                console.log('[LoginForm] Redirecionando admin para /dashboard');
+            } else {
+                rotaDestino = '/catalogo';
+                console.log('[LoginForm] Redirecionando cliente para /catalogo');
+            }
+
             setMensagem({ 
                 text: 'Login realizado com sucesso! Redirecionando...', 
                 type: 'success' 
@@ -90,7 +110,7 @@ export function LoginForm({ onCadastroClick }) {
             loginRateLimiter.reset(email.value);
 
             setTimeout(() => {
-                window.location.href = '/';
+                window.location.href = rotaDestino;
             }, 1000);
 
         } catch (error) {
