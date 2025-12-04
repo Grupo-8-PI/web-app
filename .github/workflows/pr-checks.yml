@@ -1,0 +1,188 @@
+name: PR - Pull Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Validação do PR
+  pr-validation:
+    name: 📋 PR Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📋 Verificar título do PR
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "Título do PR: $PR_TITLE"
+          
+          # Verificar se o título segue convenção (opcional)
+          if [[ ! "$PR_TITLE" =~ ^(feat|fix|docs|style|refactor|perf|test|chore|ci|build)(\(.+\))?:.*$ ]]; then
+            echo "⚠️ Aviso: O título do PR não segue a convenção de commits convencionais."
+            echo "Formato sugerido: tipo(escopo): descrição"
+            echo "Exemplos: feat: nova funcionalidade, fix: correção de bug"
+          else
+            echo "✅ Título do PR segue a convenção!"
+          fi
+
+  # Lint e Build
+  lint-build:
+    name: 🔍 Lint & Build Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./AEJLivrosFront
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './AEJLivrosFront/package-lock.json'
+
+      - name: 📚 Instalar dependências
+        run: npm ci
+
+      - name: 🔍 Executar ESLint
+        run: npm run lint
+        continue-on-error: false
+
+      - name: 🏗️ Verificar Build
+        run: npm run build
+
+  # Análise de segurança
+  security-check:
+    name: 🔒 Security Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./AEJLivrosFront
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './AEJLivrosFront/package-lock.json'
+
+      - name: 📚 Instalar dependências
+        run: npm ci
+
+      - name: 🔒 Audit de dependências
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  # Verificação de tamanho do bundle
+  bundle-size:
+    name: 📊 Bundle Size Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./AEJLivrosFront
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './AEJLivrosFront/package-lock.json'
+
+      - name: 📚 Instalar dependências
+        run: npm ci
+
+      - name: 🏗️ Build da aplicação
+        run: npm run build
+
+      - name: 📊 Analisar tamanho do bundle
+        run: |
+          echo "📊 Análise do tamanho do bundle:"
+          echo "================================"
+          du -sh dist/
+          echo ""
+          echo "📁 Arquivos principais:"
+          find dist -name "*.js" -o -name "*.css" | head -20 | xargs -I {} sh -c 'echo "{}: $(du -h {} | cut -f1)"'
+
+  # Comentário no PR com resultado
+  pr-comment:
+    name: 💬 PR Comment
+    runs-on: ubuntu-latest
+    needs: [pr-validation, lint-build, security-check, bundle-size]
+    if: always()
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: 💬 Comentar no PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('## 🤖 CI/CD Status Report')
+            );
+            
+            const lintBuild = '${{ needs.lint-build.result }}';
+            const security = '${{ needs.security-check.result }}';
+            const bundleSize = '${{ needs.bundle-size.result }}';
+            
+            const getEmoji = (result) => result === 'success' ? '✅' : result === 'failure' ? '❌' : '⚠️';
+            
+            const body = `## 🤖 CI/CD Status Report
+            
+            | Check | Status |
+            |-------|--------|
+            | Lint & Build | ${getEmoji(lintBuild)} ${lintBuild} |
+            | Security Check | ${getEmoji(security)} ${security} |
+            | Bundle Size | ${getEmoji(bundleSize)} ${bundleSize} |
+            
+            ---
+            *Atualizado em: ${new Date().toISOString()}*
+            `;
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
