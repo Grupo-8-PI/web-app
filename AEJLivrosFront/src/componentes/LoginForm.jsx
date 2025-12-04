@@ -4,7 +4,6 @@ import { authService } from '../services/authService';
 import { loginRateLimiter } from '../utils/securityUtils';
 import { handleHttpError, validateForm } from '../utils/errorHandler';
 import api from '../services/api';
-import usuarioService from '../services/usuarioService';
 
 export function LoginForm({ onCadastroClick }) {
     const [mensagem, setMensagem] = useState({ text: "", type: "" });
@@ -68,6 +67,7 @@ export function LoginForm({ onCadastroClick }) {
             const dados = response.data;
 
             console.log('✅ Token extraído:', dados.token); 
+            console.log('✅ Tipo de usuário:', dados.tipoUsuario || dados.tipo_usuario);
 
             const tokenSalvo = authService.setToken(dados.token, {
                 userId: dados.userId,
@@ -81,23 +81,24 @@ export function LoginForm({ onCadastroClick }) {
                 throw new Error('Erro ao processar autenticação');
             }
 
-            console.log('[LoginForm] Buscando dados do usuário para obter tipo...');
-            
-            const usuario = await usuarioService.getUsuarioById(dados.userId);
-            
-            console.log('✅ Dados do usuário:', usuario);
-            console.log('✅ Tipo de usuário:', usuario.tipo_usuario);
+            const tipoUsuario = dados.cargo || dados.tipoUsuario || dados.tipo_usuario;
 
-            const tipoUsuario = usuario.tipo_usuario;
+            if (!tipoUsuario) {
+                console.error('❌ tipo_usuario não encontrado na resposta!');
+                throw new Error('Tipo de usuário não encontrado');
+            }
 
             let rotaDestino;
             
             if (tipoUsuario === 'admin') {
                 rotaDestino = '/dashboard';
-                console.log('[LoginForm] Redirecionando admin para /dashboard');
-            } else {
+                console.log('[LoginForm] ✅ Redirecionando admin para /dashboard');
+            } else if (tipoUsuario === 'cliente') {
                 rotaDestino = '/catalogo';
-                console.log('[LoginForm] Redirecionando cliente para /catalogo');
+                console.log('[LoginForm] ✅ Redirecionando cliente para /catalogo');
+            } else {
+                console.error('❌ Tipo de usuário desconhecido:', tipoUsuario);
+                throw new Error('Tipo de usuário inválido');
             }
 
             setMensagem({ 
