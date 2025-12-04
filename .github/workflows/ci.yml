@@ -90,16 +90,7 @@ jobs:
       - name: 🐳 Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: 🏗️ Build da imagem Docker com Nginx
-        uses: docker/build-push-action@v5
-        with:
-          context: ./AEJLivrosFront
-          push: false
-          tags: aejlivros-frontend:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: 🧪 Testar container Docker
+      - name: 🏗️ Build e testar container Docker com Nginx
         run: |
           docker build -t aejlivros-test .
           docker run -d --name test-container -p 8080:80 aejlivros-test
