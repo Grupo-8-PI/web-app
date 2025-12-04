@@ -99,4 +99,3 @@ jobs:
           curl -f http://localhost:8080/health || exit 1
           docker stop test-container
           echo "✅ Container Docker com Nginx funcionando!"
-          cache-to: type=gha,mode=max
