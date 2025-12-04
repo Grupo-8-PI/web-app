@@ -1,5 +1,5 @@
 # Etapa 1: Build
-FROM node:18 AS build
+FROM node:18-alpine AS build
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Instalar dependências
-RUN npm install
+RUN npm ci --silent
 
 # Copiar todo o código
 COPY . .
@@ -15,18 +15,24 @@ COPY . .
 # Build da aplicação
 RUN npm run build
 
-# Etapa 2: Servir a aplicação
-FROM node:18-slim
+# Etapa 2: Servir com Nginx
+FROM nginx:alpine
 
-WORKDIR /app
+# Remover configuração padrão do Nginx
+RUN rm -rf /usr/share/nginx/html/*
 
-# Instalar servidor estático serve
-RUN npm install -g serve
+# Copiar build da etapa anterior
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copiar build da etapa anterior (Vite gera 'dist')
-COPY --from=build /app/dist /app/dist
+# Copiar configuração customizada do Nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 3000
+# Expor porta 80
+EXPOSE 80
 
-# Servir a aplicação
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:80 || exit 1
+
+# Iniciar Nginx
+CMD ["nginx", "-g", "daemon off;"]
