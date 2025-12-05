@@ -3,10 +3,7 @@ name: CI - Continuous Integration
 on:
   push:
     branches:
-      - main
-      - develop
-      - 'feature/**'
-      - 'ci/**'
+      - '**'  # Todas as branches
   pull_request:
     branches:
       - main
