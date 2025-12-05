@@ -37,6 +37,7 @@ jobs:
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build-push.outputs.digest }}
+      image-main: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
 
     steps:
       - name: 📥 Checkout do código
