@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import reservaService from "../../services/reservaService";
+import usuarioService from "../../services/usuarioService";
+import livroService from "../../services/livroService";
 import "./Tabela.css";
 
 const Reservas = () => {
@@ -32,16 +34,134 @@ const Reservas = () => {
       // Garantir que response seja sempre um array
       console.log('Resposta da API:', response);
       
-      // Seu backend retorna estrutura paginada: { content: [], totalElements: X, ... }
-      if (response && Array.isArray(response.content)) {
-        setReservas(response.content);
+      // ✅ Backend retorna estrutura paginada: { reservas: [], totalElements: X, ... }
+      let reservasData = [];
+      if (response && Array.isArray(response.reservas)) {
+        console.log('✅ Encontrou response.reservas');
+        reservasData = response.reservas;
+      } else if (response && Array.isArray(response.content)) {
+        console.log('✅ Encontrou response.content');
+        reservasData = response.content;
       } else if (Array.isArray(response)) {
-        setReservas(response);
+        console.log('✅ Response é array direto');
+        reservasData = response;
       } else if (response && typeof response === 'object') {
-        setReservas([response]);
+        console.log('✅ Response é objeto único, transformando em array');
+        reservasData = [response];
       } else {
-        setReservas([]);
+        console.log('❌ Nenhum formato reconhecido, setando array vazio');
+        reservasData = [];
       }
+
+      // ✅ ENRIQUECER RESERVAS COM DADOS DO CLIENTE E LIVROS
+      console.log(`📦 Enriquecendo ${reservasData.length} reservas com dados completos...`);
+      
+      const reservasEnriquecidas = await Promise.all(
+        reservasData.map(async (reserva) => {
+          try {
+            // 1️⃣ Buscar dados do cliente
+            let clienteCompleto = null;
+            if (reserva.usuarioId) {
+              console.log(`👤 Buscando cliente ID: ${reserva.usuarioId}`);
+              try {
+                clienteCompleto = await usuarioService.getUsuarioById(reserva.usuarioId);
+                console.log(`✅ Cliente encontrado:`, clienteCompleto);
+              } catch (error) {
+                console.error(`❌ Erro ao buscar cliente ${reserva.usuarioId}:`, error);
+                clienteCompleto = {
+                  id: reserva.usuarioId,
+                  nome: 'Cliente não encontrado',
+                  email: 'N/A',
+                  telefone: 'N/A'
+                };
+              }
+            }
+
+            // 2️⃣ Buscar dados dos livros
+            let livrosCompletos = [];
+            
+            // ✅ IMPORTANTE: livroId pode ser NUMBER ou ARRAY
+            let livroIds = [];
+            
+            if (reserva.livroId) {
+              if (Array.isArray(reserva.livroId)) {
+                // É array: [10, 15, 20]
+                livroIds = reserva.livroId;
+                console.log(`📚 livroId é ARRAY com ${livroIds.length} livros:`, livroIds);
+              } else if (typeof reserva.livroId === 'number') {
+                // É número: 40 → transformar em array [40]
+                livroIds = [reserva.livroId];
+                console.log(`📚 livroId é NUMBER, transformado em array:`, livroIds);
+              } else {
+                console.log(`⚠️ livroId tem tipo inesperado:`, typeof reserva.livroId, reserva.livroId);
+              }
+            }
+            
+            if (livroIds.length > 0) {
+              console.log(`📚 Buscando ${livroIds.length} livros:`, livroIds);
+              try {
+                livrosCompletos = await livroService.getLivrosByIds(livroIds);
+                console.log(`✅ Livros encontrados (${livrosCompletos.length}):`, livrosCompletos);
+                
+                // Debug: Verificar estrutura de cada livro
+                livrosCompletos.forEach((livro, idx) => {
+                  console.log(`📖 Livro ${idx + 1}:`, {
+                    id: livro.id,
+                    titulo: livro.titulo,
+                    autor: livro.autor,
+                    capa: livro.capa,
+                    preco: livro.preco,
+                    paginas: livro.paginas,
+                    categoria: livro.nomeCategoria
+                  });
+                });
+              } catch (error) {
+                console.error(`❌ Erro ao buscar livros:`, error);
+                console.error(`❌ Detalhes do erro:`, error.response?.data);
+                // Se falhar, criar objetos placeholder
+                livrosCompletos = livroIds.map((id) => ({
+                  id: id,
+                  titulo: `Livro ID ${id}`,
+                  autor: 'Autor não encontrado',
+                  isbn: 'N/A',
+                  preco: 0,
+                  capa: null
+                }));
+              }
+            } else {
+              console.log(`⚠️ Nenhum livroId encontrado na reserva ${reserva.id}`);
+              console.log(`⚠️ reserva.livroId:`, reserva.livroId);
+              console.log(`⚠️ Tipo:`, typeof reserva.livroId);
+            }
+
+            // 3️⃣ Retornar reserva enriquecida
+            return {
+              ...reserva,
+              cliente: clienteCompleto,
+              livros: livrosCompletos,
+              // Quantidade: se for array, pegar length; se for número, é 1 livro
+              quantidadeLivros: Array.isArray(reserva.livroId) 
+                ? reserva.livroId.length 
+                : (reserva.livroId ? 1 : 0)
+            };
+          } catch (error) {
+            console.error(`❌ Erro ao enriquecer reserva ${reserva.id}:`, error);
+            return {
+              ...reserva,
+              cliente: {
+                nome: 'Erro ao carregar',
+                email: 'N/A',
+                telefone: 'N/A'
+              },
+              livros: [],
+              quantidadeLivros: 0
+            };
+          }
+        })
+      );
+
+      console.log('✅ Reservas enriquecidas:', reservasEnriquecidas);
+      setReservas(reservasEnriquecidas);
     } catch (err) {
       setError('Erro ao carregar reservas. Tente novamente mais tarde.');
       console.error('Erro ao carregar reservas:', err);
@@ -103,7 +223,10 @@ const Reservas = () => {
     }
   };
 
+  // ✅ Função que aceita ambos os formatos de data do backend
   const calcularDiasRestantes = (dataReserva) => {
+    if (!dataReserva) return 'N/A';
+    
     const hoje = new Date();
     const dataReservaObj = new Date(dataReserva);
     const diffTime = dataReservaObj - hoje;
@@ -115,8 +238,15 @@ const Reservas = () => {
     return `${diffDays} dias`;
   };
 
+  // ✅ Função que aceita ambos os formatos de data do backend
   const formatarData = (data) => {
-    return new Date(data).toLocaleDateString('pt-BR');
+    if (!data) return 'N/A';
+    
+    try {
+      return new Date(data).toLocaleDateString('pt-BR');
+    } catch (e) {
+      return 'Invalid Date';
+    }
   };
 
   const getStatusBadgeClass = (status) => {
@@ -252,9 +382,19 @@ const Reservas = () => {
             </thead>
             <tbody>
               {currentReservas.map((reserva, index) => {
-                const totalLivros = reserva.livros?.length || 0;
+                // ✅ Mapear campos do backend (aceita ambos os formatos)
+                const dataReserva = reserva.dtReserva || reserva.dataReserva;
+                const dataRetirada = reserva.dtLimite || reserva.dataRetirada;
+                const status = reserva.statusReserva || reserva.status || 'PENDENTE';
+                const valorTotal = reserva.totalReserva || reserva.valorTotal || 0;
+                
+                // ✅ Usar quantidadeLivros já calculada no carregarReservas
+                const totalLivros = reserva.quantidadeLivros || 0;
                 const titulosLivros = reserva.livros?.map(l => l.titulo).join(' + ') || 'N/A';
-                const valorTotal = reserva.valorTotal || 0;
+                
+                console.log('📚 DEBUG - Reserva:', reserva);
+                console.log('📚 DEBUG - Livros:', reserva.livros);
+                console.log('📚 DEBUG - Títulos:', titulosLivros);
                 
                 return (
                   <React.Fragment key={reserva.id || `reserva-${index}`}>
@@ -282,13 +422,13 @@ const Reservas = () => {
                       <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {titulosLivros}
                       </td>
-                      <td>{formatarData(reserva.dataReserva)}</td>
-                      <td>{formatarData(reserva.dataRetirada)}</td>
-                      <td>{calcularDiasRestantes(reserva.dataRetirada)}</td>
+                      <td>{formatarData(dataReserva)}</td>
+                      <td>{formatarData(dataRetirada)}</td>
+                      <td>{calcularDiasRestantes(dataRetirada)}</td>
                       <td>{totalLivros}</td>
                       <td>
-                        <span className={`status-badge ${getStatusBadgeClass(reserva.status)}`}>
-                          {getStatusLabel(reserva.status)}
+                        <span className={`status-badge ${getStatusBadgeClass(status)}`}>
+                          {getStatusLabel(status)}
                         </span>
                       </td>
                       <td>
@@ -319,19 +459,19 @@ const Reservas = () => {
                                   borderRadius: '8px' 
                                 }}>
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
-                                    <strong>Cliente:</strong> {reserva.cliente?.nome}
+                                    <strong>Cliente:</strong> {reserva.cliente?.nome || 'N/A'}
                                   </p>
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
-                                    <strong>Email:</strong> {reserva.cliente?.email}
+                                    <strong>Email:</strong> {reserva.cliente?.email || 'N/A'}
                                   </p>
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
                                     <strong>Telefone:</strong> {reserva.cliente?.telefone || 'N/A'}
                                   </p>
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
-                                    <strong>Data de Criação:</strong> {formatarData(reserva.dataReserva)}
+                                    <strong>Data de Criação:</strong> {formatarData(dataReserva)}
                                   </p>
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
-                                    <strong>Data de Retirada:</strong> {formatarData(reserva.dataRetirada)}
+                                    <strong>Data de Retirada:</strong> {formatarData(dataRetirada)}
                                   </p>
                                 </div>
                               </div>
@@ -339,7 +479,7 @@ const Reservas = () => {
                               {reserva.livros?.map((livro, i) => (
                                 <div key={i} className="detalhes-livro">
                                   <img 
-                                    src={livro.imagemUrl || 'https://via.placeholder.com/150x200?text=Sem+Capa'} 
+                                    src={livro.capa || 'https://via.placeholder.com/150x200?text=Sem+Capa'} 
                                     alt={`Capa de ${livro.titulo}`} 
                                     className="detalhes-capa"
                                     onError={(e) => {
@@ -347,14 +487,15 @@ const Reservas = () => {
                                     }}
                                   />
                                   <div className="detalhes-info">
-                                    <h3>{livro.titulo}</h3>
-                                    <p><strong>Autor:</strong> {livro.autor}</p>
+                                    <h3>{livro.titulo || 'Título não disponível'}</h3>
+                                    <p><strong>Autor:</strong> {livro.autor || 'N/A'}</p>
+                                    <p><strong>Ano:</strong> {livro.anoPublicacao || 'N/A'}</p>
+                                    <p><strong>Idioma:</strong> {livro.idioma || 'Português'}</p>
+                                    <p><strong>Páginas:</strong> {livro.paginas || 'N/A'}</p>
+                                    <p><strong>Conservação:</strong> {livro.estadoConservacao || 'N/A'}</p>
+                                    <p><strong>Categoria:</strong> {livro.nomeCategoria || 'N/A'}</p>
                                     <p><strong>ISBN:</strong> {livro.isbn || 'N/A'}</p>
                                     <p><strong>Editora:</strong> {livro.editora || 'N/A'}</p>
-                                    <p><strong>Ano:</strong> {livro.anoPublicacao || 'N/A'}</p>
-                                    <p><strong>Páginas:</strong> {livro.numeroPaginas || 'N/A'}</p>
-                                    <p><strong>Idioma:</strong> {livro.idioma || 'N/A'}</p>
-                                    <p><strong>Categoria:</strong> {livro.categoria || 'N/A'}</p>
                                     <p className="reserva-total">
                                       Preço: R$ {(livro.preco || 0).toFixed(2)}
                                     </p>
@@ -384,10 +525,10 @@ const Reservas = () => {
                                 <button 
                                   className="cancelar-btn"
                                   onClick={() => handleCancelarReserva(reserva.id)}
-                                  disabled={reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA'}
+                                  disabled={status === 'CANCELADA' || status === 'CONCLUIDA'}
                                   style={{ 
-                                    opacity: (reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA') ? 0.5 : 1,
-                                    cursor: (reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA') ? 'not-allowed' : 'pointer'
+                                    opacity: (status === 'CANCELADA' || status === 'CONCLUIDA') ? 0.5 : 1,
+                                    cursor: (status === 'CANCELADA' || status === 'CONCLUIDA') ? 'not-allowed' : 'pointer'
                                   }}
                                 >
                                   Cancelar Reserva
@@ -395,10 +536,10 @@ const Reservas = () => {
                                 <button 
                                   className="concluir-btn"
                                   onClick={() => handleConcluirReserva(reserva.id)}
-                                  disabled={reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA'}
+                                  disabled={status === 'CANCELADA' || status === 'CONCLUIDA'}
                                   style={{ 
-                                    opacity: (reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA') ? 0.5 : 1,
-                                    cursor: (reserva.status === 'CANCELADA' || reserva.status === 'CONCLUIDA') ? 'not-allowed' : 'pointer'
+                                    opacity: (status === 'CANCELADA' || status === 'CONCLUIDA') ? 0.5 : 1,
+                                    cursor: (status === 'CANCELADA' || status === 'CONCLUIDA') ? 'not-allowed' : 'pointer'
                                   }}
                                 >
                                   Concluir Reserva
