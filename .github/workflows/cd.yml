@@ -114,9 +114,9 @@ jobs:
               docker stop frontend || true
               docker rm frontend || true
               docker run -d --name frontend \
-                --restart unless-stopped \
-                -p 5173:5173 \
-                $IMAGE
+               --restart unless-stopped \
+               -p 5173:80 \
+               $IMAGE
               docker logout ghcr.io
           EOF
           done
@@ -160,9 +160,10 @@ jobs:
               docker stop frontend || true
               docker rm frontend || true
               docker run -d --name frontend \
-                --restart unless-stopped \
-                -p 5173:5173 \
-                $IMAGE
+               --restart unless-stopped \
+               -p 5173:80 \
+               $IMAGE
+              docker logout ghcr.io
               docker logout ghcr.io
           EOF
           done
