@@ -54,7 +54,7 @@ export function Header() {
                 </div>
             </div>
             <div className="rightSpace">
-                <div className="searchBox" style={{ position: 'relative' }}>
+                <div className="searchBox" style={{ position: 'relative', width: '100%' }}>
                     <i className='bx bx-search-alt-2'></i>
                     <input 
                         type="text" 
@@ -70,7 +70,6 @@ export function Header() {
                     />
                 </div>
                 <div className="icons" style={{ position: 'relative' }}>
-                    <i className='bx bxs-cart'></i>
                     <i
                         className='bx bxs-user-circle user'
                         ref={userIconRef}
