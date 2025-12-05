@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';  
+import React, { useState, useRef } from 'react';
 import '../StyleAej.css'
 import { Link } from 'react-router-dom';
 import UserModal from './UserModal';
@@ -20,22 +20,26 @@ export function Header() {
     const handleCloseModal = () => {
         setShowModal(false);
     };
-    const handleSearchChange = (e) => {
+    const handleSearchChange = async (e) => {
         const query = e.target.value;
         setSearchQuery(query);
-        
-        console.log('Search query:', query);
-        
+
         if (query.trim().length > 0) {
             setShowBuscaModal(true);
-            const resultados = buscarLivrosLocal(query);
-            console.log('Resultados encontrados:', resultados);
-            setSearchResults(resultados);
+
+            try {
+                const resultados = await buscarLivrosLocal(query);
+                console.log('Resultados encontrados:', resultados);
+                setSearchResults(resultados);
+            } catch (error) {
+                console.error('Erro ao buscar livros:', error);
+            }
         } else {
             setShowBuscaModal(false);
             setSearchResults([]);
         }
     };
+
 
     const handleCloseBuscaModal = () => {
         setShowBuscaModal(false);
@@ -56,15 +60,15 @@ export function Header() {
             <div className="rightSpace">
                 <div className="searchBox" style={{ position: 'relative', width: '100%' }}>
                     <i className='bx bx-search-alt-2'></i>
-                    <input 
-                        type="text" 
-                        placeholder="Buscar..." 
+                    <input
+                        type="text"
+                        placeholder="Buscar..."
                         className="searchInput"
                         value={searchQuery}
                         onChange={handleSearchChange}
                     />
-                    <BuscaModal 
-                        isOpen={showBuscaModal} 
+                    <BuscaModal
+                        isOpen={showBuscaModal}
                         onClose={handleCloseBuscaModal}
                         searchResults={searchResults}
                     />
