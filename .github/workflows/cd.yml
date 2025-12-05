@@ -90,17 +90,36 @@ jobs:
       - name: 📥 Checkout do código
         uses: actions/checkout@v4
 
+      - name: 🔐 Login no GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: 🚀 Deploy para Staging
+        env:
+          IMAGE: ${{ needs.build-and-push.outputs.image-tag }}
+          SSH_KEY: ${{ secrets.AEJ_SSH_KEY }}
+          FRONT_HOSTS: ${{ secrets.STAGING_FE_IPS }}
         run: |
-          echo "🚀 Iniciando deploy para Staging..."
-          echo "📦 Imagem: ${{ needs.build-and-push.outputs.image-tag }}"
-          echo "🔑 Digest: ${{ needs.build-and-push.outputs.image-digest }}"
-          # Adicione aqui os comandos de deploy para seu ambiente
-          # Exemplos:
-          # - kubectl apply -f k8s/staging/
-          # - docker-compose up -d
-          # - ssh user@server "docker pull <image> && docker-compose up -d"
-          echo "✅ Deploy para Staging concluído!"
+          echo "$SSH_KEY" > key.pem
+          chmod 600 key.pem
+          for HOST in $FRONT_HOSTS; do
+            echo "🚀 Atualizando $HOST..."
+            ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$HOST <<EOF
+              set -euxo pipefail
+              docker pull $IMAGE
+              docker stop frontend || true
+              docker rm frontend || true
+              docker run -d --name frontend \
+                --restart unless-stopped \
+                -p 5173:5173 \
+                $IMAGE
+EOF
+          done
+          rm key.pem
+          echo "✅ Deploy concluído!"
 
   # Job de Deploy para Production
   deploy-production:
@@ -116,15 +135,35 @@ jobs:
       - name: 📥 Checkout do código
         uses: actions/checkout@v4
 
+      - name: 🔐 Login no GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: 🚀 Deploy para Production
+        env:
+          IMAGE: ${{ needs.build-and-push.outputs.image-tag }}
+          SSH_KEY: ${{ secrets.AEJ_SSH_KEY }}
+          FRONT_HOSTS: ${{ secrets.PRODUCTION_FE_IPS }}
         run: |
-          echo "🚀 Iniciando deploy para Production..."
-          echo "📦 Imagem: ${{ needs.build-and-push.outputs.image-tag }}"
-          echo "🔑 Digest: ${{ needs.build-and-push.outputs.image-digest }}"
-          # Adicione aqui os comandos de deploy para seu ambiente de produção
-          # Exemplos:
-          # - kubectl apply -f k8s/production/
-          # - docker-compose -f docker-compose.prod.yml up -d
+          echo "$SSH_KEY" > key.pem
+          chmod 600 key.pem
+          for HOST in $FRONT_HOSTS; do
+            echo "🚀 Atualizando $HOST..."
+            ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$HOST <<EOF
+              set -euxo pipefail
+              docker pull $IMAGE
+              docker stop frontend || true
+              docker rm frontend || true
+              docker run -d --name frontend \
+                --restart unless-stopped \
+                -p 5173:5173 \
+                $IMAGE
+EOF
+          done
+          rm key.pem
           echo "✅ Deploy para Production concluído!"
 
   # Job de Notificação
