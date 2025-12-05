@@ -41,7 +41,7 @@ export function CadastroForm({ onVoltarLogin }) {
                 const errorData = await response.json();
                 setMensagem(errorData.message || 'Erro ao cadastrar.');
             }
-        } catch (error) {
+        } catch {
             setMensagem('Erro de conexão com o servidor.');
         }
     };

@@ -1,5 +1,4 @@
 import '../StyleAej.css'
-import image from '../assets/AejLogo.png'
 import image2 from '../assets/Leitora.png'
 import React, { useState, useEffect } from 'react';
 import { LoginForm } from './LoginForm';

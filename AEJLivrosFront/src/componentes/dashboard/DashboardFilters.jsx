@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "./DashboardFilters.css";
 
 function DashboardFilters({ onFilterChange, categorias, loading }) {
