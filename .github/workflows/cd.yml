@@ -98,6 +98,7 @@ jobs:
           FRONT_HOSTS: ${{ secrets.STAGING_FE_IPS }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
+          API_IP: ${{ secrets.STAGING_API_IP }}
         run: |
           # Pegar apenas a primeira tag
           IMAGE=$(echo "$IMAGE_TAGS" | head -n1)
@@ -113,10 +114,15 @@ jobs:
               docker pull $IMAGE
               docker stop frontend || true
               docker rm frontend || true
+              
+              # Criar arquivo .env com IP da API
+              echo "VITE_API_URL=http://$API_IP:8080" > /home/ubuntu/.env
+              
               docker run -d --name frontend \
-               --restart unless-stopped \
-               -p 5173:80 \
-               $IMAGE
+                --restart unless-stopped \
+                -p 5173:80 \
+                --env-file /home/ubuntu/.env \
+                $IMAGE
               docker logout ghcr.io
           EOF
           done
@@ -144,6 +150,7 @@ jobs:
           FRONT_HOSTS: ${{ secrets.PRODUCTION_FE_IPS }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
+          API_IP: ${{ secrets.PRODUCTION_API_IP }}
         run: |
           # Pegar apenas a primeira tag
           IMAGE=$(echo "$IMAGE_TAGS" | head -n1)
@@ -159,11 +166,15 @@ jobs:
               docker pull $IMAGE
               docker stop frontend || true
               docker rm frontend || true
+              
+              # Criar arquivo .env com IP da API
+              echo "VITE_API_URL=http://$API_IP:8080" > /home/ubuntu/.env
+              
               docker run -d --name frontend \
-               --restart unless-stopped \
-               -p 5173:80 \
-               $IMAGE
-              docker logout ghcr.io
+                --restart unless-stopped \
+                -p 5173:80 \
+                --env-file /home/ubuntu/.env \
+                $IMAGE
               docker logout ghcr.io
           EOF
           done
