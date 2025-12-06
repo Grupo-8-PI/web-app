@@ -1,0 +1,16 @@
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # CSP dinâmica com API_URL injetada
+    add_header Content-Security-Policy "connect-src 'self' ${API_URL} https://www.googleapis.com https://openlibrary.org https://books.google.com;" always;
+    
+    # Remove CSP do HTML (se existir)
+    sub_filter '<meta http-equiv="Content-Security-Policy"' '<meta http-equiv="X-Disabled-CSP"';
+    sub_filter_once off;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
