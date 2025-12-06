@@ -2,7 +2,7 @@ import axios from 'axios';
 import { authService } from './authService';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: "/api",  
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -30,5 +30,21 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export const criarReserva = (payload) => {
+  return api.post('/reservas', payload);
+};
+
+export const listarReservasUsuario = (idUsuario) => {
+  return api.get(`/reservas/user/${idUsuario}`);
+};
+
+export const cancelarReserva = (id) => {
+  return api.delete(`/reservas/${id}`);
+};
+
+export const buscarLivroPorId = (livroId) => {
+  return api.get(`/livros/${livroId}`);
+};
 
 export default api;

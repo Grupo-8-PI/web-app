@@ -190,6 +190,44 @@ export default function CadastrarLivro() {
         return true;
     };
 
+    // ========== FUNÇÃO DE TRATAMENTO DE ERROS SEGURA ==========
+    const tratarErro = (error) => {
+        console.error('❌ Erro ao cadastrar livro:', error);
+
+        // Mapear códigos de status HTTP para mensagens amigáveis
+        if (error.response) {
+            const status = error.response.status;
+
+            switch (status) {
+                case 400:
+                    return 'Dados inválidos. Verifique os campos e tente novamente.';
+                case 401:
+                    return 'Sessão expirada. Faça login novamente.';
+                case 403:
+                    return 'Você não tem permissão para cadastrar livros.';
+                case 409:
+                    return 'Este livro já está cadastrado no sistema.';
+                case 422:
+                    return 'Alguns campos estão preenchidos incorretamente.';
+                case 500:
+                    return 'Erro no servidor. Tente novamente mais tarde.';
+                case 503:
+                    return 'Serviço temporariamente indisponível. Tente novamente.';
+                default:
+                    return 'Erro ao cadastrar livro. Tente novamente.';
+            }
+        }
+
+        // Erro de rede (sem resposta do servidor)
+        if (error.request) {
+            return 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+        }
+
+        // Erro desconhecido
+        return 'Erro inesperado. Tente novamente.';
+    };
+    // ===========================================================
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMensagem({ tipo: '', texto: '' });

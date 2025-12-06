@@ -1,6 +1,5 @@
 
 import React from 'react';
-// ...existing code...
 import { RouterProvider } from 'react-router-dom';
 import { routes } from './router';
 

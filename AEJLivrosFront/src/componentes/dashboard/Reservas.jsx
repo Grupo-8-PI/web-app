@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import reservaService from "../../services/reservaService";
-import livroService from "../../services/livroService";
 import usuarioService from "../../services/usuarioService";
+import livroService from "../../services/livroService";
 import "./Tabela.css";
 
 const Reservas = () => {
@@ -24,112 +24,142 @@ const Reservas = () => {
       setLoading(true);
       setError(null);
       
-      console.log('🚀 Carregando reservas (ADMIN)...');
+      console.log('🚀 Carregando reservas...');
       
-      // Buscar TODAS as reservas (ADMIN)
-      const response = await reservaService.listarReservas(0, 100);
+      let response;
+      if (filtroStatus === 'TODOS') {
+        response = await reservaService.listarReservas(0, 100);
+      } else {
+        response = await reservaService.buscarPorStatus(filtroStatus);
+      }
       
       console.log('📦 Resposta do backend:', response);
       
-      // Backend retorna: { reservas: [], page, size, totalElements, totalPages }
-      let reservasDoBackend = [];
-      
+      // ✅ Backend retorna estrutura paginada: { reservas: [], totalElements: X, ... }
+      let reservasData = [];
       if (response && Array.isArray(response.reservas)) {
-        reservasDoBackend = response.reservas;
-      } else if (Array.isArray(response.content)) {
-        reservasDoBackend = response.content;
+        console.log('✅ Encontrou response.reservas');
+        reservasData = response.reservas;
+      } else if (response && Array.isArray(response.content)) {
+        console.log('✅ Encontrou response.content');
+        reservasData = response.content;
       } else if (Array.isArray(response)) {
-        reservasDoBackend = response;
+        console.log('✅ Response é array direto');
+        reservasData = response;
+      } else if (response && typeof response === 'object') {
+        console.log('✅ Response é objeto único, transformando em array');
+        reservasData = [response];
+      } else {
+        console.log('❌ Nenhum formato reconhecido, setando array vazio');
+        reservasData = [];
       }
 
-      console.log('📚 Total de reservas encontradas:', reservasDoBackend.length);
+      console.log(`📚 Total de reservas encontradas: ${reservasData.length}`);
 
-      // Para cada reserva, buscar dados do livro e do usuário
-      const reservasCompletas = await Promise.all(
-        reservasDoBackend.map(async (reserva) => {
+      // ✅ ENRIQUECER RESERVAS COM DADOS DO CLIENTE E LIVROS
+      console.log(`📦 Enriquecendo ${reservasData.length} reservas com dados completos...`);
+      
+      const reservasEnriquecidas = await Promise.all(
+        reservasData.map(async (reserva) => {
           try {
-            // Buscar livro
-            let livro = null;
-            if (reserva.livroId) {
-              try {
-                livro = await livroService.buscarPorId(reserva.livroId);
-                console.log(`✅ Livro ${reserva.livroId} encontrado:`, livro.titulo);
-              } catch (err) {
-                console.warn(`⚠️ Erro ao buscar livro ${reserva.livroId}:`, err);
-              }
-            }
-
-            // Buscar dados do cliente
-            let cliente = {
-              nome: 'Cliente não identificado',
-              email: 'Sem email',
-              telefone: 'N/A'
-            };
-
-            // Tentar buscar pelo endpoint de reservas que deve retornar dados do usuário
-            // Ou buscar usuário se o backend retornar usuarioId
+            // 1️⃣ Buscar dados do cliente
+            let clienteCompleto = null;
             if (reserva.usuarioId) {
+              console.log(`👤 Buscando cliente ID: ${reserva.usuarioId}`);
               try {
-                const usuarioData = await usuarioService.getUsuarioById(reserva.usuarioId);
-                cliente = {
-                  nome: usuarioData.nome || 'Cliente não identificado',
-                  email: usuarioData.email || 'Sem email',
-                  telefone: usuarioData.telefone || 'N/A'
+                clienteCompleto = await usuarioService.getUsuarioById(reserva.usuarioId);
+                console.log(`✅ Cliente encontrado:`, clienteCompleto.nome);
+              } catch (error) {
+                console.error(`❌ Erro ao buscar cliente ${reserva.usuarioId}:`, error);
+                clienteCompleto = {
+                  id: reserva.usuarioId,
+                  nome: 'Cliente não encontrado',
+                  email: 'N/A',
+                  telefone: 'N/A'
                 };
-                console.log(`✅ Cliente ${reserva.usuarioId} encontrado:`, cliente.nome);
-              } catch (err) {
-                console.warn(`⚠️ Erro ao buscar cliente ${reserva.usuarioId}:`, err);
               }
             }
 
+            // 2️⃣ Buscar dados dos livros
+            let livrosCompletos = [];
+            
+            // ✅ IMPORTANTE: livroId pode ser NUMBER ou ARRAY
+            let livroIds = [];
+            
+            if (reserva.livroId) {
+              if (Array.isArray(reserva.livroId)) {
+                // É array: [10, 15, 20]
+                livroIds = reserva.livroId;
+                console.log(`📚 livroId é ARRAY com ${livroIds.length} livros:`, livroIds);
+              } else if (typeof reserva.livroId === 'number') {
+                // É número: 40 → transformar em array [40]
+                livroIds = [reserva.livroId];
+                console.log(`📚 livroId é NUMBER, transformado em array:`, livroIds);
+              } else {
+                console.log(`⚠️ livroId tem tipo inesperado:`, typeof reserva.livroId, reserva.livroId);
+              }
+            }
+            
+            if (livroIds.length > 0) {
+              console.log(`📚 Buscando ${livroIds.length} livros:`, livroIds);
+              try {
+                livrosCompletos = await livroService.getLivrosByIds(livroIds);
+                console.log(`✅ Livros encontrados (${livrosCompletos.length})`);
+                
+                // Debug: Verificar capas dos livros
+                livrosCompletos.forEach((livro, idx) => {
+                  console.log(`📖 Livro ${idx + 1}:`, {
+                    id: livro.id,
+                    titulo: livro.titulo,
+                    capa: livro.capa || livro.imagemUrl,
+                    preco: livro.preco
+                  });
+                });
+              } catch (error) {
+                console.error(`❌ Erro ao buscar livros:`, error);
+                console.error(`❌ Detalhes do erro:`, error.response?.data);
+                // Se falhar, criar objetos placeholder
+                livrosCompletos = livroIds.map((id) => ({
+                  id: id,
+                  titulo: `Livro ID ${id}`,
+                  autor: 'Autor não encontrado',
+                  isbn: 'N/A',
+                  preco: 0,
+                  capa: null
+                }));
+              }
+            } else {
+              console.log(`⚠️ Nenhum livroId encontrado na reserva ${reserva.id}`);
+            }
+
+            // 3️⃣ Retornar reserva enriquecida
             return {
-              id: reserva.id,
-              cliente: cliente,
-              livros: livro ? [{
-                titulo: livro.titulo,
-                autor: livro.autor,
-                isbn: livro.isbn,
-                editora: livro.editora,
-                anoPublicacao: livro.anoPublicacao,
-                numeroPaginas: livro.paginas,
-                categoria: livro.nomeCategoria,
-                preco: livro.preco,
-                imagemUrl: livro.capa
-              }] : [],
-              dataReserva: reserva.dtReserva,
-              dataRetirada: reserva.dtLimite,
-              status: reserva.statusReserva,
-              valorTotal: reserva.totalReserva,
-              livroId: reserva.livroId
+              ...reserva,
+              cliente: clienteCompleto,
+              livros: livrosCompletos,
+              // Quantidade: se for array, pegar length; se for número, é 1 livro
+              quantidadeLivros: Array.isArray(reserva.livroId) 
+                ? reserva.livroId.length 
+                : (reserva.livroId ? 1 : 0)
             };
           } catch (error) {
-            console.error(`❌ Erro ao processar reserva ${reserva.id}:`, error);
+            console.error(`❌ Erro ao enriquecer reserva ${reserva.id}:`, error);
             return {
-              id: reserva.id,
+              ...reserva,
               cliente: {
                 nome: 'Erro ao carregar',
-                email: 'Erro',
+                email: 'N/A',
                 telefone: 'N/A'
               },
               livros: [],
-              dataReserva: reserva.dtReserva,
-              dataRetirada: reserva.dtLimite,
-              status: reserva.statusReserva,
-              valorTotal: reserva.totalReserva
+              quantidadeLivros: 0
             };
           }
         })
       );
 
-      console.log('✅ Reservas processadas:', reservasCompletas);
-
-      // Filtrar por status se necessário
-      let reservasFiltradas = reservasCompletas;
-      if (filtroStatus !== 'TODOS') {
-        reservasFiltradas = reservasCompletas.filter(r => r.status === filtroStatus);
-      }
-
-      setReservas(reservasFiltradas);
+      console.log('✅ Reservas enriquecidas:', reservasEnriquecidas.length);
+      setReservas(reservasEnriquecidas);
     } catch (err) {
       setError('Erro ao carregar reservas. Tente novamente mais tarde.');
       console.error('❌ Erro ao carregar reservas:', err);
@@ -165,13 +195,14 @@ const Reservas = () => {
     }
 
     try {
+      console.log('🚫 Cancelando reserva:', reservaId);
       await reservaService.cancelarReserva(reservaId);
       alert('Reserva cancelada com sucesso!');
       carregarReservas();
       setExpandedIndex(null);
     } catch (err) {
-      alert('Erro ao cancelar reserva. Tente novamente.');
-      console.error('Erro ao cancelar reserva:', err);
+      console.error('❌ Erro ao cancelar reserva:', err);
+      alert(`Erro ao cancelar reserva: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -181,13 +212,14 @@ const Reservas = () => {
     }
 
     try {
+      console.log('✅ Concluindo reserva:', reservaId);
       await reservaService.concluirReserva(reservaId);
       alert('Reserva concluída com sucesso!');
       carregarReservas();
       setExpandedIndex(null);
     } catch (err) {
-      alert('Erro ao concluir reserva. Tente novamente.');
-      console.error('Erro ao concluir reserva:', err);
+      console.error('❌ Erro ao concluir reserva:', err);
+      alert(`Erro ao concluir reserva: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -213,7 +245,7 @@ const Reservas = () => {
   };
 
   const formatarData = (data) => {
-    if (!data) return 'Invalid Date';
+    if (!data) return 'N/A';
     
     try {
       const dataObj = new Date(data);
@@ -271,7 +303,7 @@ const Reservas = () => {
     return (
       <div className="tabela-container">
         <div style={{ textAlign: 'center', padding: '40px', fontSize: '18px', color: '#666' }}>
-          Carregando reservas...
+          📚 Carregando reservas...
         </div>
       </div>
     );
@@ -281,7 +313,7 @@ const Reservas = () => {
     return (
       <div className="tabela-container">
         <div style={{ textAlign: 'center', padding: '40px', color: '#e74c3c', backgroundColor: '#fee', borderRadius: '8px', margin: '20px' }}>
-          {error}
+          ❌ {error}
           <button 
             onClick={carregarReservas} 
             style={{
@@ -295,7 +327,7 @@ const Reservas = () => {
               fontSize: '14px'
             }}
           >
-            Tentar Novamente
+            🔄 Tentar Novamente
           </button>
         </div>
       </div>
@@ -305,7 +337,7 @@ const Reservas = () => {
   return (
     <div className="tabela-container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0, color: '#2c3e50', fontSize: '24px' }}>Gerenciamento de Reservas</h2>
+        <h2 style={{ margin: 0, color: '#2c3e50', fontSize: '24px' }}>📋 Gerenciamento de Reservas</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <label style={{ fontWeight: 600, color: '#2c3e50' }}>Filtrar por Status:</label>
           <select 
@@ -334,7 +366,7 @@ const Reservas = () => {
 
       {reservasArray.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: '#999', fontSize: '18px' }}>
-          <p>Nenhuma reserva encontrada.</p>
+          <p>📚 Nenhuma reserva encontrada.</p>
         </div>
       ) : (
         <>
@@ -360,9 +392,15 @@ const Reservas = () => {
             </thead>
             <tbody>
               {currentReservas.map((reserva, index) => {
-                const totalLivros = reserva.livros?.length || 0;
+                // ✅ Mapear campos do backend (aceita ambos os formatos)
+                const dataReserva = reserva.dtReserva || reserva.dataReserva;
+                const dataRetirada = reserva.dtLimite || reserva.dataRetirada;
+                const status = reserva.statusReserva || reserva.status || 'PENDENTE';
+                const valorTotal = reserva.totalReserva || reserva.valorTotal || 0;
+                
+                // ✅ Usar quantidadeLivros já calculada no carregarReservas
+                const totalLivros = reserva.quantidadeLivros || 0;
                 const titulosLivros = reserva.livros?.map(l => l.titulo).join(' + ') || 'N/A';
-                const valorTotal = reserva.valorTotal || 0;
                 
                 return (
                   <React.Fragment key={reserva.id || `reserva-${index}`}>
@@ -390,13 +428,13 @@ const Reservas = () => {
                       <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {titulosLivros}
                       </td>
-                      <td>{formatarData(reserva.dataReserva)}</td>
-                      <td>{formatarData(reserva.dataRetirada)}</td>
-                      <td>{calcularDiasRestantes(reserva.dataRetirada)}</td>
+                      <td>{formatarData(dataReserva)}</td>
+                      <td>{formatarData(dataRetirada)}</td>
+                      <td>{calcularDiasRestantes(dataRetirada)}</td>
                       <td>{totalLivros}</td>
                       <td>
-                        <span className={`status-badge ${getStatusBadgeClass(reserva.status)}`}>
-                          {getStatusLabel(reserva.status)}
+                        <span className={`status-badge ${getStatusBadgeClass(status)}`}>
+                          {getStatusLabel(status)}
                         </span>
                       </td>
                       <td>
@@ -416,7 +454,7 @@ const Reservas = () => {
                             <div className="detalhes-livros-lista">
                               <div style={{ marginBottom: '20px', paddingBottom: '15px', borderBottom: '2px solid #e0e0e0' }}>
                                 <h3 style={{ margin: '0 0 15px 0', color: '#2c3e50', fontSize: '20px' }}>
-                                  Detalhes da Reserva #{reserva.id}
+                                  📋 Detalhes da Reserva #{reserva.id}
                                 </h3>
                                 <div style={{ 
                                   display: 'grid', 
@@ -427,19 +465,19 @@ const Reservas = () => {
                                   borderRadius: '8px' 
                                 }}>
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
-                                    <strong>Cliente:</strong> {reserva.cliente?.nome}
+                                    <strong>Cliente:</strong> {reserva.cliente?.nome || 'N/A'}
                                   </p>
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
-                                    <strong>Email:</strong> {reserva.cliente?.email}
+                                    <strong>Email:</strong> {reserva.cliente?.email || 'N/A'}
                                   </p>
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
                                     <strong>Telefone:</strong> {reserva.cliente?.telefone || 'N/A'}
                                   </p>
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
-                                    <strong>Data de Criação:</strong> {formatarData(reserva.dataReserva)}
+                                    <strong>Data de Criação:</strong> {formatarData(dataReserva)}
                                   </p>
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#555' }}>
-                                    <strong>Data de Retirada:</strong> {formatarData(reserva.dataRetirada)}
+                                    <strong>Data de Retirada:</strong> {formatarData(dataRetirada)}
                                   </p>
                                 </div>
                               </div>
@@ -448,57 +486,77 @@ const Reservas = () => {
                                 reserva.livros.map((livro, i) => (
                                   <div key={i} className="detalhes-livro">
                                     <img 
-                                      src={livro.imagemUrl || 'https://via.placeholder.com/150x200?text=Sem+Capa'} 
+                                      src={livro.capa || livro.imagemUrl || 'https://via.placeholder.com/150x200?text=Sem+Capa'} 
                                       alt={`Capa de ${livro.titulo}`} 
                                       className="detalhes-capa"
                                       onError={(e) => {
                                         e.target.src = 'https://via.placeholder.com/150x200?text=Sem+Capa';
                                       }}
+                                      loading="lazy"
                                     />
                                     <div className="detalhes-info">
-                                      <h3>{livro.titulo}</h3>
-                                      <p><strong>Autor:</strong> {livro.autor}</p>
+                                      <h3>{livro.titulo || 'Título não disponível'}</h3>
+                                      <p><strong>Autor:</strong> {livro.autor || 'N/A'}</p>
+                                      <p><strong>Ano:</strong> {livro.anoPublicacao || 'N/A'}</p>
+                                      <p><strong>Idioma:</strong> {livro.idioma || 'Português'}</p>
+                                      <p><strong>Páginas:</strong> {livro.paginas || livro.numeroPaginas || 'N/A'}</p>
+                                      <p><strong>Conservação:</strong> {livro.estadoConservacao || 'N/A'}</p>
+                                      <p><strong>Categoria:</strong> {livro.nomeCategoria || livro.categoria || 'N/A'}</p>
                                       <p><strong>ISBN:</strong> {livro.isbn || 'N/A'}</p>
                                       <p><strong>Editora:</strong> {livro.editora || 'N/A'}</p>
-                                      <p><strong>Ano:</strong> {livro.anoPublicacao || 'N/A'}</p>
-                                      <p><strong>Páginas:</strong> {livro.numeroPaginas || 'N/A'}</p>
-                                      <p><strong>Categoria:</strong> {livro.categoria || 'N/A'}</p>
                                       <p className="reserva-total">
-                                        Preço: R$ {(livro.preco || 0).toFixed(2)}
+                                        💰 Preço: R$ {(livro.preco || 0).toFixed(2)}
                                       </p>
                                     </div>
                                   </div>
                                 ))
                               ) : (
                                 <p style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
-                                  Nenhum livro associado a esta reserva.
+                                  📚 Nenhum livro associado a esta reserva.
                                 </p>
                               )}
                             </div>
 
                             <div className="detalhes-footer">
+                              {reserva.observacoes && (
+                                <div style={{ 
+                                  backgroundColor: '#f8f9fa', 
+                                  padding: '15px', 
+                                  borderRadius: '8px', 
+                                  marginBottom: '15px',
+                                  width: '100%'
+                                }}>
+                                  <p style={{ margin: 0, color: '#555', fontSize: '14px', lineHeight: '1.6' }}>
+                                    <strong>📝 Observações:</strong> {reserva.observacoes}
+                                  </p>
+                                </div>
+                              )}
                               <p className="reserva-total">
-                                <strong>Total da Reserva:</strong> R$ {valorTotal.toFixed(2)}
+                                <strong>💰 Total da Reserva:</strong> R$ {valorTotal.toFixed(2)}
                               </p>
-                              
-                              {/* TEMPORÁRIO: Botões desabilitados até backend implementar endpoint ADMIN */}
-                              <div style={{ 
-                                padding: '20px', 
-                                backgroundColor: '#fff3cd', 
-                                borderRadius: '8px',
-                                color: '#856404',
-                                textAlign: 'center',
-                                marginTop: '15px'
-                              }}>
-                                <i className='bx bx-info-circle' style={{ fontSize: '32px', marginBottom: '10px' }}></i>
-                                <p style={{ margin: '0', fontSize: '16px' }}>
-                                  <strong>Ações de Atualização Indisponíveis</strong>
-                                </p>
-                                <p style={{ margin: '10px 0 0 0', fontSize: '14px' }}>
-                                  O backend precisa implementar endpoint específico para ADMIN atualizar status de reservas.
-                                  <br />
-                                  Veja o arquivo <code>ERRO_403_SOLUCAO.md</code> para detalhes.
-                                </p>
+                              <div className="detalhes-botoes">
+                                <button 
+                                  className="cancelar-btn"
+                                  onClick={() => handleCancelarReserva(reserva.id)}
+                                  disabled={status === 'CANCELADA' || status === 'CONCLUIDA'}
+                                  style={{ 
+                                    opacity: (status === 'CANCELADA' || status === 'CONCLUIDA') ? 0.5 : 1,
+                                    cursor: (status === 'CANCELADA' || status === 'CONCLUIDA') ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  🚫 Cancelar Reserva
+                                </button>
+                                <button 
+                                  className="concluir-btn"
+                                  onClick={() => handleConcluirReserva(reserva.id)}
+                                  disabled={status === 'CANCELADA' || status === 'CONCLUIDA'}
+                                  style={{ 
+                                    opacity: (status === 'CANCELADA' || status === 'CONCLUIDA') ? 0.5 : 1,
+                                    cursor: (status === 'CANCELADA' || status === 'CONCLUIDA') ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  ✅ Concluir Reserva
+                                </button>
                               </div>
                             </div>
                           </div>
