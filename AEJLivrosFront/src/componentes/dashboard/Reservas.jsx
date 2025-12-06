@@ -244,7 +244,7 @@ const Reservas = () => {
     
     try {
       return new Date(data).toLocaleDateString('pt-BR');
-    } catch (e) {
+    } catch {
       return 'Invalid Date';
     }
   };
