@@ -1,7 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import api from '../services/api';
 import './FiltroCatalogo.css';
 
-export default function FiltroCatalogo({ onLimparFiltros }) {
+export default function FiltroCatalogo() {
+  const [categorias, setCategorias] = useState([]);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const fetchCategorias = async () => {
+      try {
+        const res = await api.get('/categorias');
+        const data = Array.isArray(res.data) ? res.data : [];
+        setCategorias(data);
+      } catch (err) {
+        console.error('Erro ao carregar categorias:', err);
+      }
+    };
+
+    fetchCategorias();
+  }, []);
+
+  const handleCategoriaChange = (e) => {
+    const categoriaId = e.target.value;
+    if (categoriaId) {
+      navigate(`/catalogo?categoria=${categoriaId}`);
+    } else {
+      navigate('/catalogo');
+    }
+  };
+
+  const params = new URLSearchParams(location.search);
+  const categoriaAtual = params.get('categoria') || '';
+
+  const handleLimparFiltros = () => {
+    navigate('/catalogo');
+  };
+
   return (
     <div className="filtro-catalogo">
       <h2>Filtros</h2>
@@ -19,15 +55,20 @@ export default function FiltroCatalogo({ onLimparFiltros }) {
       </div>
       <div className="filtro-bloco">
         <span>Categoria</span>
-        <select defaultValue="" className="filtro-select">
-          <option value="" disabled>Selecione uma categoria</option>
-          <option value="ficcao">Ficção</option>
-          <option value="romance">Romance</option>
-          <option value="aventura">Aventura</option>
-          <option value="fantasia">Fantasia</option>
+        <select 
+          value={categoriaAtual} 
+          onChange={handleCategoriaChange}
+          className="filtro-select"
+        >
+          <option value="">Todas as categorias</option>
+          {categorias.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.nome || cat.titulo || cat.name}
+            </option>
+          ))}
         </select>
       </div>
-      <button className="filtro-limpar" onClick={onLimparFiltros}>Limpar Filtros</button>
+      <button className="filtro-limpar" onClick={handleLimparFiltros}>Limpar Filtros</button>
     </div>
   );
 }

@@ -28,16 +28,16 @@ export default function Catalogo() {
 
             let res;
             if (categoriaId) {
-                res = await api.get(`/livros/categoria/${categoriaId}`, {
-                    params: { page: pageNumber, size }
-                });
+                res = await api.get(`/livros/categoria/${categoriaId}`);
             } else {
                 res = await api.get('/livros', {
                     params: { page: pageNumber, size }
                 });
             }
 
-            const data = res.data.livros || res.data.items || res.data.data || [];
+            const data = categoriaId 
+                ? (Array.isArray(res.data) ? res.data : [])
+                : (res.data.livros || res.data.items || res.data.data || []);
             const mapped = data.map(l => ({
                 id: l.id || l._id,
                 titulo: l.titulo || l.nome || l.title,
