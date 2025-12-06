@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import api from '../services/api';
 
 export function CadastroForm({ onVoltarLogin }) {
+
+    const CLIENT_TYPE = "cliente";
     
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
@@ -23,26 +26,31 @@ export function CadastroForm({ onVoltarLogin }) {
             nome,
             email,
             telefone,
-            tipo_usuario: "cliente", // Valor fixo 
+            tipo_usuario: CLIENT_TYPE,
             cpf,
             senha,
             dtNascimento: nascimento 
         };
 
         try {
-            const response = await fetch('http://localhost:8080/usuarios', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
-            if (response.ok) {
-                setMensagem('Cadastro realizado com sucesso!');
+            await api.post('/usuarios', data);
+            setMensagem('Cadastro realizado com sucesso!');
+        } catch (error) {
+            if (error.response) {
+                const errorData = error.response.data;
+                switch(error.response.status) {
+                    case 409:
+                        setMensagem(errorData.message || 'O usuário já existe.');
+                        break;
+                    case 400:
+                        setMensagem(errorData.message || 'Dados inválidos.');
+                        break;
+                    default:
+                        setMensagem(errorData.message || 'Erro ao cadastrar.');
+                }
             } else {
-                const errorData = await response.json();
-                setMensagem(errorData.message || 'Erro ao cadastrar.');
+                setMensagem('Erro de conexão com o servidor.');
             }
-        } catch {
-            setMensagem('Erro de conexão com o servidor.');
         }
     };
 
