@@ -1,48 +1,119 @@
-import api from "./api";
+import api from './api';
 
 const livroService = {
-  getLivroById: async (id) => {
+  // Listar todos os livros (paginado)
+  listarLivros: async (page = 0, size = 9) => {
     try {
-      console.log(`🔍 Buscando livro ID ${id}...`);
-      const response = await api.get(`/livros/${id}`);
-      console.log(`✅ Livro ${id} encontrado:`, response.data);
-      return response.data;
-    } catch (error) {
-      console.error(`❌ Erro ao buscar livro ${id}:`, error);
-      console.error(`❌ Status:`, error.response?.status);
-      console.error(`❌ Dados:`, error.response?.data);
-      throw error;
-    }
-  },
-
-  getLivrosByIds: async (ids) => {
-    try {
-      if (!ids || ids.length === 0) {
-        console.log('⚠️ Array de IDs vazio, retornando array vazio');
-        return [];
-      }
-
-      console.log(`📚 Iniciando busca de ${ids.length} livros em paralelo...`);
-      console.log(`📚 IDs a buscar:`, ids);
-
-      // Buscar todos os livros em paralelo
-      const promises = ids.map(id => livroService.getLivroById(id));
-      const livros = await Promise.all(promises);
-      
-      console.log(`✅ Busca concluída! ${livros.length} livros retornados`);
-      return livros;
-    } catch (error) {
-      console.error('❌ Erro ao buscar livros em lote:', error);
-      throw error;
-    }
-  },
-
-  listarLivros: async () => {
-    try {
-      const response = await api.get('/livros');
+      const response = await api.get(`/livros?page=${page}&size=${size}`);
       return response.data;
     } catch (error) {
       console.error('Erro ao listar livros:', error);
+      throw error;
+    }
+  },
+
+  // Buscar livro por ID
+  buscarPorId: async (id) => {
+    try {
+      const response = await api.get(`/livros/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erro ao buscar livro ${id}:`, error);
+      throw error;
+    }
+  },
+
+  // Criar novo livro
+  criarLivro: async (livroData) => {
+    try {
+      const response = await api.post('/livros', livroData);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao criar livro:', error);
+      throw error;
+    }
+  },
+
+  // Atualizar livro
+  atualizarLivro: async (id, livroData) => {
+    try {
+      const response = await api.put(`/livros/${id}`, livroData);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao atualizar livro:', error);
+      throw error;
+    }
+  },
+
+  // Deletar livro
+  deletarLivro: async (id) => {
+    try {
+      const response = await api.delete(`/livros/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao deletar livro:', error);
+      throw error;
+    }
+  },
+
+  // Buscar livros por categoria
+  buscarPorCategoria: async (categoriaId) => {
+    try {
+      const response = await api.get(`/livros/categoria/${categoriaId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar livros por categoria:', error);
+      throw error;
+    }
+  },
+
+  // Buscar livros recentes
+  buscarRecentes: async () => {
+    try {
+      const response = await api.get('/livros/recentes');
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar livros recentes:', error);
+      throw error;
+    }
+  },
+
+  // Buscar livros recomendados
+  buscarRecomendados: async () => {
+    try {
+      const response = await api.get('/livros/recomendados');
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar livros recomendados:', error);
+      throw error;
+    }
+  },
+
+  // Upload de capa do livro
+  uploadCapa: async (id, file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await api.post(`/livros/${id}/capa`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao fazer upload da capa:', error);
+      throw error;
+    }
+  },
+
+  // Listar todas as categorias
+  listarCategorias: async () => {
+    try {
+      const response = await api.get('/livros/categorias');
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao listar categorias:', error);
       throw error;
     }
   }

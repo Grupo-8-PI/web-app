@@ -24,6 +24,8 @@ const Reservas = () => {
       setLoading(true);
       setError(null);
       
+      console.log('🚀 Carregando reservas...');
+      
       let response;
       if (filtroStatus === 'TODOS') {
         response = await reservaService.listarReservas(0, 100);
@@ -31,8 +33,7 @@ const Reservas = () => {
         response = await reservaService.buscarPorStatus(filtroStatus);
       }
       
-      // Garantir que response seja sempre um array
-      console.log('Resposta da API:', response);
+      console.log('📦 Resposta do backend:', response);
       
       // ✅ Backend retorna estrutura paginada: { reservas: [], totalElements: X, ... }
       let reservasData = [];
@@ -53,6 +54,8 @@ const Reservas = () => {
         reservasData = [];
       }
 
+      console.log(`📚 Total de reservas encontradas: ${reservasData.length}`);
+
       // ✅ ENRIQUECER RESERVAS COM DADOS DO CLIENTE E LIVROS
       console.log(`📦 Enriquecendo ${reservasData.length} reservas com dados completos...`);
       
@@ -65,7 +68,7 @@ const Reservas = () => {
               console.log(`👤 Buscando cliente ID: ${reserva.usuarioId}`);
               try {
                 clienteCompleto = await usuarioService.getUsuarioById(reserva.usuarioId);
-                console.log(`✅ Cliente encontrado:`, clienteCompleto);
+                console.log(`✅ Cliente encontrado:`, clienteCompleto.nome);
               } catch (error) {
                 console.error(`❌ Erro ao buscar cliente ${reserva.usuarioId}:`, error);
                 clienteCompleto = {
@@ -101,18 +104,15 @@ const Reservas = () => {
               console.log(`📚 Buscando ${livroIds.length} livros:`, livroIds);
               try {
                 livrosCompletos = await livroService.getLivrosByIds(livroIds);
-                console.log(`✅ Livros encontrados (${livrosCompletos.length}):`, livrosCompletos);
+                console.log(`✅ Livros encontrados (${livrosCompletos.length})`);
                 
-                // Debug: Verificar estrutura de cada livro
+                // Debug: Verificar capas dos livros
                 livrosCompletos.forEach((livro, idx) => {
                   console.log(`📖 Livro ${idx + 1}:`, {
                     id: livro.id,
                     titulo: livro.titulo,
-                    autor: livro.autor,
-                    capa: livro.capa,
-                    preco: livro.preco,
-                    paginas: livro.paginas,
-                    categoria: livro.nomeCategoria
+                    capa: livro.capa || livro.imagemUrl,
+                    preco: livro.preco
                   });
                 });
               } catch (error) {
@@ -130,8 +130,6 @@ const Reservas = () => {
               }
             } else {
               console.log(`⚠️ Nenhum livroId encontrado na reserva ${reserva.id}`);
-              console.log(`⚠️ reserva.livroId:`, reserva.livroId);
-              console.log(`⚠️ Tipo:`, typeof reserva.livroId);
             }
 
             // 3️⃣ Retornar reserva enriquecida
@@ -160,11 +158,11 @@ const Reservas = () => {
         })
       );
 
-      console.log('✅ Reservas enriquecidas:', reservasEnriquecidas);
+      console.log('✅ Reservas enriquecidas:', reservasEnriquecidas.length);
       setReservas(reservasEnriquecidas);
     } catch (err) {
       setError('Erro ao carregar reservas. Tente novamente mais tarde.');
-      console.error('Erro ao carregar reservas:', err);
+      console.error('❌ Erro ao carregar reservas:', err);
       setReservas([]);
     } finally {
       setLoading(false);
@@ -197,13 +195,14 @@ const Reservas = () => {
     }
 
     try {
+      console.log('🚫 Cancelando reserva:', reservaId);
       await reservaService.cancelarReserva(reservaId);
       alert('Reserva cancelada com sucesso!');
       carregarReservas();
       setExpandedIndex(null);
     } catch (err) {
-      alert('Erro ao cancelar reserva. Tente novamente.');
-      console.error('Erro ao cancelar reserva:', err);
+      console.error('❌ Erro ao cancelar reserva:', err);
+      alert(`Erro ao cancelar reserva: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -213,45 +212,53 @@ const Reservas = () => {
     }
 
     try {
+      console.log('✅ Concluindo reserva:', reservaId);
       await reservaService.concluirReserva(reservaId);
       alert('Reserva concluída com sucesso!');
       carregarReservas();
       setExpandedIndex(null);
     } catch (err) {
-      alert('Erro ao concluir reserva. Tente novamente.');
-      console.error('Erro ao concluir reserva:', err);
+      console.error('❌ Erro ao concluir reserva:', err);
+      alert(`Erro ao concluir reserva: ${err.response?.data?.message || err.message}`);
     }
   };
 
-  // ✅ Função que aceita ambos os formatos de data do backend
-  const calcularDiasRestantes = (dataReserva) => {
-    if (!dataReserva) return 'N/A';
+  const calcularDiasRestantes = (dataRetirada) => {
+    if (!dataRetirada) return 'N/A';
     
-    const hoje = new Date();
-    const dataReservaObj = new Date(dataReserva);
-    const diffTime = dataReservaObj - hoje;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return 'Vencida';
-    if (diffDays === 0) return 'Hoje';
-    if (diffDays === 1) return '1 dia';
-    return `${diffDays} dias`;
+    try {
+      const hoje = new Date();
+      const dataRetiradaObj = new Date(dataRetirada);
+      
+      if (isNaN(dataRetiradaObj.getTime())) return 'Data inválida';
+      
+      const diffTime = dataRetiradaObj - hoje;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 0) return 'Vencida';
+      if (diffDays === 0) return 'Hoje';
+      if (diffDays === 1) return '1 dia';
+      return `${diffDays} dias`;
+    } catch (error) {
+      return 'N/A';
+    }
   };
 
-  // ✅ Função que aceita ambos os formatos de data do backend
   const formatarData = (data) => {
     if (!data) return 'N/A';
     
     try {
-      return new Date(data).toLocaleDateString('pt-BR');
-    } catch (e) {
+      const dataObj = new Date(data);
+      if (isNaN(dataObj.getTime())) return 'Invalid Date';
+      return dataObj.toLocaleDateString('pt-BR');
+    } catch (error) {
       return 'Invalid Date';
     }
   };
 
   const getStatusBadgeClass = (status) => {
     const statusMap = {
-      'PENDENTE': 'status-inconsistente', // Usando classe existente
+      'PENDENTE': 'status-inconsistente',
       'APROVADA': 'status-ok',
       'CONCLUIDA': 'status-ok',
       'CANCELADA': 'status-inconsistente',
@@ -271,7 +278,7 @@ const Reservas = () => {
     return labelMap[status] || status;
   };
 
-  // Paginação - garantir que reservas seja array
+  // Paginação
   const reservasArray = Array.isArray(reservas) ? reservas : [];
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -296,7 +303,7 @@ const Reservas = () => {
     return (
       <div className="tabela-container">
         <div style={{ textAlign: 'center', padding: '40px', fontSize: '18px', color: '#666' }}>
-          Carregando reservas...
+          📚 Carregando reservas...
         </div>
       </div>
     );
@@ -306,7 +313,7 @@ const Reservas = () => {
     return (
       <div className="tabela-container">
         <div style={{ textAlign: 'center', padding: '40px', color: '#e74c3c', backgroundColor: '#fee', borderRadius: '8px', margin: '20px' }}>
-          {error}
+          ❌ {error}
           <button 
             onClick={carregarReservas} 
             style={{
@@ -320,7 +327,7 @@ const Reservas = () => {
               fontSize: '14px'
             }}
           >
-            Tentar Novamente
+            🔄 Tentar Novamente
           </button>
         </div>
       </div>
@@ -330,12 +337,15 @@ const Reservas = () => {
   return (
     <div className="tabela-container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0, color: '#2c3e50', fontSize: '24px' }}>Gerenciamento de Reservas</h2>
+        <h2 style={{ margin: 0, color: '#2c3e50', fontSize: '24px' }}>📋 Gerenciamento de Reservas</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <label style={{ fontWeight: 600, color: '#2c3e50' }}>Filtrar por Status:</label>
           <select 
             value={filtroStatus} 
-            onChange={(e) => setFiltroStatus(e.target.value)}
+            onChange={(e) => {
+              setFiltroStatus(e.target.value);
+              setCurrentPage(1);
+            }}
             style={{
               padding: '8px 12px',
               border: '1px solid #ddd',
@@ -356,7 +366,7 @@ const Reservas = () => {
 
       {reservasArray.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: '#999', fontSize: '18px' }}>
-          <p>Nenhuma reserva encontrada.</p>
+          <p>📚 Nenhuma reserva encontrada.</p>
         </div>
       ) : (
         <>
@@ -391,10 +401,6 @@ const Reservas = () => {
                 // ✅ Usar quantidadeLivros já calculada no carregarReservas
                 const totalLivros = reserva.quantidadeLivros || 0;
                 const titulosLivros = reserva.livros?.map(l => l.titulo).join(' + ') || 'N/A';
-                
-                console.log('📚 DEBUG - Reserva:', reserva);
-                console.log('📚 DEBUG - Livros:', reserva.livros);
-                console.log('📚 DEBUG - Títulos:', titulosLivros);
                 
                 return (
                   <React.Fragment key={reserva.id || `reserva-${index}`}>
@@ -448,7 +454,7 @@ const Reservas = () => {
                             <div className="detalhes-livros-lista">
                               <div style={{ marginBottom: '20px', paddingBottom: '15px', borderBottom: '2px solid #e0e0e0' }}>
                                 <h3 style={{ margin: '0 0 15px 0', color: '#2c3e50', fontSize: '20px' }}>
-                                  Detalhes da Reserva #{reserva.id}
+                                  📋 Detalhes da Reserva #{reserva.id}
                                 </h3>
                                 <div style={{ 
                                   display: 'grid', 
@@ -476,32 +482,39 @@ const Reservas = () => {
                                 </div>
                               </div>
 
-                              {reserva.livros?.map((livro, i) => (
-                                <div key={i} className="detalhes-livro">
-                                  <img 
-                                    src={livro.capa || 'https://via.placeholder.com/150x200?text=Sem+Capa'} 
-                                    alt={`Capa de ${livro.titulo}`} 
-                                    className="detalhes-capa"
-                                    onError={(e) => {
-                                      e.target.src = 'https://via.placeholder.com/150x200?text=Sem+Capa';
-                                    }}
-                                  />
-                                  <div className="detalhes-info">
-                                    <h3>{livro.titulo || 'Título não disponível'}</h3>
-                                    <p><strong>Autor:</strong> {livro.autor || 'N/A'}</p>
-                                    <p><strong>Ano:</strong> {livro.anoPublicacao || 'N/A'}</p>
-                                    <p><strong>Idioma:</strong> {livro.idioma || 'Português'}</p>
-                                    <p><strong>Páginas:</strong> {livro.paginas || 'N/A'}</p>
-                                    <p><strong>Conservação:</strong> {livro.estadoConservacao || 'N/A'}</p>
-                                    <p><strong>Categoria:</strong> {livro.nomeCategoria || 'N/A'}</p>
-                                    <p><strong>ISBN:</strong> {livro.isbn || 'N/A'}</p>
-                                    <p><strong>Editora:</strong> {livro.editora || 'N/A'}</p>
-                                    <p className="reserva-total">
-                                      Preço: R$ {(livro.preco || 0).toFixed(2)}
-                                    </p>
+                              {reserva.livros && reserva.livros.length > 0 ? (
+                                reserva.livros.map((livro, i) => (
+                                  <div key={i} className="detalhes-livro">
+                                    <img 
+                                      src={livro.capa || livro.imagemUrl || 'https://via.placeholder.com/150x200?text=Sem+Capa'} 
+                                      alt={`Capa de ${livro.titulo}`} 
+                                      className="detalhes-capa"
+                                      onError={(e) => {
+                                        e.target.src = 'https://via.placeholder.com/150x200?text=Sem+Capa';
+                                      }}
+                                      loading="lazy"
+                                    />
+                                    <div className="detalhes-info">
+                                      <h3>{livro.titulo || 'Título não disponível'}</h3>
+                                      <p><strong>Autor:</strong> {livro.autor || 'N/A'}</p>
+                                      <p><strong>Ano:</strong> {livro.anoPublicacao || 'N/A'}</p>
+                                      <p><strong>Idioma:</strong> {livro.idioma || 'Português'}</p>
+                                      <p><strong>Páginas:</strong> {livro.paginas || livro.numeroPaginas || 'N/A'}</p>
+                                      <p><strong>Conservação:</strong> {livro.estadoConservacao || 'N/A'}</p>
+                                      <p><strong>Categoria:</strong> {livro.nomeCategoria || livro.categoria || 'N/A'}</p>
+                                      <p><strong>ISBN:</strong> {livro.isbn || 'N/A'}</p>
+                                      <p><strong>Editora:</strong> {livro.editora || 'N/A'}</p>
+                                      <p className="reserva-total">
+                                        💰 Preço: R$ {(livro.preco || 0).toFixed(2)}
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
+                                ))
+                              ) : (
+                                <p style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
+                                  📚 Nenhum livro associado a esta reserva.
+                                </p>
+                              )}
                             </div>
 
                             <div className="detalhes-footer">
@@ -514,12 +527,12 @@ const Reservas = () => {
                                   width: '100%'
                                 }}>
                                   <p style={{ margin: 0, color: '#555', fontSize: '14px', lineHeight: '1.6' }}>
-                                    <strong>Observações:</strong> {reserva.observacoes}
+                                    <strong>📝 Observações:</strong> {reserva.observacoes}
                                   </p>
                                 </div>
                               )}
                               <p className="reserva-total">
-                                <strong>Total da Reserva:</strong> R$ {valorTotal.toFixed(2)}
+                                <strong>💰 Total da Reserva:</strong> R$ {valorTotal.toFixed(2)}
                               </p>
                               <div className="detalhes-botoes">
                                 <button 
@@ -531,7 +544,7 @@ const Reservas = () => {
                                     cursor: (status === 'CANCELADA' || status === 'CONCLUIDA') ? 'not-allowed' : 'pointer'
                                   }}
                                 >
-                                  Cancelar Reserva
+                                  🚫 Cancelar Reserva
                                 </button>
                                 <button 
                                   className="concluir-btn"
@@ -542,7 +555,7 @@ const Reservas = () => {
                                     cursor: (status === 'CANCELADA' || status === 'CONCLUIDA') ? 'not-allowed' : 'pointer'
                                   }}
                                 >
-                                  Concluir Reserva
+                                  ✅ Concluir Reserva
                                 </button>
                               </div>
                             </div>
