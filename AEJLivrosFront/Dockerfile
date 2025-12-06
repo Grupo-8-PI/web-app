@@ -1,38 +1,17 @@
-# Etapa 1: Build
-FROM node:18-alpine AS build
-
+FROM node:18-alpine AS builder
 WORKDIR /app
-
-# Copiar package.json e package-lock.json
-COPY package.json package-lock.json ./
-
-# Instalar dependências
-RUN npm ci --silent
-
-# Copiar todo o código
+COPY package*.json ./
+RUN npm ci
 COPY . .
-
-# Build da aplicação
 RUN npm run build
 
-# Etapa 2: Servir com Nginx
 FROM nginx:alpine
 
-# Remover configuração padrão do Nginx
-RUN rm -rf /usr/share/nginx/html/*
+# Instala envsubst (já vem no nginx:alpine)
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf.template /etc/nginx/nginx.conf.template
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
-# Copiar build da etapa anterior
-COPY --from=build /app/dist /usr/share/nginx/html
+RUN chmod +x /docker-entrypoint.sh
 
-# Copiar configuração customizada do Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expor porta 80
-EXPOSE 80
-
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:80 || exit 1
-
-# Iniciar Nginx
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
