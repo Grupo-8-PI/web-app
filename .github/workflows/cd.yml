@@ -90,6 +90,7 @@ jobs:
       - name: 📥 Checkout do código
         uses: actions/checkout@v4
 
+<<<<<<< HEAD
       - name: 🔑 Configurar chave SSH
         run: |
           mkdir -p ~/.ssh
