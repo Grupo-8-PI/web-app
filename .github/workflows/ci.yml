@@ -189,17 +189,29 @@ jobs:
 
       - name: 🧪 Testar container
         run: |
-          docker run -d --name test -p 8080:80 aejlivros:test
+          # Rodar container com API_URL definida (necessário para o entrypoint)
+          docker run -d --name test -p 8080:80 -e API_URL=http://localhost:8080 aejlivros:test
+          
+          # Aguardar container iniciar
+          echo "Aguardando container iniciar..."
           sleep 5
           
+          # Verificar se container está rodando
+          if ! docker ps | grep -q test; then
+            echo "❌ Container não está rodando!"
+            docker logs test
+            exit 1
+          fi
+          
           # Teste de saúde
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080)
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080 || echo "000")
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "✅ Container respondendo (HTTP $HTTP_CODE)"
             echo "## 🐳 Docker Test" >> $GITHUB_STEP_SUMMARY
             echo "✅ Container rodando corretamente na porta 80" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Container não respondeu (HTTP $HTTP_CODE)"
+            echo "❌ Container não respondeu corretamente (HTTP $HTTP_CODE)"
+            echo "Logs do container:"
             docker logs test
             exit 1
           fi
