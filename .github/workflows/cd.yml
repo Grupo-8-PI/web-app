@@ -79,10 +79,9 @@ jobs:
 
   # Job de Deploy para Staging
   deploy-staging:
-    name: 🚀 Deploy to Staging
+    name: 🎯 Deploy to Staging
     runs-on: ubuntu-latest
     needs: build-and-push
-    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
     environment:
       name: staging
       url: ${{ vars.STAGING_URL }}
@@ -91,7 +90,7 @@ jobs:
       - name: 📥 Checkout do código
         uses: actions/checkout@v4
 
-      - name: 🚀 Deploy para Staging
+      - name: 🎯 Deploy para Staging
         env:
           IMAGE_TAGS: ${{ needs.build-and-push.outputs.image-tag }}
           SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
@@ -106,28 +105,28 @@ jobs:
           
           echo "$SSH_KEY" > key.pem
           chmod 600 key.pem
-          for HOST in $FRONT_HOSTS; do
-            echo "🚀 Atualizando $HOST..."
+          
+          for HOST in $(echo "$FRONT_HOSTS" | tr ',' ' '); do
+            echo "🎯 Atualizando $HOST..."
             ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$HOST <<EOF
               set -euxo pipefail
               echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
               docker pull $IMAGE
-              docker stop frontend || true
-              docker rm frontend || true
+              docker stop frontend-container 2>/dev/null || true
+              docker rm frontend-container 2>/dev/null || true
               
-              # Criar arquivo .env com IP da API
-              echo "VITE_API_URL=http://$API_IP:8080" > /home/ubuntu/.env
-              
-              docker run -d --name frontend \
+              docker run -d --name frontend-container \
                 --restart unless-stopped \
+                -e API_URL=http://$API_IP:8080 \
                 -p 5173:80 \
-                --env-file /home/ubuntu/.env \
                 $IMAGE
+              
               docker logout ghcr.io
           EOF
           done
+          
           rm key.pem
-          echo "✅ Deploy concluído!"
+          echo "✅ Deploy para Staging concluído!"
 
   # Job de Deploy para Production
   deploy-production:
@@ -158,26 +157,26 @@ jobs:
           
           echo "$SSH_KEY" > key.pem
           chmod 600 key.pem
-          for HOST in $FRONT_HOSTS; do
+          
+          for HOST in $(echo "$FRONT_HOSTS" | tr ',' ' '); do
             echo "🚀 Atualizando $HOST..."
             ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$HOST <<EOF
               set -euxo pipefail
               echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
               docker pull $IMAGE
-              docker stop frontend || true
-              docker rm frontend || true
+              docker stop frontend-container 2>/dev/null || true
+              docker rm frontend-container 2>/dev/null || true
               
-              # Criar arquivo .env com IP da API
-              echo "VITE_API_URL=http://$API_IP:8080" > /home/ubuntu/.env
-              
-              docker run -d --name frontend \
+              docker run -d --name frontend-container \
                 --restart unless-stopped \
+                -e API_URL=http://$API_IP:8080 \
                 -p 5173:80 \
-                --env-file /home/ubuntu/.env \
                 $IMAGE
+              
               docker logout ghcr.io
           EOF
           done
+          
           rm key.pem
           echo "✅ Deploy para Production concluído!"
 
