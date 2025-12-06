@@ -23,6 +23,29 @@ const livroService = {
     }
   },
 
+  // ✨ NOVO: Buscar múltiplos livros por IDs
+  getLivrosByIds: async (ids) => {
+    try {
+      console.log('📚 livroService.getLivrosByIds chamado com:', ids);
+      
+      // Validar entrada
+      if (!Array.isArray(ids) || ids.length === 0) {
+        console.warn('⚠️ getLivrosByIds: IDs inválidos ou vazios');
+        return [];
+      }
+
+      // Buscar cada livro individualmente
+      const promises = ids.map(id => livroService.buscarPorId(id));
+      const livros = await Promise.all(promises);
+      
+      console.log('✅ getLivrosByIds: Livros encontrados:', livros.length);
+      return livros;
+    } catch (error) {
+      console.error('❌ Erro ao buscar livros por IDs:', error);
+      throw error;
+    }
+  },
+
   // Criar novo livro
   criarLivro: async (livroData) => {
     try {
