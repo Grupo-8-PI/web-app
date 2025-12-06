@@ -1,0 +1,20 @@
+# ============================================
+# CODEOWNERS - Revisores automáticos
+# ============================================
+# Quando alguém abre um PR modificando estes arquivos,
+# os owners listados são automaticamente adicionados como reviewers
+
+# Configurações de CI/CD - Requer revisão do time de DevOps
+/.github/ @Grupo-8-PI/devops
+
+# Configuração do Docker
+/AEJLivrosFront/Dockerfile @Grupo-8-PI/devops
+/AEJLivrosFront/nginx.conf* @Grupo-8-PI/devops
+/AEJLivrosFront/docker-* @Grupo-8-PI/devops
+
+# Código fonte - Time de desenvolvimento
+/AEJLivrosFront/src/ @Grupo-8-PI/developers
+
+# Configurações do projeto
+/AEJLivrosFront/package.json @Grupo-8-PI/developers
+/AEJLivrosFront/vite.config.js @Grupo-8-PI/developers

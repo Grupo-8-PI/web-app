@@ -1,6 +1,8 @@
 version: 2
 updates:
-  # Dependências do npm para o frontend
+  # ============================================
+  # NPM Dependencies
+  # ============================================
   - package-ecosystem: "npm"
     directory: "/AEJLivrosFront"
     schedule:
@@ -12,28 +14,39 @@ updates:
     labels:
       - "dependencies"
       - "npm"
-      - "automated"
     commit-message:
-      prefix: "deps"
-      include: "scope"
+      prefix: "deps(npm)"
     groups:
-      # Agrupar atualizações de desenvolvimento
-      dev-dependencies:
-        dependency-type: "development"
-        patterns:
-          - "@types/*"
-          - "eslint*"
-          - "vite*"
-          - "@vitejs/*"
-      # Agrupar atualizações do React
+      # Dependências de produção React
       react:
         patterns:
           - "react"
           - "react-dom"
-          - "react-router-dom"
-          - "@types/react*"
+          - "react-router*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Dependências de desenvolvimento
+      dev:
+        dependency-type: "development"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Charts e visualização
+      charts:
+        patterns:
+          - "chart.js"
+          - "recharts"
+    ignore:
+      # Ignorar major updates automáticos (revisar manualmente)
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
-  # Dependências do GitHub Actions
+  # ============================================
+  # GitHub Actions
+  # ============================================
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -45,24 +58,25 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
-      - "automated"
     commit-message:
-      prefix: "ci"
-      include: "scope"
+      prefix: "ci(deps)"
+    groups:
+      actions:
+        patterns:
+          - "*"
 
+  # ============================================
   # Docker
+  # ============================================
   - package-ecosystem: "docker"
     directory: "/AEJLivrosFront"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "monthly"
       time: "09:00"
       timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 3
     labels:
       - "dependencies"
       - "docker"
-      - "automated"
     commit-message:
-      prefix: "docker"
-      include: "scope"
+      prefix: "docker(deps)"
