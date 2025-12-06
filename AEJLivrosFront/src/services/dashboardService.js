@@ -174,6 +174,35 @@ const dashboardService = {
         const taxaRetirada = totalReservas > 0 ? ((reservasRetiradas / totalReservas) * 100).toFixed(0) : 0;
         const taxaDesistencia = totalReservas > 0 ? ((reservasNaoRetiradas / totalReservas) * 100).toFixed(0) : 0;
 
+        // ✅ NOVO: Contar reservas por status para o gráfico de barras
+        const reservasConcluidas = reservas.filter(r => {
+            const status = (r.statusReserva || r.status || '').toUpperCase();
+            return status === 'CONCLUIDA' || status === 'CONCLUÍDA';
+        }).length;
+
+        const reservasCanceladas = reservas.filter(r => {
+            const status = (r.statusReserva || r.status || '').toUpperCase();
+            return status === 'CANCELADA';
+        }).length;
+
+        const reservasPendentes = reservas.filter(r => {
+            const status = (r.statusReserva || r.status || '').toUpperCase();
+            return status === 'PENDENTE';
+        }).length;
+
+        const reservasAprovadas = reservas.filter(r => {
+            const status = (r.statusReserva || r.status || '').toUpperCase();
+            return status === 'APROVADA';
+        }).length;
+
+        console.log('📊 Estatísticas de reservas por status:', {
+            total: totalReservas,
+            concluidas: reservasConcluidas,
+            canceladas: reservasCanceladas,
+            pendentes: reservasPendentes,
+            aprovadas: reservasAprovadas
+        });
+
         const tempoCatalogo = this.calculateTempoCatalogo(livros);
 
         return {
@@ -191,6 +220,11 @@ const dashboardService = {
             totalReservas,
             reservasRetiradas,
             reservasNaoRetiradas,
+            // ✅ NOVO: Campos para o gráfico de barras
+            reservasConcluidas,
+            reservasCanceladas,
+            reservasPendentes,
+            reservasAprovadas,
             tempoCatalogo,
             totalLivrosFiltrados: livros.length
         };
