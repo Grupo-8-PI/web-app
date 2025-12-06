@@ -5,7 +5,6 @@ import Sidebar from "../componentes/dashboard/Sidebar";
 import PainelUsuario from "../componentes/dashboard/PainelUsuario";
 import MenuTabs from "../componentes/dashboard/MenuTabs";
 
-// Páginas internas
 import Geral from "../componentes/dashboard/Geral";
 import Reservas from "../componentes/dashboard/Reservas";
 import Inconsistencias from "../componentes/dashboard/Inconsistencias";
@@ -16,11 +15,9 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // 🎯 Detecta se veio de uma navegação com tab específica
     useEffect(() => {
         if (location.state?.activeTab) {
             setActiveTab(location.state.activeTab);
-            // Limpa o state para não interferir em futuras navegações
             window.history.replaceState({}, document.title);
         }
     }, [location.state]);

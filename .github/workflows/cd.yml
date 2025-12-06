@@ -1,0 +1,201 @@
+name: CD - Continuous Deployment
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Ambiente para deploy'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '18'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/aejlivros-frontend
+
+jobs:
+  # Job de Build e Push da Imagem Docker
+  build-and-push:
+    name: 🐳 Build & Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        working-directory: ./AEJLivrosFront
+
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build-push.outputs.digest }}
+      image-main: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 🐳 Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Login no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Extrair metadata Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-
+
+      - name: 🏗️ Build e Push da imagem
+        id: build-push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./AEJLivrosFront
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  # Job de Deploy para Staging
+  deploy-staging:
+    name: 🎯 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_URL }}
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 🎯 Deploy para Staging
+        env:
+          IMAGE_TAGS: ${{ needs.build-and-push.outputs.image-tag }}
+          SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
+          FRONT_HOSTS: ${{ secrets.STAGING_FE_IPS }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+          API_IP: ${{ secrets.STAGING_API_IP }}
+        run: |
+          # Pegar apenas a primeira tag
+          IMAGE=$(echo "$IMAGE_TAGS" | head -n1)
+          echo "Using image: $IMAGE"
+          
+          echo "$SSH_KEY" > key.pem
+          chmod 600 key.pem
+          
+          for HOST in $(echo "$FRONT_HOSTS" | tr ',' ' '); do
+            echo "🎯 Atualizando $HOST..."
+            ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$HOST <<EOF
+              set -euxo pipefail
+              echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+              docker pull $IMAGE
+              docker stop frontend-container 2>/dev/null || true
+              docker rm frontend-container 2>/dev/null || true
+              
+              docker run -d --name frontend-container \
+                --restart unless-stopped \
+                -e API_URL=http://$API_IP:8080 \
+                -p 5173:80 \
+                $IMAGE
+              
+              docker logout ghcr.io
+          EOF
+          done
+          
+          rm key.pem
+          echo "✅ Deploy para Staging concluído!"
+
+  # Job de Deploy para Production
+  deploy-production:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy-staging]
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 🚀 Deploy para Production
+        env:
+          IMAGE_TAGS: ${{ needs.build-and-push.outputs.image-tag }}
+          SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
+          FRONT_HOSTS: ${{ secrets.PRODUCTION_FE_IPS }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+          API_IP: ${{ secrets.PRODUCTION_API_IP }}
+        run: |
+          # Pegar apenas a primeira tag
+          IMAGE=$(echo "$IMAGE_TAGS" | head -n1)
+          echo "Using image: $IMAGE"
+          
+          echo "$SSH_KEY" > key.pem
+          chmod 600 key.pem
+          
+          for HOST in $(echo "$FRONT_HOSTS" | tr ',' ' '); do
+            echo "🚀 Atualizando $HOST..."
+            ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$HOST <<EOF
+              set -euxo pipefail
+              echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+              docker pull $IMAGE
+              docker stop frontend-container 2>/dev/null || true
+              docker rm frontend-container 2>/dev/null || true
+              
+              docker run -d --name frontend-container \
+                --restart unless-stopped \
+                -e API_URL=http://$API_IP:8080 \
+                -p 5173:80 \
+                $IMAGE
+              
+              docker logout ghcr.io
+          EOF
+          done
+          
+          rm key.pem
+          echo "✅ Deploy para Production concluído!"
+
+  # Job de Notificação
+  notify:
+    name: 📢 Notificar resultado
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy-staging]
+    if: always()
+
+    steps:
+      - name: 📢 Notificação de sucesso
+        if: ${{ needs.build-and-push.result == 'success' && needs.deploy-staging.result == 'success' }}
+        run: |
+          echo "✅ Pipeline de CD executado com sucesso!"
+          echo "📦 Imagem publicada e deploy realizado"
+
+      - name: 📢 Notificação de falha
+        if: ${{ needs.build-and-push.result == 'failure' || needs.deploy-staging.result == 'failure' }}
+        run: |
+          echo "❌ Pipeline de CD falhou!"
+          echo "Por favor, verifique os logs para mais detalhes."
