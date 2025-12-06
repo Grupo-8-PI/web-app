@@ -46,7 +46,6 @@ const ModalLivro = ({ livro, onClose }) => {
                         <p><b>Sinopse com IA:</b> {livro.descricao || 'Descrição não disponível.'}</p>
                     <div className="buttonsArea">
                         <button>Reservar Livro</button>
-                        <button>Gerar Sinopse com IA</button>
                     </div>
                     </div>
                 </div>
