@@ -106,6 +106,13 @@ export default function Catalogo() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.search]);
 
+    // Se filtro for limpo, busca todos os livros
+    useEffect(() => {
+        if (filtros.limpar) {
+            setFiltros({ categoria: '', conservacoes: [] });
+            fetchLivros(0, { categoria: '', conservacoes: [] });
+        }
+    }, [filtros.limpar]);
     // Aplicar filtro de categoria quando vindo da navegação
     useEffect(() => {
         if (location.state?.categoriaId) {
@@ -115,7 +122,6 @@ export default function Catalogo() {
         }
     }, [location.state]);
 
-    // Carregar livros quando mudar os filtros
     useEffect(() => {
         if (filtros.categoria || filtros.conservacoes.length > 0) {
             fetchLivros(0, filtros);
@@ -123,29 +129,16 @@ export default function Catalogo() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filtros]);
 
-    const handleFilterChange = (newFiltros) => {
-        setFiltros(newFiltros);
-        setPage(0);
-    };
-
-    const handleLimparFiltros = () => {
-        setFiltros({ categoria: '', conservacoes: [] });
-        fetchLivros(0, { categoria: '', conservacoes: [] });
-    };
-
     const handlePageChange = (newPage) => {
         fetchLivros(newPage, filtros);
     };
 
     return (
-        <div>
+        <div style={{position: 'fixed', width: '99%', minHeight: '100vh'}}>
             <Header />
             <div className="cat-cont">
                 <div className="filtroEsp">
-                    <FiltroCatalogo 
-                        onFilterChange={handleFilterChange}
-                        onLimparFiltros={handleLimparFiltros}
-                    />
+                    <FiltroCatalogo filtros={filtros} onChangeFiltros={setFiltros}/>
                 </div>
                 <div className="catAll">
                     <div className="catEsp">
