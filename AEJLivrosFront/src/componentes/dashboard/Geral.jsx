@@ -20,10 +20,12 @@ const Geral = () => {
   useEffect(() => {
     loadCategorias();
     loadDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     loadDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const loadCategorias = async () => {

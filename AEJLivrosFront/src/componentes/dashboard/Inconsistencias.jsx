@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import reservaService from "../../services/reservaService";
 import "./Tabela.css";
-import { parseBackendDate } from "../../utils/dateUtils";
+import { parseBackendDate, formatDateBR } from "../../utils/dateUtils";
 
 const Inconsistencias = ({ onCountChange }) => {
   const [expandedIndex, setExpandedIndex] = useState(null);
@@ -14,6 +14,7 @@ const Inconsistencias = ({ onCountChange }) => {
 
   useEffect(() => {
     carregarReservasVencidas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const carregarReservasVencidas = async () => {

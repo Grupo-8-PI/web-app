@@ -3,7 +3,7 @@ import { useSafeInput } from '../hooks/useSafeInput';
 import { authService } from '../services/authService';
 import { loginRateLimiter } from '../utils/securityUtils';
 import { handleHttpError, validateForm } from '../utils/errorHandler';
-import { extractRole, getRedirectRoute, normalizeRole } from '../utils/roleUtils';
+import { extractRole, getRedirectRoute } from '../utils/roleUtils';
 import api from '../services/api';
 
 export function LoginForm({ onCadastroClick }) {

@@ -3,7 +3,7 @@ import reservaService from "../../services/reservaService";
 import usuarioService from "../../services/usuarioService";
 import livroService from "../../services/livroService";
 import "./Tabela.css";
-import { parseBackendDate, formatDateBR } from "../../utils/dateUtils";
+import { formatDateBR } from "../../utils/dateUtils";
 
 const Reservas = ({ onCountChange }) => {
   const [expandedIndex, setExpandedIndex] = useState(null);
@@ -18,6 +18,7 @@ const Reservas = ({ onCountChange }) => {
   // Carregar reservas ao montar o componente
   useEffect(() => {
     carregarReservas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtroStatus]);
 
   const carregarReservas = async () => {

@@ -1,5 +1,5 @@
 import api from './api';
-import { parseBackendDate, isToday, isPastDate } from '../utils/dateUtils';
+import { parseBackendDate } from '../utils/dateUtils';
 
 const dashboardService = {
     async getAllLivros(page = 0, size = 1000) {

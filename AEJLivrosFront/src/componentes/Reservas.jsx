@@ -3,7 +3,7 @@ import './reservas.css';
 import { listarReservasUsuario, cancelarReserva, buscarLivroPorId } from '../services/api';
 import { authService } from '../services/authService';
 import ModalReserva from './ModalReserva';
-import { parseBackendDate, formatDateBR } from '../utils/dateUtils';
+import { formatDateBR } from '../utils/dateUtils';
 
 const Reservas = () => {
     const [reservas, setReservas] = useState([]);

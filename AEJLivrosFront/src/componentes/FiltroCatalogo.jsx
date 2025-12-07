@@ -29,7 +29,7 @@ export default function FiltroCatalogo({ onFilterChange, onLimparFiltros }) {
         conservacoes: conservacoesSelecionadas
       });
     }
-  }, [categoriaSelecionada, conservacoesSelecionadas]);
+  }, [categoriaSelecionada, conservacoesSelecionadas, onFilterChange]);
 
   const handleConservacaoChange = (conservacaoId) => {
     setConservacoesSelecionadas(prev => {

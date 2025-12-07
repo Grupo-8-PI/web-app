@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './ModalReserva.css';
-import { parseBackendDate, formatDateTimeBR, formatRemainingDays } from '../utils/dateUtils';
+import { formatDateTimeBR, formatRemainingDays } from '../utils/dateUtils';
 
 const ModalReserva = ({ reserva, onClose }) => {
     if (!reserva) return null;

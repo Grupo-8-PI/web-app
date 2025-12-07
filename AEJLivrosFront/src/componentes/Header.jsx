@@ -10,7 +10,6 @@ export function Header() {
     const [showBuscaModal, setShowBuscaModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
-    const [isSearching, setIsSearching] = useState(false);
     const userIconRef = useRef(null);
 
     const handleUserClick = () => {
@@ -27,7 +26,6 @@ export function Header() {
         
         if (query.trim().length > 0) {
             setShowBuscaModal(true);
-            setIsSearching(true);
             
             try {
                 const response = await livroService.buscar(query);
@@ -51,8 +49,6 @@ export function Header() {
             } catch (error) {
                 console.error('Erro ao buscar livros:', error);
                 setSearchResults([]);
-            } finally {
-                setIsSearching(false);
             }
         } else {
             setShowBuscaModal(false);

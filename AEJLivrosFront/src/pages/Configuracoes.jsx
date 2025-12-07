@@ -53,6 +53,7 @@ export default function Configuracoes() {
             return;
         }
         loadUserData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [navigate]);
 
     const loadUserData = async () => {

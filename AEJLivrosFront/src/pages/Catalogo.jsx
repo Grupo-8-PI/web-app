@@ -103,6 +103,7 @@ export default function Catalogo() {
     // Carregar livros quando mudar a URL
     useEffect(() => {
         fetchLivros(0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.search]);
 
     // Aplicar filtro de categoria quando vindo da navegação
@@ -119,6 +120,7 @@ export default function Catalogo() {
         if (filtros.categoria || filtros.conservacoes.length > 0) {
             fetchLivros(0, filtros);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filtros]);
 
     const handleFilterChange = (newFiltros) => {
