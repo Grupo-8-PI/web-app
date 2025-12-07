@@ -2,7 +2,6 @@ import React from 'react';
 import './cardLivro.css';
 
 export default function CardLivro({ 
-    id,
     titulo, 
     autor, 
     imagem, 
@@ -10,7 +9,6 @@ export default function CardLivro({
     ano, 
     categoria,
     conservacao,
-    editora,
     paginas,
     onVerDetalhes 
 }) {
