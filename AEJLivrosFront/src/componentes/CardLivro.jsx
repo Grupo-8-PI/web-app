@@ -1,5 +1,5 @@
 import React from 'react';
-import './CardLivro.css';
+import './cardLivro.css';
 
 export default function CardLivro({ 
     id,
