@@ -89,7 +89,7 @@ export function CadastroForm({ onVoltarLogin }) {
                 let errorData;
                 try {
                     errorData = await response.json();
-                } catch (e) {
+                } catch {
                     errorData = { message: 'Erro ao processar resposta do servidor' };
                 }
 
