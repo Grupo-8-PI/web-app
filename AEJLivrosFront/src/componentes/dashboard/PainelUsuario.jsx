@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import dashboardService from "../../services/dashboardService";
 import usuarioService from "../../services/usuarioService";
 import { authService } from "../../services/authService";
+import { normalizeRole, getRoleDisplayName, getRoleFullName } from "../../utils/roleUtils";
 import "./PainelUsuario.css";
 
 const PainelUsuario = () => {
@@ -43,10 +44,10 @@ const PainelUsuario = () => {
               console.error('❌ DEBUG PainelUsuario - ID não encontrado no token');
               // Se não encontrar ID, usa dados do sessionStorage como fallback
               const nome = sessionStorage.getItem("userName") || "Usuário";
-              const role = sessionStorage.getItem("userRole") || "CLIENTE";
+              const role = normalizeRole(sessionStorage.getItem("userRole"));
               setUserName(nome);
-              setUserRole(role === "ADMIN" ? "Administrador" : "Cliente");
-              setUserCargo(role === "ADMIN" ? "Administrador do Sistema" : "Cliente do Sistema");
+              setUserRole(getRoleDisplayName(role));
+              setUserCargo(getRoleFullName(role));
               setLoading(false);
               return;
             }
@@ -54,10 +55,10 @@ const PainelUsuario = () => {
             console.error('❌ DEBUG PainelUsuario - Erro ao decodificar token:', error);
             // Fallback para sessionStorage
             const nome = sessionStorage.getItem("userName") || "Usuário";
-            const role = sessionStorage.getItem("userRole") || "CLIENTE";
+            const role = normalizeRole(sessionStorage.getItem("userRole"));
             setUserName(nome);
-            setUserRole(role === "ADMIN" ? "Administrador" : "Cliente");
-            setUserCargo(role === "ADMIN" ? "Administrador do Sistema" : "Cliente do Sistema");
+            setUserRole(getRoleDisplayName(role));
+            setUserCargo(getRoleFullName(role));
             setLoading(false);
             return;
           }
@@ -65,10 +66,10 @@ const PainelUsuario = () => {
           console.error('❌ DEBUG PainelUsuario - Token não encontrado');
           // Fallback para sessionStorage
           const nome = sessionStorage.getItem("userName") || "Usuário";
-          const role = sessionStorage.getItem("userRole") || "CLIENTE";
+          const role = normalizeRole(sessionStorage.getItem("userRole"));
           setUserName(nome);
-          setUserRole(role === "ADMIN" ? "Administrador" : "Cliente");
-          setUserCargo(role === "ADMIN" ? "Administrador do Sistema" : "Cliente do Sistema");
+          setUserRole(getRoleDisplayName(role));
+          setUserCargo(getRoleFullName(role));
           setLoading(false);
           return;
         }
@@ -81,27 +82,25 @@ const PainelUsuario = () => {
       // Atualizar estados com dados do backend
       setUserName(data.nome || "Usuário");
       
-      // Determinar role baseado no tipo_usuario
-      const tipoUsuario = data.tipo_usuario || "CLIENTE";
-      setUserRole(tipoUsuario === "ADMIN" ? "Administrador" : "Cliente");
-      
-      // Usar tipo_usuario como cargo
-      setUserCargo(tipoUsuario === "ADMIN" ? "Administrador do Sistema" : "Cliente do Sistema");
+      // Determinar role baseado no tipo_usuario e normalizar
+      const userRole = normalizeRole(data.tipo_usuario);
+      setUserRole(getRoleDisplayName(userRole));
+      setUserCargo(getRoleFullName(userRole));
 
       // Atualizar sessionStorage para manter consistência
       sessionStorage.setItem("userName", data.nome || "Usuário");
-      sessionStorage.setItem("userRole", tipoUsuario);
+      sessionStorage.setItem("userRole", userRole);
 
     } catch (error) {
       console.error("❌ Erro ao carregar dados do usuário:", error);
       
       // Fallback para sessionStorage caso a API falhe
       const nome = sessionStorage.getItem("userName") || "Usuário";
-      const role = sessionStorage.getItem("userRole") || "CLIENTE";
+      const role = normalizeRole(sessionStorage.getItem("userRole"));
       
       setUserName(nome);
-      setUserRole(role === "ADMIN" ? "Administrador" : "Cliente");
-      setUserCargo(role === "ADMIN" ? "Administrador do Sistema" : "Cliente do Sistema");
+      setUserRole(getRoleDisplayName(role));
+      setUserCargo(getRoleFullName(role));
     } finally {
       setLoading(false);
     }

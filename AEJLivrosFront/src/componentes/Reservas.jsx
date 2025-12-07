@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import './reservas.css';
 import { listarReservasUsuario, cancelarReserva, buscarLivroPorId } from '../services/api';
 import { authService } from '../services/authService';
+import ModalReserva from './ModalReserva';
+import { parseBackendDate, formatDateBR } from '../utils/dateUtils';
 
 const Reservas = () => {
     const [reservas, setReservas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [reservaSelecionada, setReservaSelecionada] = useState(null);
 
     useEffect(() => {
         carregarReservas();
@@ -85,7 +88,11 @@ const Reservas = () => {
     };
 
     const handleVerReserva = (reserva) => {
-        alert(`Abrindo detalhes da reserva: ${reserva.id}`);
+        setReservaSelecionada(reserva);
+    };
+
+    const handleFecharModal = () => {
+        setReservaSelecionada(null);
     };
 
     if (loading) {
@@ -128,11 +135,11 @@ const Reservas = () => {
                             <h3>{reserva.livro?.titulo || "Livro desconhecido"}</h3>
 
                             <p className="reservaDates">
-                                Reserva feita em: {new Date(reserva.dtReserva).toLocaleDateString("pt-BR")}
+                                Reserva feita em: {formatDateBR(reserva.dtReserva)}
                             </p>
 
                             <p className="reservaDates">
-                                Data limite: {new Date(reserva.dtLimite).toLocaleDateString("pt-BR")}
+                                Data limite: {formatDateBR(reserva.dtLimite)}
                             </p>
 
                             <div className="reservaActions">
@@ -166,6 +173,11 @@ const Reservas = () => {
                     </div>
                 ))
             )}
+            
+            <ModalReserva 
+                reserva={reservaSelecionada} 
+                onClose={handleFecharModal}
+            />
         </div>
     );
 };

@@ -95,7 +95,7 @@ const Geral = () => {
           fontWeight: '500'
         }}>
             Exibindo dados de <strong>{stats.totalLivrosFiltrados}</strong> livro(s)
-          {filters.categoria && <span> da categoria <strong>{filters.categoria}</strong></span>}
+          {filters.categoria && <span> da categoria <strong>{categorias.find(c => c.id === parseInt(filters.categoria))?.nome || filters.categoria}</strong></span>}
           {filters.mes !== null && <span> do mês filtrado</span>}
         </div>
       )}

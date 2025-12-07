@@ -1,4 +1,5 @@
 import { isValidJwtFormat } from '../utils/securityUtils';
+import { normalizeRole, extractRole } from '../utils/roleUtils';
 
 class AuthService {
   constructor() {
@@ -131,6 +132,29 @@ class AuthService {
 
     return null;
 }
+
+  /**
+   * Get user role from stored user data or token
+   * @returns {string} Normalized role (admin or cliente)
+   */
+  getUserRole() {
+    const user = this.getUser();
+    if (user && user.role) {
+      return normalizeRole(user.role);
+    }
+
+    const token = this.getToken();
+    if (token) {
+      try {
+        const payload = this.decodeToken(token);
+        return extractRole(payload);
+      } catch {
+        return 'cliente';
+      }
+    }
+
+    return 'cliente';
+  }
 }
 
 export const authService = new AuthService();

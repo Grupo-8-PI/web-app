@@ -1,6 +1,16 @@
 import api from "../services/api";
 
 const usuarioService = {
+  getCurrentUser: async () => {
+    try {
+      const response = await api.get('/usuarios/me');
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar usuário atual:', error);
+      throw error;
+    }
+  },
+
   getUsuarioById: async (id) => {
     try {
       const response = await api.get(`/usuarios/${id}`);

@@ -20,6 +20,13 @@ export const useFetchBooks = (page = 0, size = 9) => {
                 titulo: book.titulo,
                 autor: book.autor,
                 imagem: book.capa || book.imagem || null,
+                preco: book.preco,
+                ano: book.anoPublicacao || book.ano,
+                categoria: book.nomeCategoria || book.categoria || null,
+                conservacao: book.estadoConservacao || book.conservacao || null,
+                editora: book.editora,
+                paginas: book.paginas,
+                descricao: book.descricao || null
             }));
 
             setBooks(normalizedBooks);

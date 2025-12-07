@@ -1,6 +1,6 @@
 const statusMessages = {
     400: 'Dados inválidos. Verifique as informações e tente novamente.',
-    401: 'Email ou senha incorretos. Tente novamente.',
+    401: 'Houve um erro no login, suas credenciais estão inválidas ou o servidor está offline, tente novamente!',
     403: 'Acesso negado. Você não tem permissão para realizar esta ação.',
     404: 'Recurso não encontrado.',
     409: 'Já existe um cadastro com estes dados.',
@@ -41,7 +41,7 @@ const fieldMessages = {
     }
 };
 
-function extractErrorMessage(errorData) {
+function extractErrorMessage(errorData, context = '') {
     if (errorData.message) {
         const msg = errorData.message.toLowerCase();
         
@@ -66,7 +66,8 @@ function extractErrorMessage(errorData) {
             return fieldMessages.senha.weak;
         }
         
-        if (msg.includes('credenciais') || msg.includes('não autorizado')) {
+        // Skip credenciais check for login context - let status code handle it
+        if ((msg.includes('credenciais') || msg.includes('não autorizado')) && context !== 'login') {
             return 'Email ou senha incorretos.';
         }
         
@@ -114,7 +115,7 @@ export function handleHttpError(error, context = '') {
     
     console.log(`[ErrorHandler] Status: ${status}, Data:`, data);
     
-    const specificMessage = extractErrorMessage(data);
+    const specificMessage = extractErrorMessage(data, context);
     if (specificMessage) {
         return {
             message: specificMessage,

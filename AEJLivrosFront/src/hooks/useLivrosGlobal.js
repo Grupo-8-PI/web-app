@@ -22,7 +22,14 @@ export function useLivrosGlobal() {
                     id: l.id || l._id,
                     titulo: l.titulo || l.nome || l.title || '',
                     autor: l.autor || l.autores || '',
-                    capa: l.capa || l.imagem || l.cover || null,
+                    imagem: l.capa || l.imagem || l.cover || null,
+                    preco: l.preco,
+                    ano: l.anoPublicacao || l.ano,
+                    categoria: l.nomeCategoria || l.categoria || null,
+                    conservacao: l.estadoConservacao || l.conservacao || null,
+                    editora: l.editora,
+                    paginas: l.paginas,
+                    descricao: l.descricao || null
                 }));
                 
                 console.log('Livros mapeados:', mapped);

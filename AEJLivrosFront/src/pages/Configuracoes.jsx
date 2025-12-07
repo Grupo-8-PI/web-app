@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import usuarioService from "../services/usuarioService";
 import { authService } from "../services/authService";
+import { normalizeRole, getRoleDisplayName } from "../utils/roleUtils";
+import { formatDateBR } from "../utils/dateUtils";
 
 export default function Configuracoes() {
     const navigate = useNavigate();
@@ -45,51 +47,20 @@ export default function Configuracoes() {
     });
 
     useEffect(() => {
+        if (!authService.isAuthenticated()) {
+            console.log('❌ Usuário não autenticado, redirecionando para home');
+            navigate('/');
+            return;
+        }
         loadUserData();
-    }, []);
+    }, [navigate]);
 
     const loadUserData = async () => {
         try {
             setLoading(true);
-            let user = authService.getUser();
-
-            console.log('🔍 DEBUG - User do sessionStorage:', user);
-
-            // Se não encontrar user ou user.id, tenta extrair do token
-            if (!user || !user.id) {
-                const token = authService.getToken();
-                console.log('🔍 DEBUG - Token:', token);
-
-                if (token) {
-                    try {
-                        const payload = authService.decodeToken(token);
-                        console.log('🔍 DEBUG - Payload do token:', payload);
-                        
-                        // O ID pode estar em diferentes campos dependendo do backend
-                        const userId = payload.id || payload.sub || payload.userId;
-                        
-                        if (userId) {
-                            console.log('✅ DEBUG - ID encontrado no token:', userId);
-                            user = { id: userId };
-                        } else {
-                            console.error('❌ DEBUG - ID não encontrado no token');
-                            navigate("/login");
-                            return;
-                        }
-                    } catch (error) {
-                        console.error('❌ DEBUG - Erro ao decodificar token:', error);
-                        navigate("/login");
-                        return;
-                    }
-                } else {
-                    console.error('❌ DEBUG - Token não encontrado');
-                    navigate("/login");
-                    return;
-                }
-            }
-
-            console.log('✅ DEBUG - Buscando dados do usuário com ID:', user.id);
-            const data = await usuarioService.getUsuarioById(user.id);
+            
+            console.log('🔍 DEBUG - Buscando dados do usuário atual via /usuarios/me');
+            const data = await usuarioService.getCurrentUser();
             console.log('✅ DEBUG - Dados recebidos do backend:', data);
 
             setUserData(data);
@@ -100,13 +71,15 @@ export default function Configuracoes() {
                 dtNascimento: data.dtNascimento || ""
             });
 
-            // Carregar histórico de compras
-            loadCompras(user.id);
+            if (data.id) {
+                loadCompras(data.id);
+            }
         } catch (error) {
             console.error("❌ Erro ao carregar dados:", error);
             setError("Erro ao carregar seus dados. Tente novamente.");
 
-            if (error.response?.status === 401) {
+            if (error.response?.status === 401 || error.response?.status === 403) {
+                console.log('❌ Não autorizado, fazendo logout');
                 authService.logout();
             }
         } finally {
@@ -177,9 +150,7 @@ export default function Configuracoes() {
     };
 
     const formatDate = (dateString) => {
-        if (!dateString) return "-";
-        const date = new Date(dateString);
-        return date.toLocaleDateString("pt-BR");
+        return formatDateBR(dateString);
     };
 
     const formatCPF = (cpf) => {
@@ -252,7 +223,7 @@ export default function Configuracoes() {
                 telefone: formData.telefone,
                 cpf: userData.cpf,
                 dtNascimento: formData.dtNascimento,
-                tipo_usuario: userData.tipo_usuario,
+                tipo_usuario: normalizeRole(userData.tipo_usuario),
                 senha: "KEEP_CURRENT_PASSWORD_DO_NOT_CHANGE_123456" // Senha placeholder de 6+ caracteres
             };
 
@@ -267,7 +238,7 @@ export default function Configuracoes() {
                     id: userData.id,
                     nome: formData.nome,
                     email: formData.email,
-                    tipo_usuario: userData.tipo_usuario
+                    role: normalizeRole(userData.tipo_usuario)
                 });
             }
 
@@ -331,7 +302,7 @@ export default function Configuracoes() {
                 telefone: userData.telefone,
                 cpf: userData.cpf,
                 dtNascimento: userData.dtNascimento,
-                tipo_usuario: userData.tipo_usuario,
+                tipo_usuario: normalizeRole(userData.tipo_usuario),
                 senha: senhaData.novaSenha // Aqui SIM enviamos a senha
             };
 
@@ -344,7 +315,7 @@ export default function Configuracoes() {
                     id: userData.id,
                     nome: userData.nome,
                     email: userData.email,
-                    tipo_usuario: userData.tipo_usuario
+                    role: normalizeRole(userData.tipo_usuario)
                 });
             }
 
@@ -478,7 +449,7 @@ export default function Configuracoes() {
                                 <div className="perfil-header">
                                     <div>
                                         <h3>{userData.nome}</h3>
-                                        <p>Tipo: {userData.tipo_usuario}</p>
+                                        <p>Tipo: {getRoleDisplayName(userData.tipo_usuario)}</p>
                                     </div>
                                 </div>
 
@@ -729,7 +700,7 @@ export default function Configuracoes() {
                                         o livro e clique em "Reservar".
                                     </li>
                                     <li>
-                                        ⏰ Qual o prazo para retirar meu livro? <br /> Até 7 dias
+                                        ⏰ Qual o prazo para retirar meu livro? <br /> Até 2 dias
                                         úteis após a reserva.
                                     </li>
                                     <li>

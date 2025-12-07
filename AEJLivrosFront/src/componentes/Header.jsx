@@ -3,15 +3,15 @@ import '../StyleAej.css'
 import { Link } from 'react-router-dom';
 import UserModal from './UserModal';
 import BuscaModal from './BuscaModal';
-import { useLivrosGlobal } from '../hooks/useLivrosGlobal';
+import livroService from '../services/livroService';
 
 export function Header() {
     const [showModal, setShowModal] = useState(false);
     const [showBuscaModal, setShowBuscaModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
     const userIconRef = useRef(null);
-    const { buscarLivrosLocal } = useLivrosGlobal();
 
     const handleUserClick = () => {
         setShowModal((prev) => !prev);
@@ -20,17 +20,40 @@ export function Header() {
     const handleCloseModal = () => {
         setShowModal(false);
     };
-    const handleSearchChange = (e) => {
+    
+    const handleSearchChange = async (e) => {
         const query = e.target.value;
         setSearchQuery(query);
         
-        console.log('Search query:', query);
-        
         if (query.trim().length > 0) {
             setShowBuscaModal(true);
-            const resultados = buscarLivrosLocal(query);
-            console.log('Resultados encontrados:', resultados);
-            setSearchResults(resultados);
+            setIsSearching(true);
+            
+            try {
+                const response = await livroService.buscar(query);
+                const livros = response.livros || response.content || response || [];
+                
+                const normalizedResults = livros.map(l => ({
+                    id: l.id,
+                    titulo: l.titulo,
+                    autor: l.autor,
+                    imagem: l.capa || l.imagem || null,
+                    preco: l.preco,
+                    ano: l.anoPublicacao || l.ano,
+                    categoria: l.nomeCategoria || l.categoria || null,
+                    conservacao: l.estadoConservacao || l.conservacao || null,
+                    editora: l.editora,
+                    paginas: l.paginas,
+                    descricao: l.descricao || null
+                }));
+                
+                setSearchResults(normalizedResults);
+            } catch (error) {
+                console.error('Erro ao buscar livros:', error);
+                setSearchResults([]);
+            } finally {
+                setIsSearching(false);
+            }
         } else {
             setShowBuscaModal(false);
             setSearchResults([]);

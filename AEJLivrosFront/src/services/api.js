@@ -31,6 +31,19 @@ api.interceptors.response.use(
   }
 );
 
+/**
+ * Creates a new reservation (secure API)
+ * @param {Object} payload - Reservation data
+ * @param {number} payload.livroId - REQUIRED - ID of the book to reserve
+ * @param {string} [payload.statusReserva] - OPTIONAL - defaults to "Confirmada"
+ * @returns {Promise} Response with server-calculated dtReserva, dtLimite, and totalReserva
+ * 
+ * SECURITY NOTE:
+ * - dtReserva is AUTO-SET by server to current time
+ * - dtLimite is AUTO-SET by server to dtReserva + 48 hours
+ * - totalReserva is AUTO-SET by server from livro.preco
+ * - Do NOT send these fields from client (security risk)
+ */
 export const criarReserva = (payload) => {
   return api.post('/reservas', payload);
 };

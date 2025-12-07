@@ -938,20 +938,11 @@ body {
 /* Sobre */
 .primeiraSobre {
   width: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-image: url('./assets/backgroundSobre.png');
   background-size: cover;
-}
-
-.sobreContent {
-  width: 100%;
-  height: 80vh;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  gap: 50px;
-  margin-top: 50px;
 }
 
 .sobreContent {
@@ -976,6 +967,15 @@ body {
   margin-bottom: 10%;
 }
 
+.sobreContent h1 span {
+  font-size: 3rem;
+  color: #09386B;
+  font-weight: 800;
+  margin: 0;
+  position: relative;
+  left: 10%;
+}
+
 .sobreContent p {
   font-size: 3rem;
   color: #09386B;
@@ -987,9 +987,6 @@ body {
 
 .sobreContent h2 {
   font-family: "Brush Script MT", "Comic Sans MS", cursive;
-  ;
-  position: relative;
-  left: 50%;
   font-size: 4rem;
   color: #BF9E53;
   margin: 0;
@@ -1014,6 +1011,15 @@ body {
   font-weight: 800;
   width: 100%;
   text-align: center;
+}
+
+.servicosSobre {
+  width: 100%;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  padding: 48px 0;
 }
 
 .carrossel-induzido {
@@ -1209,6 +1215,16 @@ body {
   margin: 0;
   width: 50%;
   margin-bottom: 15%;
+}
+
+.sobreContent2 h1 span {
+  font-family: "Brush Script MT", "Comic Sans MS", cursive;
+  position: relative;
+  left: 10%;
+  font-size: 4rem;
+  color: #BF9E53;
+  margin: 0;
+  font-weight: 550;
 }
 
 .sobreContent2 p {

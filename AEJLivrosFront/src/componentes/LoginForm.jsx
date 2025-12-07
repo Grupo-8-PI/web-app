@@ -3,6 +3,7 @@ import { useSafeInput } from '../hooks/useSafeInput';
 import { authService } from '../services/authService';
 import { loginRateLimiter } from '../utils/securityUtils';
 import { handleHttpError, validateForm } from '../utils/errorHandler';
+import { extractRole, getRedirectRoute, normalizeRole } from '../utils/roleUtils';
 import api from '../services/api';
 
 export function LoginForm({ onCadastroClick }) {
@@ -67,12 +68,22 @@ export function LoginForm({ onCadastroClick }) {
             const dados = response.data;
 
             console.log('✅ Token extraído:', dados.token); 
-            console.log('✅ Tipo de usuário:', dados.tipoUsuario || dados.tipo_usuario);
+            console.log('✅ Dados completos do login:', dados);
+            
+            // Extract and normalize role using utility
+            const userRole = extractRole(dados);
+            console.log('✅ Tipo de usuário normalizado:', userRole);
+            
+            // Extract user ID from response (try different field names)
+            const userId = dados.id || dados.userId || dados.usuarioId;
+            console.log('✅ User ID extraído:', userId);
 
             const tokenSalvo = authService.setToken(dados.token, {
-                userId: dados.userId,
+                id: userId,
+                userId: userId,
                 nome: dados.nome,
-                email: dados.email
+                email: dados.email,
+                role: userRole
             });
 
             console.log('✅ Token salvo?', tokenSalvo); 
@@ -81,25 +92,12 @@ export function LoginForm({ onCadastroClick }) {
                 throw new Error('Erro ao processar autenticação');
             }
 
-            const tipoUsuario = dados.cargo || dados.tipoUsuario || dados.tipo_usuario;
-
-            if (!tipoUsuario) {
-                console.error('❌ tipo_usuario não encontrado na resposta!');
-                throw new Error('Tipo de usuário não encontrado');
-            }
-
-            let rotaDestino;
+            // Get redirect route based on role
+            const rotaDestino = getRedirectRoute(userRole);
+            console.log(`[LoginForm] ✅ Redirecionando ${userRole} para ${rotaDestino}`);
             
-            if (tipoUsuario === 'admin') {
-                rotaDestino = '/dashboard';
-                console.log('[LoginForm] ✅ Redirecionando admin para /dashboard');
-            } else if (tipoUsuario === 'cliente') {
-                rotaDestino = '/catalogo';
-                console.log('[LoginForm] ✅ Redirecionando cliente para /catalogo');
-            } else {
-                console.error('❌ Tipo de usuário desconhecido:', tipoUsuario);
-                throw new Error('Tipo de usuário inválido');
-            }
+            // Store normalized role
+            sessionStorage.setItem('userRole', userRole);
 
             setMensagem({ 
                 text: 'Login realizado com sucesso! Redirecionando...', 

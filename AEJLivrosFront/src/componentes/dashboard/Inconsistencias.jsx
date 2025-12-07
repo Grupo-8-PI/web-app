@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import reservaService from "../../services/reservaService";
 import "./Tabela.css";
+import { parseBackendDate } from "../../utils/dateUtils";
 
-const Inconsistencias = () => {
+const Inconsistencias = ({ onCountChange }) => {
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [reservasVencidas, setReservasVencidas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,16 +35,22 @@ const Inconsistencias = () => {
       const agora = new Date();
       const vencidas = todasReservas.filter(reserva => {
         if (!reserva.dtLimite) return false;
-        const dataLimite = new Date(reserva.dtLimite);
+        const dataLimite = parseBackendDate(reserva.dtLimite);
         return dataLimite < agora;
       });
       
       console.log('Reservas vencidas encontradas:', vencidas.length);
       setReservasVencidas(vencidas);
+      if (onCountChange) {
+        onCountChange(vencidas.length);
+      }
     } catch (err) {
       setError('Erro ao carregar inconsistências. Tente novamente mais tarde.');
       console.error('Erro ao carregar inconsistências:', err);
       setReservasVencidas([]);
+      if (onCountChange) {
+        onCountChange(0);
+      }
     } finally {
       setLoading(false);
     }
@@ -77,6 +84,7 @@ const Inconsistencias = () => {
     try {
       await reservaService.deletarReserva(reservaId);
       alert('Reserva cancelada com sucesso!');
+      await carregarReservasVencidas();
       carregarReservasVencidas();
       setExpandedIndex(null);
     } catch (err) {
@@ -110,8 +118,7 @@ const Inconsistencias = () => {
   };
 
   const formatarData = (data) => {
-    if (!data) return 'N/A';
-    return new Date(data).toLocaleDateString('pt-BR');
+    return formatDateBR(data);
   };
 
   const indexOfLastItem = currentPage * itemsPerPage;
