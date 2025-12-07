@@ -95,6 +95,13 @@ function Charts2({ stats, loading }) {
     return null;
   };
 
+  const isValidNumber = (value) => {
+    return value !== null && value !== undefined && !isNaN(value) && value !== 0;
+  };
+
+  const hasRetiradaData = isValidNumber(stats.taxaRetirada);
+  const hasDesistenciaData = isValidNumber(stats.taxaDesistencia);
+
   return (
     <div className="charts">
       <div className="box">

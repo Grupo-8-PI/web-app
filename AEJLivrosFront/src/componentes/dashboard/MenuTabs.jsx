@@ -1,28 +1,25 @@
 import "./MenuTabs.css";
 
-const MenuTabs = ({ activeTab, onChange }) => {
+const MenuTabs = ({ activeTab, onChange, reservasCount = 0, inconsistenciasCount = 0 }) => {
   const tabs = [
     { key: "Geral", label: "Geral" },
-    { key: "Reservas", label: "Reservas" },
-    { key: "Inconsistencias", label: "Inconsistências" },
+    { key: "Reservas", label: "Reservas", count: reservasCount },
+    { key: "Inconsistencias", label: "Inconsistências", count: inconsistenciasCount },
     { key: "Visao-estante", label: "Visão Estante" },
   ];
 
   return (
     <div className="menu-tabs">
       <ul className="tabs-list">
-        {tabs.map(({ key, label }) => (
+        {tabs.map(({ key, label, count }) => (
           <li
             key={key}
             className={`tab-item ${activeTab === key ? "active" : ""}`}
             onClick={() => onChange(key)}
           >
             {label}
-            {key === "Inconsistencias" && (
-              <span className="tooltip">3</span>
-            )}
-            {key === "Reservas" && (
-              <span className="tooltip">6</span>
+            {count !== undefined && count > 0 && (
+              <span className="tooltip">{count}</span>
             )}
           </li>
         ))}

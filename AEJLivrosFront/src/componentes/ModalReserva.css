@@ -1,0 +1,258 @@
+.modal-reserva-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.modal-reserva-content {
+    background: #fff;
+    border-radius: 12px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.modal-reserva-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: #666;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.modal-reserva-close:hover {
+    background: #f0f0f0;
+    color: #09386B;
+}
+
+.modal-reserva-title {
+    margin: 0;
+    padding: 24px 24px 16px;
+    border-bottom: 2px solid #e0e0e0;
+    color: #09386B;
+    font-size: 24px;
+}
+
+.modal-reserva-body {
+    padding: 24px;
+}
+
+.modal-reserva-livro {
+    display: flex;
+    gap: 20px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 24px;
+}
+
+.modal-reserva-capa {
+    flex-shrink: 0;
+    width: 120px;
+    height: 180px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal-reserva-capa img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.capa-mock {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #09386B 0%, #0a4d8f 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 48px;
+}
+
+.modal-reserva-livro-info {
+    flex: 1;
+}
+
+.modal-reserva-livro-info h3 {
+    margin: 0 0 12px 0;
+    color: #333;
+    font-size: 20px;
+}
+
+.modal-reserva-livro-info p {
+    margin: 6px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.modal-reserva-detalhes {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.detalhe-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.detalhe-item.detalhe-total {
+    background: #e8f0f7;
+    border: 2px solid #09386B;
+}
+
+.detalhe-label {
+    font-weight: 500;
+    color: #666;
+    font-size: 14px;
+}
+
+.detalhe-valor {
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+}
+
+.detalhe-preco {
+    color: #09386B;
+    font-size: 20px;
+}
+
+.detalhe-destaque {
+    color: #d32f2f;
+    font-size: 16px;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status-confirmada {
+    background: #4caf50;
+    color: white;
+}
+
+.status-pendente {
+    background: #ff9800;
+    color: white;
+}
+
+.status-cancelada {
+    background: #f44336;
+    color: white;
+}
+
+.status-concluida {
+    background: #2196f3;
+    color: white;
+}
+
+.modal-reserva-instrucoes {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 24px;
+}
+
+.modal-reserva-instrucoes h4 {
+    margin: 0 0 12px 0;
+    color: #856404;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-reserva-instrucoes h4 i {
+    font-size: 20px;
+}
+
+.modal-reserva-instrucoes ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #856404;
+}
+
+.modal-reserva-instrucoes li {
+    margin: 8px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.modal-reserva-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-fechar {
+    padding: 12px 32px;
+    background: #09386B;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-fechar:hover {
+    background: #072d57;
+}
+
+@media (max-width: 600px) {
+    .modal-reserva-overlay {
+        padding: 10px;
+    }
+
+    .modal-reserva-livro {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .modal-reserva-capa {
+        width: 150px;
+        height: 225px;
+    }
+
+    .detalhe-item {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+    }
+}

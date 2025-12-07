@@ -3,8 +3,9 @@ import reservaService from "../../services/reservaService";
 import usuarioService from "../../services/usuarioService";
 import livroService from "../../services/livroService";
 import "./Tabela.css";
+import { formatDateBR } from "../../utils/dateUtils";
 
-const Reservas = () => {
+const Reservas = ({ onCountChange }) => {
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [reservas, setReservas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +18,7 @@ const Reservas = () => {
   // Carregar reservas ao montar o componente
   useEffect(() => {
     carregarReservas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtroStatus]);
 
   const carregarReservas = async () => {
@@ -162,10 +164,16 @@ const Reservas = () => {
 
       console.log('✅ Reservas enriquecidas:', reservasEnriquecidas);
       setReservas(reservasEnriquecidas);
+      if (onCountChange) {
+        onCountChange(reservasEnriquecidas.length);
+      }
     } catch (err) {
       setError('Erro ao carregar reservas. Tente novamente mais tarde.');
       console.error('Erro ao carregar reservas:', err);
       setReservas([]);
+      if (onCountChange) {
+        onCountChange(0);
+      }
     } finally {
       setLoading(false);
     }
@@ -240,13 +248,7 @@ const Reservas = () => {
 
   // ✅ Função que aceita ambos os formatos de data do backend
   const formatarData = (data) => {
-    if (!data) return 'N/A';
-    
-    try {
-      return new Date(data).toLocaleDateString('pt-BR');
-    } catch (e) {
-      return 'Invalid Date';
-    }
+    return formatDateBR(data);
   };
 
   const getStatusBadgeClass = (status) => {

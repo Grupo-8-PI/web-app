@@ -2,7 +2,7 @@ import React from 'react';
 import './paginacao.css';
 
 const Paginacao = ({ page, totalPages, onPageChange }) => {
-    if (totalPages <= 1) return null; // não mostra paginação se tiver 1 página
+    // Sempre mostra paginação, mesmo se houver só uma página
 
     const handlePrev = () => {
         if (page > 0) onPageChange(page - 1);

@@ -1,44 +1,46 @@
-import { Acessibilidade } from "../componentes/Acessibilidade";
 import { Header } from "../componentes/Header";
 import { Footer } from "../componentes/Footer";
 import CarrosselCard from "../componentes/CarrosselCard";
+import ModalLivro from "../componentes/ModalLivro";
 import '../StyleAej.css'
 import BookSobre from "../assets/BookSobre.png";
+import { useState } from "react";
 
 
 export default function Sobre() {
+    const [selectedLivro, setSelectedLivro] = useState(null);
+
+    console.log('SOBRE PAGE RENDERED');
+
+    const handleBookClick = (livro) => {
+        setSelectedLivro(livro);
+    };
+
+    const handleCloseModal = () => {
+        setSelectedLivro(null);
+    };
+
     return (
         <div>
-            <Acessibilidade />
-            <session className="primeiraSobre">
+            <section className="primeiraSobre visible">
 
                 <Header />
                 <div className="sobreContent">
                     <h1>
-                        Impulsionamos a <br /> <p>criatividade com a nossa</p>  
+                        Impulsionamos a <br /> <span>criatividade com a nossa</span>
                         <h2>Solidariedade</h2>
                     </h1>
                      
                     <img src={BookSobre} alt="" />
                 </div>
-            </session>
-            <session className="segundaSobre">
+            </section>
+            <section className="segundaSobre visible">
                 <h1>Nosso Acervo</h1>
-                    <div className="carrossel-induzido">
-                        <div className="carrossel-cards" style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'end', gap: '32px', padding: '32px 0' }}>
-                        <CarrosselCard />
-                        <CarrosselCard />
-                        <CarrosselCard />
-                        <CarrosselCard />
-                        <CarrosselCard />
-                        </div>
-                        <div className="carrossel-controls" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px' }}>
-                            <button style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid #d6d6d6', background: '#fff', color: '#888', fontSize: '20px', cursor: 'pointer' }}><i class='bx bx-left-arrow-alt' ></i></button>
-                            <button style={{ width: '40px', height: '32px', borderRadius: '16px', border: 'none', background: '#c9a44c', color: '#fff', fontSize: '20px', cursor: 'pointer' }}><i class='bx bx-right-arrow-alt' ></i></button>
-                        </div>
-                    </div>
-                </session>
-                 <session className="servicosSobre">
+                <div className="carrossel-induzido">
+                    <CarrosselCard onBookClick={handleBookClick} />
+                </div>
+            </section>
+            <section className="servicosSobre visible">
                 <h1>Serviços</h1>
                 <div className="servicosContent" style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'start', gap: '32px', padding: '32px 0' }}>
                     <div className="servicoItem" style={{ textAlign: 'center', maxWidth: '200px' }}>
@@ -62,19 +64,23 @@ export default function Sobre() {
                         <p>Garantimos que todos possam acessar nossos serviços com facilidade e inclusão.</p>
                     </div>
                 </div>
-            </session>
+            </section>
 
-                <session className="terceiraSobre">
+                <section className="terceiraSobre visible">
                     <div className="sobreContent2">
-                        <h1>Sobre a <br /> <h2>Instituição</h2></h1>
+                        <h1>Sobre a <br /> <span>Instituição</span></h1>
                         <p>
                             A AEJ Livros é uma instituição dedicada à promoção da leitura, educação e solidariedade. Nosso objetivo é proporcionar acesso à cultura e ao conhecimento para todos, incentivando a criatividade e o desenvolvimento pessoal por meio de projetos sociais e educacionais. Valorizamos a inclusão, o respeito e o compromisso com a transformação social.
                         </p>
                     </div>
-                </session>
-        <session className="footer">
+                </section>
+        <section className="footer visible">
             <Footer/>
-        </session>
+        </section>
+
+        {selectedLivro && (
+            <ModalLivro livro={selectedLivro} onClose={handleCloseModal} />
+        )}
 
         </div>
     );

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { handleHttpError, validateForm, formatCPF, formatTelefone } from '../utils/errorHandler';
+import api from '../services/api';
 
 export function CadastroForm({ onVoltarLogin }) {
     const [nome, setNome] = useState("");
@@ -60,52 +61,26 @@ export function CadastroForm({ onVoltarLogin }) {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8080/usuarios', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
+            await api.post('/usuarios', data);
 
-            if (response.ok) {
-                setMensagem({ 
-                    text: 'Cadastro realizado com sucesso! Você já pode fazer login.', 
-                    type: 'success' 
-                });
+            setMensagem({ 
+                text: 'Cadastro realizado com sucesso! Você já pode fazer login.', 
+                type: 'success' 
+            });
+            
+            setTimeout(() => {
+                setNome("");
+                setEmail("");
+                setCpf("");
+                setNascimento("");
+                setTelefone("");
+                setSenha("");
+                setConfirmaSenha("");
                 
                 setTimeout(() => {
-                    setNome("");
-                    setEmail("");
-                    setCpf("");
-                    setNascimento("");
-                    setTelefone("");
-                    setSenha("");
-                    setConfirmaSenha("");
-                    
-                    setTimeout(() => {
-                        onVoltarLogin();
-                    }, 2000);
-                }, 1000);
-            } else {
-                let errorData;
-                try {
-                    errorData = await response.json();
-                } catch (e) {
-                    errorData = { message: 'Erro ao processar resposta do servidor' };
-                }
-
-                const error = {
-                    response: {
-                        status: response.status,
-                        data: errorData
-                    }
-                };
-                
-                const handledError = handleHttpError(error, 'cadastro');
-                setMensagem({ 
-                    text: handledError.message, 
-                    type: handledError.type 
-                });
-            }
+                    onVoltarLogin();
+                }, 2000);
+            }, 1000);
         } catch (error) {
             console.error('[CadastroForm] Erro na requisição:', error);
             

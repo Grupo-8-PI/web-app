@@ -76,9 +76,9 @@ function DashboardFilters({ onFilterChange, categorias, loading }) {
             className="filter-select"
           >
             <option value="">Todas as categorias</option>
-            {categorias && categorias.map((cat, index) => (
-              <option key={index} value={cat}>
-                {cat}
+            {categorias && categorias.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.nome}
               </option>
             ))}
           </select>

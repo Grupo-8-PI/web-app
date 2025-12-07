@@ -70,6 +70,7 @@ export default function EditarLivro() {
         };
 
         buscarLivro();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, navigate]);
 
     const validarFormulario = () => {

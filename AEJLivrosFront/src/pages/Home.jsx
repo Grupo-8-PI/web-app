@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import "../StyleAej.css";
-import { Acessibilidade } from "../componentes/Acessibilidade";
 import BoxBook from "../componentes/BoxBook";
 import ModalLivro from "../componentes/ModalLivro";
 import api from "../services/api";
@@ -10,14 +9,20 @@ import MiniCategoriasList from "../componentes/MiniCategoriasList";
 import AejBook from "../assets/AejBook.png";
 import { Footer } from "../componentes/Footer";
 import { Depoimentos } from "../componentes/Depoimentos";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Home() {
+    const navigate = useNavigate();
     const [recomendados, setRecomendados] = useState([]);
     const [recentes, setRecentes] = useState([]);
     const [loadingRec, setLoadingRec] = useState(false);
     const [recError, setRecError] = useState(null);
     const [selectedLivro, setSelectedLivro] = useState(null);
+
+    const handleCategoriaClick = (categoria) => {
+        navigate('/catalogo', { state: { categoriaId: categoria.id } });
+    };
+
     useEffect(() => {
         const revealOnScroll = () => {
             const elements = document.querySelectorAll(".primeira, .segunda, .recomend, .cat, section");
@@ -100,14 +105,15 @@ export default function Home() {
     }, []);
     return (
         <div>
-            <Acessibilidade />
             <session className="primeira">
                 <Header />
                 <div className="hero-area">
                     <div className="hero-content">
                         <h1>Seu novo livro</h1>
                         <h3>Pode ajudar muitas pessoas</h3>
-                        <button className="hero-btn">Explore</button>
+                        <Link to="/catalogo">
+                            <button className="hero-btn">Explore</button>
+                        </Link>
                     </div>
                     <div className="hero-3d-container">
                         <div className="hero-3d-concave">
@@ -145,7 +151,7 @@ export default function Home() {
                         </Link>
                     </div>
                     <div className="catSpace">
-                        <MiniCategoriasList />
+                        <MiniCategoriasList onCategoriaClick={handleCategoriaClick} />
                     </div>
                 </div>
             </session>

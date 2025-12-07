@@ -90,6 +90,28 @@ const livroService = {
     }
   },
 
+  // Buscar livros por texto (titulo, autor, etc)
+  buscar: async (query, page = 0, size = 9) => {
+    try {
+      const response = await api.get(`/livros/buscar?q=${encodeURIComponent(query)}&page=${page}&size=${size}`);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar livros:', error);
+      throw error;
+    }
+  },
+
+  // Buscar livros por conservação
+  buscarPorConservacao: async (conservacaoId) => {
+    try {
+      const response = await api.get(`/livros/conservacao/${conservacaoId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar livros por conservação:', error);
+      throw error;
+    }
+  },
+
   // Buscar livros recentes
   buscarRecentes: async () => {
     try {

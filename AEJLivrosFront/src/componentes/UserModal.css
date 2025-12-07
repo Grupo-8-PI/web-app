@@ -1,22 +1,119 @@
 .user-modal {
   position: absolute;
-  top: 50px; /* ajuste conforme necessário */
+  top: 50px;
   right: 0;
   z-index: 1000;
 }
+
 .user-modal-content {
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 20px;
   margin-top: 15px;
-  min-width: 180px;
+  min-width: 260px;
   margin-right: 10px;
 }
+
 .close-btn {
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 20px;
   float: right;
   cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #09386B;
+}
+
+.user-info {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.user-info h3 {
+  margin: 0 0 8px 0;
+  padding-left: 3vh;
+  font-size: 16px;
+  color: #09386B;
+  text-align: center;
+}
+
+.user-name {
+  margin: 4px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.user-email {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #666;
+  word-break: break-word;
+}
+
+.user-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #f5f5f5;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.menu-item:hover {
+  background: #e8f0f7;
+  color: #09386B;
+}
+
+.menu-item i {
+  font-size: 18px;
+}
+
+.logout-btn {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  color: #d32f2f;
+  margin-top: 4px;
+}
+
+.logout-btn:hover {
+  background: #ffebee;
+  border-color: #d32f2f;
+  color: #b71c1c;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 6px;
+  background: #09386B;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background 0.2s;
+  margin-top: 12px;
+}
+
+.login-btn:hover {
+  background: #072d57;
 }

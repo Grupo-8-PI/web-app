@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import './modalLivro.css';
-import { Header } from './Header';
 import { criarReserva } from '../services/api';
+import { formatDateTimeBR } from '../utils/dateUtils';
 
 const ModalLivro = ({ livro, onClose }) => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (!livro) return;
+        console.log('MODAL received livro:', livro);
+        console.log('MODAL livro keys:', Object.keys(livro));
         document.body.style.overflow = 'hidden';
         return () => {
             document.body.style.overflow = '';
@@ -18,29 +20,30 @@ const ModalLivro = ({ livro, onClose }) => {
     const handleReservarLivro = async () => {
         setLoading(true);
         try {
-            const dtReserva = new Date().toISOString();
-
-            const dtLimite = new Date();
-            dtLimite.setDate(dtLimite.getDate() + 14);
-            const dtLimiteFormatada = dtLimite.toISOString();
-
             const payload = {
-                dtReserva: dtReserva,
-                dtLimite: dtLimiteFormatada,
-                statusReserva: "Confirmada",
-                totalReserva: livro.preco || 150,
                 livroId: livro.id,
+                statusReserva: "Confirmada"
             };
 
             console.log("Enviando payload:", payload);
 
-            await criarReserva(payload);
+            const response = await criarReserva(payload);
+            
+            console.log('Reserva criada:', {
+                id: response.data.id,
+                dtReserva: response.data.dtReserva,
+                dtLimite: response.data.dtLimite,
+                totalReserva: response.data.totalReserva
+            });
 
-            alert('Reserva criada com sucesso!');
+            const dtLimiteFormatted = formatDateTimeBR(response.data.dtLimite);
+
+            alert(`Reserva confirmada!\nVálida até: ${dtLimiteFormatted}\nValor: R$ ${response.data.totalReserva}`);
             onClose();
         } catch (erro) {
             console.error('Erro ao criar reserva:', erro);
-            alert('Erro ao criar reserva. Verifique os dados ou tente novamente.');
+            const errorMsg = erro.response?.data?.message || 'Erro ao criar reserva. Verifique os dados ou tente novamente.';
+            alert(errorMsg);
         } finally {
             setLoading(false);
         }
@@ -51,9 +54,6 @@ const ModalLivro = ({ livro, onClose }) => {
     const modalContent = (
         <div className="modalLivro-overlay" onClick={onClose}>
             <div className="modalLivro" onClick={e => e.stopPropagation()}>
-                <div className="headerSpace">
-                    <Header />
-                </div>
                 <button className="modalLivro-close" onClick={onClose}>×</button>
 
                 <div className="modalLivro-content">
@@ -67,18 +67,20 @@ const ModalLivro = ({ livro, onClose }) => {
 
                     <div className="modalLivro-info">
                         <h2>{livro.titulo}</h2>
-                        <h3>R$ {livro.preco}</h3>
-                        <p><b>Autor:</b> {livro.autor}</p>
-                        <p><b>Ano:</b> {livro.ano}</p>
-                        <p><b>Categoria:</b> {livro.categoria}</p>
-                        <p><b>Conservação:</b> {livro.conservacao}</p>
+                        <h3>R$ {livro.preco?.toFixed(2) || '0.00'}</h3>
+                        <p><b>Autor:</b> {livro.autor || 'Desconhecido'}</p>
+                        <p><b>Ano:</b> {livro.ano || 'N/A'}</p>
+                        <p><b>Categoria:</b> {livro.categoria || 'Não informada'}</p>
+                        <p><b>Conservação:</b> {livro.conservacao || 'Não informada'}</p>
+                        <p><b>Acabamento:</b> {livro.tipoAcabamento || livro.acabamento || livro.acabamentoId || 'Não informado'}</p>
                         <p><b>Editora:</b> {livro.editora || 'Desconhecida'}</p>
                         <p><b>Páginas:</b> {livro.paginas || 'N/A'}</p>
-                        <p><b>Sinopse com IA:</b> {livro.descricao || 'Descrição não disponível.'}</p>
+                        <p><b>Sinopse:</b> {livro.descricao || 'Descrição não disponível.'}</p>
 
                     <div className="buttonsArea">
                         <button>Reservar Livro</button>
                     </div>
+
                     </div>
                 </div>
             </div>
