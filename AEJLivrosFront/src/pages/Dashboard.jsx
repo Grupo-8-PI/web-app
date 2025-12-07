@@ -12,6 +12,8 @@ import VisaoEstante from "../componentes/dashboard/VisaoEstante";
 
 const Dashboard = () => {
     const [activeTab, setActiveTab] = useState("Geral");
+    const [reservasCount, setReservasCount] = useState(0);
+    const [inconsistenciasCount, setInconsistenciasCount] = useState(0);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -27,9 +29,9 @@ const Dashboard = () => {
             case "Geral":
                 return <Geral />;
             case "Reservas":
-                return <Reservas />;
+                return <Reservas onCountChange={setReservasCount} />;
             case "Inconsistencias":
-                return <Inconsistencias />;
+                return <Inconsistencias onCountChange={setInconsistenciasCount} />;
             case "Visao-estante":
                 return <VisaoEstante />;
             default:
@@ -61,7 +63,12 @@ const Dashboard = () => {
                     </header>
 
                     <div className="menu-tabs-section">
-                        <MenuTabs activeTab={activeTab} onChange={setActiveTab} />
+                        <MenuTabs 
+                            activeTab={activeTab} 
+                            onChange={setActiveTab} 
+                            reservasCount={reservasCount}
+                            inconsistenciasCount={inconsistenciasCount}
+                        />
                     </div>
 
                     <div className="main-layout">

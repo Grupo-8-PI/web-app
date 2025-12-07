@@ -31,6 +31,13 @@ const reservaService = {
     }
   },
 
+  /**
+   * Creates a new reservation (secure API)
+   * @param {Object} reservaData - Reservation data
+   * @param {number} reservaData.livroId - REQUIRED - ID of the book
+   * @param {string} [reservaData.statusReserva] - OPTIONAL - defaults to "Confirmada"
+   * @returns {Promise<Object>} Response with server-calculated fields
+   */
   criarReserva: async (reservaData) => {
     try {
       const response = await api.post('/reservas', reservaData);

@@ -1,4 +1,5 @@
 import api from './api';
+import { parseBackendDate } from '../utils/dateUtils';
 
 const dashboardService = {
     async getAllLivros(page = 0, size = 1000) {
@@ -91,7 +92,7 @@ const dashboardService = {
 
         if (filters.categoria) {
             filtered = filtered.filter(livro => 
-                livro.nomeCategoria === filters.categoria
+                livro.categoriaId === parseInt(filters.categoria)
             );
         }
 
@@ -104,14 +105,14 @@ const dashboardService = {
         if (filters.mes !== null && filters.mes !== undefined) {
             filtered = filtered.filter(reserva => {
                 if (!reserva.dtReserva) return false;
-                const data = new Date(reserva.dtReserva);
+                const data = parseBackendDate(reserva.dtReserva);
                 return data.getMonth() === filters.mes && 
                        data.getFullYear() === filters.ano;
             });
         } else if (filters.ano) {
             filtered = filtered.filter(reserva => {
                 if (!reserva.dtReserva) return false;
-                const data = new Date(reserva.dtReserva);
+                const data = parseBackendDate(reserva.dtReserva);
                 return data.getFullYear() === filters.ano;
             });
         }
@@ -203,7 +204,7 @@ const dashboardService = {
         reservas.forEach(reserva => {
             if (reserva.dtReserva && reserva.totalReserva) {
                 try {
-                    const data = new Date(reserva.dtReserva);
+                    const data = parseBackendDate(reserva.dtReserva);
                     const mesIndex = data.getMonth();
                     
                     if (filters.mes !== null && filters.mes !== undefined) {
@@ -231,7 +232,7 @@ const dashboardService = {
             .map(livro => {
                 if (!livro.dataAdicao) return null;
                 
-                const dataAdicao = new Date(livro.dataAdicao);
+                const dataAdicao = parseBackendDate(livro.dataAdicao);
                 const diffTime = Math.abs(hoje - dataAdicao);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 

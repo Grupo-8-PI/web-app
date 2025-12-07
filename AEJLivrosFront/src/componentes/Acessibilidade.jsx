@@ -4,7 +4,7 @@ export function Acessibilidade(){
     return(
         <div>
             <div className="mainCircle">
-                <i class='bx bx-body'></i>
+                <i className='bx bx-body'></i>
             </div>
         </div>
     )
