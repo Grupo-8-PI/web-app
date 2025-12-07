@@ -7,7 +7,6 @@ function Sidebar({ activeTab, setActiveTab, mode = "auto" }) {
   const location = useLocation();
 
   const isTabMode = mode === "tabs" || (mode === "auto" && setActiveTab !== undefined);
-  const isRouteMode = mode === "routes" || (mode === "auto" && !setActiveTab);
 
   const handleLogout = () => {
     sessionStorage.removeItem('auth_token');

@@ -1,32 +1,17 @@
-# Etapa 1: Build
-FROM node:18 AS build
-
+FROM node:18-alpine AS builder
 WORKDIR /app
-
-# Copiar package.json e package-lock.json
-COPY package.json package-lock.json ./
-
-# Instalar dependências
-RUN npm install
-
-# Copiar todo o código
+COPY package*.json ./
+RUN npm ci
 COPY . .
-
-# Build da aplicação
 RUN npm run build
 
-# Etapa 2: Servir a aplicação
-FROM node:18-slim
+FROM nginx:alpine
 
-WORKDIR /app
+# Instala envsubst (já vem no nginx:alpine)
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf.template /etc/nginx/nginx.conf.template
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
-# Instalar servidor estático serve
-RUN npm install -g serve
+RUN chmod +x /docker-entrypoint.sh
 
-# Copiar build da etapa anterior (Vite gera 'dist')
-COPY --from=build /app/dist /app/dist
-
-EXPOSE 3000
-
-# Servir a aplicação
-CMD ["serve", "-s", "dist", "-l", "3000"]
+ENTRYPOINT ["/docker-entrypoint.sh"]

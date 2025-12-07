@@ -249,7 +249,7 @@ const dashboardService = {
                             valorPorMes[mesIndex].valor += reserva.totalReserva;
                         }
                     }
-                } catch (error) {
+                } catch {
                     console.warn('Erro ao processar data:', reserva.dtReserva);
                 }
             }
