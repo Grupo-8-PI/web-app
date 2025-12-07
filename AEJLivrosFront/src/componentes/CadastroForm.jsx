@@ -61,7 +61,7 @@ export function CadastroForm({ onVoltarLogin }) {
         setLoading(true);
 
         try {
-            const response = await api.post('/usuarios', data);
+            await api.post('/usuarios', data);
 
             setMensagem({ 
                 text: 'Cadastro realizado com sucesso! Você já pode fazer login.', 
