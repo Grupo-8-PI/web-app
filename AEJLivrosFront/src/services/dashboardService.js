@@ -1,6 +1,6 @@
 import api from './api';
 import { parseBackendDate } from '../utils/dateUtils';
-import { calculateStatusByDeadline, shouldDisplayReservation, STATUS } from '../utils/statusUtils';
+import { calculateStatusByDeadline, STATUS } from '../utils/statusUtils';
 
 const dashboardService = {
     async getAllLivros(page = 0, size = 1000) {
