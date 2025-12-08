@@ -4,6 +4,12 @@ import usuarioService from "../../services/usuarioService";
 import livroService from "../../services/livroService";
 import "./Tabela.css";
 import { formatDateBR } from "../../utils/dateUtils";
+import { 
+  calculateStatusByDeadline, 
+  getStatusDisplay, 
+  getStatusClass,
+  shouldDisplayReservation 
+} from "../../utils/statusUtils";
 
 const Reservas = ({ onCountChange }) => {
   const [expandedIndex, setExpandedIndex] = useState(null);
@@ -55,7 +61,6 @@ const Reservas = ({ onCountChange }) => {
         reservasData = [];
       }
 
-      // ✅ ENRIQUECER RESERVAS COM DADOS DO CLIENTE E LIVROS
       console.log(`📦 Enriquecendo ${reservasData.length} reservas com dados completos...`);
       
       const reservasEnriquecidas = await Promise.all(
@@ -163,9 +168,17 @@ const Reservas = ({ onCountChange }) => {
       );
 
       console.log('✅ Reservas enriquecidas:', reservasEnriquecidas);
-      setReservas(reservasEnriquecidas);
+      
+      // Filtrar apenas reservas que devem ser exibidas (CONFIRMADA ou PENDENTE)
+      const reservasVisiveis = reservasEnriquecidas.filter(reserva => 
+        shouldDisplayReservation(reserva.dtLimite)
+      );
+      
+      console.log(`👁️ Reservas visíveis (${reservasVisiveis.length}/${reservasEnriquecidas.length}):`, reservasVisiveis);
+      
+      setReservas(reservasVisiveis);
       if (onCountChange) {
-        onCountChange(reservasEnriquecidas.length);
+        onCountChange(reservasVisiveis.length);
       }
     } catch (err) {
       setError('Erro ao carregar reservas. Tente novamente mais tarde.');
@@ -249,28 +262,6 @@ const Reservas = ({ onCountChange }) => {
   // ✅ Função que aceita ambos os formatos de data do backend
   const formatarData = (data) => {
     return formatDateBR(data);
-  };
-
-  const getStatusBadgeClass = (status) => {
-    const statusMap = {
-      'PENDENTE': 'status-inconsistente', // Usando classe existente
-      'APROVADA': 'status-ok',
-      'CONCLUIDA': 'status-ok',
-      'CANCELADA': 'status-inconsistente',
-      'REJEITADA': 'status-inconsistente'
-    };
-    return statusMap[status] || 'status-ok';
-  };
-
-  const getStatusLabel = (status) => {
-    const labelMap = {
-      'PENDENTE': 'Pendente',
-      'APROVADA': 'Aprovada',
-      'CONCLUIDA': 'Concluída',
-      'CANCELADA': 'Cancelada',
-      'REJEITADA': 'Rejeitada'
-    };
-    return labelMap[status] || status;
   };
 
   // Paginação - garantir que reservas seja array
@@ -387,7 +378,10 @@ const Reservas = ({ onCountChange }) => {
                 // ✅ Mapear campos do backend (aceita ambos os formatos)
                 const dataReserva = reserva.dtReserva || reserva.dataReserva;
                 const dataRetirada = reserva.dtLimite || reserva.dataRetirada;
-                const status = reserva.statusReserva || reserva.status || 'PENDENTE';
+                
+                // ✅ Calcular status dinâmico baseado em dtLimite
+                const status = calculateStatusByDeadline(reserva.dtLimite, reserva.statusReserva);
+                
                 const valorTotal = reserva.totalReserva || reserva.valorTotal || 0;
                 
                 // ✅ Usar quantidadeLivros já calculada no carregarReservas
@@ -429,8 +423,8 @@ const Reservas = ({ onCountChange }) => {
                       <td>{calcularDiasRestantes(dataRetirada)}</td>
                       <td>{totalLivros}</td>
                       <td>
-                        <span className={`status-badge ${getStatusBadgeClass(status)}`}>
-                          {getStatusLabel(status)}
+                        <span className={`status-badge ${getStatusClass(status)}`}>
+                          {getStatusDisplay(status)}
                         </span>
                       </td>
                       <td>

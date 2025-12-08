@@ -1,4 +1,5 @@
 import api from './api';
+import { normalizeStatus, STATUS } from '../utils/statusUtils';
 
 const reservaService = {
   listarReservas: async (page = 0, size = 100) => {
@@ -70,18 +71,35 @@ const reservaService = {
 
   
   buscarPorStatus: async (status) => {
-    console.warn('Endpoint /reservas/status/{status} não existe no backend');
+    // Backend não tem endpoint /reservas/status/{status}
+    // Filtrar localmente após buscar todas as reservas
     const reservas = await reservaService.listarReservas(0, 1000);
-    return reservas.content?.filter(r => r.status === status) || [];
+    const normalizedStatus = normalizeStatus(status);
+    const items = reservas.content || reservas.reservas || reservas || [];
+    return items.filter(r => normalizeStatus(r.statusReserva) === normalizedStatus);
   },
 
   concluirReserva: async (id) => {
-    console.warn('Endpoint /reservas/{id}/concluir não existe no backend');
-    return await reservaService.atualizarReserva(id, { status: 'CONCLUIDA' });
+    // Backend não tem endpoint /reservas/{id}/concluir
+    // Usar PUT /reservas/{id} para atualizar o status
+    return await reservaService.atualizarReserva(id, { statusReserva: STATUS.CONCLUIDA });
   },
 
+  /**
+   * Cancela uma reserva usando DELETE (backend remove a reserva)
+   * ⚠️ NOTA: Backend deleta a reserva completamente, não apenas atualiza status
+   * Para manter histórico, considere usar atualizarReserva com STATUS.CANCELADA
+   */
   cancelarReserva: async (id) => {
     return await reservaService.deletarReserva(id);
+  },
+
+  /**
+   * Cancela uma reserva atualizando o status (alternativa que mantém histórico)
+   * Use este método se quiser preservar o histórico de reservas canceladas
+   */
+  cancelarReservaPorStatus: async (id) => {
+    return await reservaService.atualizarReserva(id, { statusReserva: STATUS.CANCELADA });
   }
 };
 

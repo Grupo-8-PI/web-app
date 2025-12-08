@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import './modalLivro.css';
 import { criarReserva } from '../services/api';
 import { formatDateTimeBR } from '../utils/dateUtils';
+import { STATUS } from '../utils/statusUtils';
 
 const ModalLivro = ({ livro, onClose }) => {
     const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ const ModalLivro = ({ livro, onClose }) => {
         try {
             const payload = {
                 livroId: livro.id,
-                statusReserva: "Confirmada"
+                statusReserva: STATUS.CONFIRMADA
             };
 
             console.log("Enviando payload:", payload);

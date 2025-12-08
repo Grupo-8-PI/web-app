@@ -2,16 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './ModalReserva.css';
 import { formatDateTimeBR, formatRemainingDays } from '../utils/dateUtils';
+import { getStatusClass, getStatusDisplay } from '../utils/statusUtils';
 
 const ModalReserva = ({ reserva, onClose }) => {
     if (!reserva) return null;
-
-    const getStatusClass = () => {
-        if (reserva.statusReserva === 'Cancelada') return 'status-cancelada';
-        if (reserva.statusReserva === 'Concluída') return 'status-concluida';
-        if (reserva.statusReserva === 'Confirmada') return 'status-confirmada';
-        return 'status-pendente';
-    };
 
     const modalContent = (
         <div className="modal-reserva-overlay" onClick={onClose}>
@@ -49,8 +43,8 @@ const ModalReserva = ({ reserva, onClose }) => {
 
                         <div className="detalhe-item">
                             <span className="detalhe-label">Status:</span>
-                            <span className={`detalhe-valor status-badge ${getStatusClass()}`}>
-                                {reserva.statusReserva}
+                            <span className={`detalhe-valor status-badge ${getStatusClass(reserva.statusReserva)}`}>
+                                {getStatusDisplay(reserva.statusReserva)}
                             </span>
                         </div>
 
