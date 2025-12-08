@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import reservaService from "../../services/reservaService";
+import usuarioService from "../../services/usuarioService";
+import livroService from "../../services/livroService";
 import "./Tabela.css";
 import { parseBackendDate, formatDateBR } from "../../utils/dateUtils";
+import { calculateStatusByDeadline, STATUS } from "../../utils/statusUtils";
 
 const Inconsistencias = ({ onCountChange }) => {
   const [expandedIndex, setExpandedIndex] = useState(null);
-  const [reservasVencidas, setReservasVencidas] = useState([]);
+  const [reservasPendentes, setReservasPendentes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedReservas, setSelectedReservas] = useState([]);
@@ -13,42 +16,120 @@ const Inconsistencias = ({ onCountChange }) => {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    carregarReservasVencidas();
+    carregarReservasPendentes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const carregarReservasVencidas = async () => {
+  const carregarReservasPendentes = async () => {
     try {
       setLoading(true);
       setError(null);
       
       const response = await reservaService.listarReservas(0, 1000);
       
-      console.log('Resposta da API (Inconsistências):', response);
-      
       let todasReservas = [];
-      if (response && Array.isArray(response.content)) {
+      if (response && Array.isArray(response.reservas)) {
+        todasReservas = response.reservas;
+      } else if (response && Array.isArray(response.content)) {
         todasReservas = response.content;
       } else if (Array.isArray(response)) {
         todasReservas = response;
       }
       
-      const agora = new Date();
-      const vencidas = todasReservas.filter(reserva => {
+      const pendentes = todasReservas.filter(reserva => {
         if (!reserva.dtLimite) return false;
-        const dataLimite = parseBackendDate(reserva.dtLimite);
-        return dataLimite < agora;
+        const statusCalculado = calculateStatusByDeadline(reserva.dtLimite, reserva.statusReserva);
+        return statusCalculado === STATUS.PENDENTE;
       });
       
-      console.log('Reservas vencidas encontradas:', vencidas.length);
-      setReservasVencidas(vencidas);
+      const reservasEnriquecidas = await Promise.all(
+        pendentes.map(async (reserva) => {
+          try {
+            let clienteCompleto = null;
+            const userId = reserva.usuarioId || reserva.clienteId;
+            
+            if (userId) {
+              try {
+                clienteCompleto = await usuarioService.getUsuarioById(userId);
+              } catch (error) {
+                console.error(`Erro ao buscar cliente ${userId}:`, error);
+                clienteCompleto = {
+                  id: userId,
+                  nome: 'Cliente não encontrado',
+                  nomeCompleto: 'Cliente não encontrado',
+                  email: 'N/A',
+                  telefone: 'N/A'
+                };
+              }
+            }
+
+            let livrosCompletos = [];
+            let livroIds = [];
+            
+            if (reserva.livroId) {
+              if (Array.isArray(reserva.livroId)) {
+                livroIds = reserva.livroId;
+              } else if (typeof reserva.livroId === 'number') {
+                livroIds = [reserva.livroId];
+              }
+            }
+            
+            if (livroIds.length > 0) {
+              try {
+                livrosCompletos = await livroService.getLivrosByIds(livroIds);
+              } catch (error) {
+                console.error(`Erro ao buscar livros:`, error);
+                livrosCompletos = livroIds.map((id) => ({
+                  id: id,
+                  titulo: `Livro ID ${id}`,
+                  autor: 'Autor não encontrado',
+                  isbn: 'N/A',
+                  preco: 0,
+                  capa: null
+                }));
+              }
+            }
+
+            return {
+              ...reserva,
+              cliente: clienteCompleto,
+              usuario: clienteCompleto,
+              livros: livrosCompletos,
+              quantidadeLivros: Array.isArray(reserva.livroId) 
+                ? reserva.livroId.length 
+                : (reserva.livroId ? 1 : 0)
+            };
+          } catch (err) {
+            console.error(`Erro ao enriquecer reserva #${reserva.id}:`, err);
+            return {
+              ...reserva,
+              cliente: {
+                nome: 'Erro ao carregar',
+                nomeCompleto: 'Erro ao carregar',
+                email: 'N/A',
+                telefone: 'N/A'
+              },
+              usuario: {
+                nome: 'Erro ao carregar',
+                nomeCompleto: 'Erro ao carregar',
+                email: 'N/A',
+                telefone: 'N/A'
+              },
+              livros: [],
+              quantidadeLivros: 0
+            };
+          }
+        })
+      );
+      
+      setReservasPendentes(reservasEnriquecidas);
       if (onCountChange) {
-        onCountChange(vencidas.length);
+        onCountChange(reservasEnriquecidas.length);
       }
     } catch (err) {
       setError('Erro ao carregar inconsistências. Tente novamente mais tarde.');
       console.error('Erro ao carregar inconsistências:', err);
-      setReservasVencidas([]);
+      setReservasPendentes([]);
       if (onCountChange) {
         onCountChange(0);
       }
@@ -70,10 +151,10 @@ const Inconsistencias = ({ onCountChange }) => {
   };
 
   const handleSelectAll = () => {
-    if (selectedReservas.length === reservasVencidas.length) {
+    if (selectedReservas.length === reservasPendentes.length) {
       setSelectedReservas([]);
     } else {
-      setSelectedReservas(reservasVencidas.map(r => r.id));
+      setSelectedReservas(reservasPendentes.map(r => r.id));
     }
   };
 
@@ -83,10 +164,9 @@ const Inconsistencias = ({ onCountChange }) => {
     }
 
     try {
-      await reservaService.deletarReserva(reservaId);
+      await reservaService.cancelarReserva(reservaId);
       alert('Reserva cancelada com sucesso!');
-      await carregarReservasVencidas();
-      carregarReservasVencidas();
+      await carregarReservasPendentes();
       setExpandedIndex(null);
     } catch (err) {
       alert('Erro ao cancelar reserva. Tente novamente.');
@@ -95,10 +175,11 @@ const Inconsistencias = ({ onCountChange }) => {
   };
 
   const handleEntrarEmContato = (reserva) => {
-    const usuario = reserva.usuario || reserva.usuarios;
+    const usuario = reserva.cliente || reserva.usuario;
     if (usuario?.email) {
-      const assunto = `Reserva Vencida - ID ${reserva.id}`;
-      const corpo = `Olá ${usuario.nomeCompleto},\n\nNotamos que sua reserva (ID: ${reserva.id}) não foi retirada no prazo.\n\nPor favor, entre em contato conosco.`;
+      const assunto = `Reserva Pendente - ID ${reserva.id}`;
+      const nomeCliente = usuario.nome || usuario.nomeCompleto || 'Cliente';
+      const corpo = `Olá ${nomeCliente},\n\nNotamos que sua reserva (ID: ${reserva.id}) está próxima do vencimento.\n\nPor favor, entre em contato conosco.`;
       window.location.href = `mailto:${usuario.email}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
     } else {
       alert('Email do cliente não disponível.');
@@ -109,13 +190,14 @@ const Inconsistencias = ({ onCountChange }) => {
     if (!dataLimite) return 'Data não definida';
     
     const hoje = new Date();
-    const limite = new Date(dataLimite);
+    const limite = parseBackendDate(dataLimite);
     const diffTime = hoje - limite;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays === 0) return 'Vence hoje';
-    if (diffDays === 1) return '-1 dia';
-    return `-${diffDays} dias`;
+    if (diffDays === 1) return '1 dia atrás';
+    if (diffDays === 2) return '2 dias atrás';
+    return `${diffDays} dias atrás`;
   };
 
   const formatarData = (data) => {
@@ -124,8 +206,8 @@ const Inconsistencias = ({ onCountChange }) => {
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentReservas = reservasVencidas.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(reservasVencidas.length / itemsPerPage);
+  const currentReservas = reservasPendentes.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(reservasPendentes.length / itemsPerPage);
 
   const nextPage = () => {
     if (currentPage < totalPages) {
@@ -157,7 +239,7 @@ const Inconsistencias = ({ onCountChange }) => {
         <div style={{ textAlign: 'center', padding: '40px', color: '#e74c3c', backgroundColor: '#fee', borderRadius: '8px', margin: '20px' }}>
           {error}
           <button 
-            onClick={carregarReservasVencidas} 
+            onClick={carregarReservasPendentes} 
             style={{
               marginTop: '15px',
               padding: '10px 20px',
@@ -180,14 +262,14 @@ const Inconsistencias = ({ onCountChange }) => {
     <div className="tabela-container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2 style={{ margin: 0, color: '#2c3e50', fontSize: '24px' }}>
-          Inconsistências - Reservas Vencidas
+          Inconsistências - Reservas Pendentes
         </h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '14px', color: '#666' }}>
-            {reservasVencidas.length} reserva(s) vencida(s)
+            {reservasPendentes.length} reserva(s) pendente(s)
           </span>
           <button 
-            onClick={carregarReservasVencidas}
+            onClick={carregarReservasPendentes}
             style={{
               padding: '8px 16px',
               backgroundColor: '#123b64',
@@ -203,11 +285,11 @@ const Inconsistencias = ({ onCountChange }) => {
         </div>
       </div>
 
-      {reservasVencidas.length === 0 ? (
+      {reservasPendentes.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: '#27ae60', fontSize: '18px' }}>
           <i className="bx bx-check-circle" style={{ fontSize: '48px', display: 'block', marginBottom: '10px' }}></i>
           <p>Nenhuma inconsistência encontrada!</p>
-          <p style={{ fontSize: '14px', color: '#999' }}>Todas as reservas estão dentro do prazo.</p>
+          <p style={{ fontSize: '14px', color: '#999' }}>Todas as reservas estão dentro do prazo ou já foram canceladas.</p>
         </div>
       ) : (
         <>
@@ -217,7 +299,7 @@ const Inconsistencias = ({ onCountChange }) => {
                 <th>
                   <input 
                     type="checkbox" 
-                    checked={selectedReservas.length === reservasVencidas.length && reservasVencidas.length > 0}
+                    checked={selectedReservas.length === reservasPendentes.length && reservasPendentes.length > 0}
                     onChange={handleSelectAll}
                   />
                 </th>
@@ -232,9 +314,9 @@ const Inconsistencias = ({ onCountChange }) => {
             </thead>
             <tbody>
               {currentReservas.map((reserva, index) => {
-                const usuario = reserva.usuario || reserva.usuarios;
-                const totalLivros = reserva.livros?.length || 0;
-                const valorTotal = reserva.valorTotal || reserva.totalReserva || 0;
+                const usuario = reserva.cliente || reserva.usuario;
+                const totalLivros = reserva.quantidadeLivros || reserva.livros?.length || 0;
+                const valorTotal = reserva.totalReserva || reserva.valorTotal || 0;
                 
                 return (
                   <React.Fragment key={reserva.id || `reserva-${index}`}>
@@ -251,21 +333,21 @@ const Inconsistencias = ({ onCountChange }) => {
                           <i className="bx bx-user"></i>
                           <div className="autor-info">
                             <span className="autor-nome">
-                              {usuario?.nomeCompleto || 'Cliente não identificado'}
+                              {usuario?.nome || usuario?.nomeCompleto || 'Cliente não identificado'}
                             </span>
-                            <span className="autor-role">Requerente</span>
+                            <span className="autor-role">{usuario?.email || 'Sem email'}</span>
                           </div>
                         </div>
                       </td>
                       <td>{formatarData(reserva.dtReserva)}</td>
                       <td>{formatarData(reserva.dtLimite)}</td>
-                      <td style={{ color: '#e74c3c', fontWeight: 'bold' }}>
+                      <td style={{ color: '#f39c12', fontWeight: 'bold' }}>
                         {calcularDiasAtrasados(reserva.dtLimite)}
                       </td>
                       <td>{totalLivros}</td>
                       <td>
-                        <span className="status-badge status-inconsistente">
-                          Inconsistente
+                        <span className="status-badge status-pendente">
+                          Pendente
                         </span>
                       </td>
                       <td>
@@ -284,8 +366,8 @@ const Inconsistencias = ({ onCountChange }) => {
                           <div className="detalhes-container">
                             <div className="detalhes-livros-lista">
                               <div style={{ marginBottom: '20px', paddingBottom: '15px', borderBottom: '2px solid #e0e0e0' }}>
-                                <h3 style={{ margin: '0 0 15px 0', color: '#e74c3c', fontSize: '20px' }}>
-                                  ⚠️ Reserva Vencida - ID #{reserva.id}
+                                <h3 style={{ margin: '0 0 15px 0', color: '#f39c12', fontSize: '20px' }}>
+                                  ⚠️ Reserva Pendente - ID #{reserva.id}
                                 </h3>
                                 <div style={{ 
                                   display: 'grid', 
@@ -297,7 +379,7 @@ const Inconsistencias = ({ onCountChange }) => {
                                   border: '1px solid #ffc107'
                                 }}>
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#856404' }}>
-                                    <strong>Cliente:</strong> {usuario?.nomeCompleto}
+                                    <strong>Cliente:</strong> {usuario?.nome || usuario?.nomeCompleto || 'N/A'}
                                   </p>
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#856404' }}>
                                     <strong>Email:</strong> {usuario?.email || 'N/A'}
@@ -308,10 +390,10 @@ const Inconsistencias = ({ onCountChange }) => {
                                   <p style={{ margin: '5px 0', fontSize: '14px', color: '#856404' }}>
                                     <strong>Data da Reserva:</strong> {formatarData(reserva.dtReserva)}
                                   </p>
-                                  <p style={{ margin: '5px 0', fontSize: '14px', color: '#e74c3c' }}>
+                                  <p style={{ margin: '5px 0', fontSize: '14px', color: '#f39c12' }}>
                                     <strong>Data Limite:</strong> {formatarData(reserva.dtLimite)}
                                   </p>
-                                  <p style={{ margin: '5px 0', fontSize: '14px', color: '#e74c3c', fontWeight: 'bold' }}>
+                                  <p style={{ margin: '5px 0', fontSize: '14px', color: '#f39c12', fontWeight: 'bold' }}>
                                     <strong>Atrasado:</strong> {calcularDiasAtrasados(reserva.dtLimite)}
                                   </p>
                                 </div>
@@ -389,7 +471,7 @@ const Inconsistencias = ({ onCountChange }) => {
               &lt;
             </span>
             <span style={{ fontSize: '14px', color: '#666', padding: '0 15px' }}>
-              Página {currentPage} de {totalPages} ({reservasVencidas.length} inconsistências)
+              Página {currentPage} de {totalPages} ({reservasPendentes.length} inconsistências)
             </span>
             <span 
               onClick={nextPage}
