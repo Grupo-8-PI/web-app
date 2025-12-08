@@ -95,10 +95,6 @@ function Charts2({ stats, loading }) {
     return null;
   };
 
-  const isValidNumber = (value) => {
-    return value !== null && value !== undefined && !isNaN(value) && value !== 0;
-  };
-
   return (
     <div className="charts">
       <div className="box">
