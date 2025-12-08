@@ -72,17 +72,18 @@ const ModalLivro = ({ livro, onClose }) => {
                         <p><b>Ano:</b> {livro.ano || 'N/A'}</p>
                         <p><b>Categoria:</b> {livro.categoria || 'Não informada'}</p>
                         <p><b>Conservação:</b> {livro.conservacao || 'Não informada'}</p>
-                        <p><b>Acabamento:</b> {livro.tipoAcabamento || livro.acabamento || livro.acabamentoId || 'Não informado'}</p>
                         <p><b>Editora:</b> {livro.editora || 'Desconhecida'}</p>
                         <p><b>Páginas:</b> {livro.paginas || 'N/A'}</p>
                         <p><b>Sinopse:</b> {livro.descricao || 'Descrição não disponível.'}</p>
 
-                    <div className="buttonsArea">
-                        <button>Reservar Livro</button>
-                    </div>
-
+                        <div className="buttonsArea">
+                            <button onClick={handleReservarLivro} disabled={loading}>
+                                {loading ? 'Reservando...' : 'Reservar Livro'}
+                            </button>
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
     );
