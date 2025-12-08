@@ -1015,7 +1015,7 @@ body {
 
 .servicosSobre {
   width: 100%;
-  min-height: 60vh;
+  min-height: 32vh;
   display: flex;
   flex-direction: column;
   background-color: #ffffff;

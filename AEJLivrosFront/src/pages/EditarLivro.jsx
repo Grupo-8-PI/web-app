@@ -178,7 +178,7 @@ export default function EditarLivro() {
             });
 
             setTimeout(() => {
-                navigate('/estante');
+                navigate('/dashboard');
             }, 1500);
 
         } catch (error) {
@@ -236,7 +236,7 @@ export default function EditarLivro() {
                     <div className="editar-livro-container">
                         <div className="breadcrumb">
                             <span
-                                onClick={() => navigate('/estante')}
+                                onClick={() => navigate('/dashboard')}
                                 style={{ cursor: 'pointer', color: '#539ce5' }}
                             >
                                 Visão Estante
@@ -469,7 +469,7 @@ export default function EditarLivro() {
                                         <button
                                             type="button"
                                             className="btn-cancelar-edicao"
-                                            onClick={() => navigate('/estante')}
+                                            onClick={() => navigate('/dashboard')}
                                             disabled={salvando}
                                         >
                                             Cancelar
