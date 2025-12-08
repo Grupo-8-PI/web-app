@@ -4,6 +4,7 @@ import { listarReservasUsuario, cancelarReserva, buscarLivroPorId } from '../ser
 import { authService } from '../services/authService';
 import ModalReserva from './ModalReserva';
 import { formatDateBR } from '../utils/dateUtils';
+import { isCancelled, getStatusDisplay } from '../utils/statusUtils';
 
 const Reservas = () => {
     const [reservas, setReservas] = useState([]);
@@ -116,10 +117,15 @@ const Reservas = () => {
             {reservas.length === 0 ? (
                 <p>Nenhuma reserva encontrada.</p>
             ) : (
-                reservas.map((reserva) => (
+                reservas.map((reserva) => {
+                    // Calcular status dinâmico baseado em dtLimite
+                    const statusAtual = reserva.statusReserva;
+                    const dtLimite = reserva.dtLimite;
+                    
+                    return (
                     <div 
                         key={reserva.id}
-                        className={`reservaCard ${reserva.statusReserva === "Cancelada" ? "reserva-cancelada" : ""}`}
+                        className={`reservaCard ${isCancelled(statusAtual, dtLimite) ? "reserva-cancelada" : ""}`}
                     >
                         <div className="reservaThumb">
                             {reserva.livro?.imagem ? (
@@ -139,14 +145,14 @@ const Reservas = () => {
                             </p>
 
                             <p className="reservaDates">
-                                Data limite: {formatDateBR(reserva.dtLimite)}
+                                Data limite: {formatDateBR(dtLimite)}
                             </p>
 
                             <div className="reservaActions">
                                 <span className="reservaPrice">R$ {reserva.totalReserva}</span>
 
                                 <div className="reservaButtons">
-                                    {reserva.statusReserva !== "Cancelada" && (
+                                    {!isCancelled(statusAtual, dtLimite) && (
                                         <>
                                             <button 
                                                 className="btn-outline" 
@@ -167,11 +173,12 @@ const Reservas = () => {
                             </div>
                         </div>
 
-                        {reserva.statusReserva === "Cancelada" && (
-                            <div className="reservaStatus">Reserva Cancelada</div>
+                        {isCancelled(statusAtual, dtLimite) && (
+                            <div className="reservaStatus">{getStatusDisplay(statusAtual, dtLimite)}</div>
                         )}
                     </div>
-                ))
+                    );
+                })
             )}
             
             <ModalReserva 
