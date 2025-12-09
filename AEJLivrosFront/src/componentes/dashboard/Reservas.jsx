@@ -40,28 +40,18 @@ const Reservas = ({ onCountChange }) => {
       }
       
       // Garantir que response seja sempre um array
-      console.log('Resposta da API:', response);
-      
-      // ✅ Backend retorna estrutura paginada: { reservas: [], totalElements: X, ... }
       let reservasData = [];
       if (response && Array.isArray(response.reservas)) {
-        console.log('✅ Encontrou response.reservas');
         reservasData = response.reservas;
       } else if (response && Array.isArray(response.content)) {
-        console.log('✅ Encontrou response.content');
         reservasData = response.content;
       } else if (Array.isArray(response)) {
-        console.log('✅ Response é array direto');
         reservasData = response;
       } else if (response && typeof response === 'object') {
-        console.log('✅ Response é objeto único, transformando em array');
         reservasData = [response];
       } else {
-        console.log('❌ Nenhum formato reconhecido, setando array vazio');
         reservasData = [];
       }
-
-      console.log(`📦 Enriquecendo ${reservasData.length} reservas com dados completos...`);
       
       const reservasEnriquecidas = await Promise.all(
         reservasData.map(async (reserva) => {
@@ -69,12 +59,10 @@ const Reservas = ({ onCountChange }) => {
             // 1️⃣ Buscar dados do cliente
             let clienteCompleto = null;
             if (reserva.usuarioId) {
-              console.log(`👤 Buscando cliente ID: ${reserva.usuarioId}`);
               try {
                 clienteCompleto = await usuarioService.getUsuarioById(reserva.usuarioId);
-                console.log(`✅ Cliente encontrado:`, clienteCompleto);
               } catch (error) {
-                console.error(`❌ Erro ao buscar cliente ${reserva.usuarioId}:`, error);
+                console.error(`Erro ao buscar cliente ${reserva.usuarioId}:`, error);
                 clienteCompleto = {
                   id: reserva.usuarioId,
                   nome: 'Cliente não encontrado',
@@ -92,39 +80,17 @@ const Reservas = ({ onCountChange }) => {
             
             if (reserva.livroId) {
               if (Array.isArray(reserva.livroId)) {
-                // É array: [10, 15, 20]
                 livroIds = reserva.livroId;
-                console.log(`📚 livroId é ARRAY com ${livroIds.length} livros:`, livroIds);
               } else if (typeof reserva.livroId === 'number') {
-                // É número: 40 → transformar em array [40]
                 livroIds = [reserva.livroId];
-                console.log(`📚 livroId é NUMBER, transformado em array:`, livroIds);
-              } else {
-                console.log(`⚠️ livroId tem tipo inesperado:`, typeof reserva.livroId, reserva.livroId);
               }
             }
             
             if (livroIds.length > 0) {
-              console.log(`📚 Buscando ${livroIds.length} livros:`, livroIds);
               try {
                 livrosCompletos = await livroService.getLivrosByIds(livroIds);
-                console.log(`✅ Livros encontrados (${livrosCompletos.length}):`, livrosCompletos);
-                
-                // Debug: Verificar estrutura de cada livro
-                livrosCompletos.forEach((livro, idx) => {
-                  console.log(`📖 Livro ${idx + 1}:`, {
-                    id: livro.id,
-                    titulo: livro.titulo,
-                    autor: livro.autor,
-                    capa: livro.capa,
-                    preco: livro.preco,
-                    paginas: livro.paginas,
-                    categoria: livro.nomeCategoria
-                  });
-                });
               } catch (error) {
-                console.error(`❌ Erro ao buscar livros:`, error);
-                console.error(`❌ Detalhes do erro:`, error.response?.data);
+                console.error(`Erro ao buscar livros:`, error);
                 // Se falhar, criar objetos placeholder
                 livrosCompletos = livroIds.map((id) => ({
                   id: id,
@@ -135,10 +101,6 @@ const Reservas = ({ onCountChange }) => {
                   capa: null
                 }));
               }
-            } else {
-              console.log(`⚠️ Nenhum livroId encontrado na reserva ${reserva.id}`);
-              console.log(`⚠️ reserva.livroId:`, reserva.livroId);
-              console.log(`⚠️ Tipo:`, typeof reserva.livroId);
             }
 
             // 3️⃣ Retornar reserva enriquecida
@@ -146,7 +108,6 @@ const Reservas = ({ onCountChange }) => {
               ...reserva,
               cliente: clienteCompleto,
               livros: livrosCompletos,
-              // Quantidade: se for array, pegar length; se for número, é 1 livro
               quantidadeLivros: Array.isArray(reserva.livroId) 
                 ? reserva.livroId.length 
                 : (reserva.livroId ? 1 : 0)
@@ -167,14 +128,10 @@ const Reservas = ({ onCountChange }) => {
         })
       );
 
-      console.log('✅ Reservas enriquecidas:', reservasEnriquecidas);
-      
       // Filtrar apenas reservas que devem ser exibidas (CONFIRMADA ou PENDENTE)
       const reservasVisiveis = reservasEnriquecidas.filter(reserva => 
         shouldDisplayReservation(reserva.dtLimite)
       );
-      
-      console.log(`👁️ Reservas visíveis (${reservasVisiveis.length}/${reservasEnriquecidas.length}):`, reservasVisiveis);
       
       setReservas(reservasVisiveis);
       if (onCountChange) {
@@ -251,7 +208,7 @@ const Reservas = ({ onCountChange }) => {
     const hoje = new Date();
     const dataReservaObj = new Date(dataReserva);
     const diffTime = dataReservaObj - hoje;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays < 0) return 'Vencida';
     if (diffDays === 0) return 'Hoje';
@@ -382,15 +339,12 @@ const Reservas = ({ onCountChange }) => {
                 // ✅ Calcular status dinâmico baseado em dtLimite
                 const status = calculateStatusByDeadline(reserva.dtLimite, reserva.statusReserva);
                 
-                const valorTotal = reserva.totalReserva || reserva.valorTotal || 0;
+                // ✅ Calcular total da reserva a partir dos preços dos livros (não confiar em totalReserva do backend)
+                const valorTotal = reserva.livros?.reduce((sum, livro) => sum + (livro.preco || 0), 0) || (reserva.totalReserva || reserva.valorTotal || 0);
                 
                 // ✅ Usar quantidadeLivros já calculada no carregarReservas
                 const totalLivros = reserva.quantidadeLivros || 0;
                 const titulosLivros = reserva.livros?.map(l => l.titulo).join(' + ') || 'N/A';
-                
-                console.log('📚 DEBUG - Reserva:', reserva);
-                console.log('📚 DEBUG - Livros:', reserva.livros);
-                console.log('📚 DEBUG - Títulos:', titulosLivros);
                 
                 return (
                   <React.Fragment key={reserva.id || `reserva-${index}`}>
