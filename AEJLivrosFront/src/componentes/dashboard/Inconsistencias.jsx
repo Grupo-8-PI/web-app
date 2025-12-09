@@ -433,7 +433,7 @@ const Inconsistencias = ({ onCountChange }) => {
 
                             <div className="detalhes-footer">
                               <p className="reserva-total">
-                                <strong>Total da Reserva:</strong> R$ {(valorTotal / 100).toFixed(2)}
+                                <strong>Total da Reserva:</strong> R$ {(valorTotal || 0).toFixed(2)}
                               </p>
                               <div className="detalhes-botoes">
                                 <button 

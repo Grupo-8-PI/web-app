@@ -31,6 +31,7 @@ export default function Catalogo() {
 
             let res;
             let allLivros = [];
+            let totalPageCount = 0;
 
             // Prioridade: filtros do componente > URL params
             const categoriaFiltro = currentFiltros.categoria || categoriaUrl;
@@ -39,6 +40,7 @@ export default function Catalogo() {
                 // Buscar por categoria
                 const data = await livroService.buscarPorCategoria(categoriaFiltro);
                 allLivros = Array.isArray(data) ? data : [];
+                totalPageCount = Math.ceil(allLivros.length / size);
             } else if (currentFiltros.conservacoes.length > 0) {
                 // Buscar por conservações e combinar resultados
                 const promises = currentFiltros.conservacoes.map(conservacaoId => 
@@ -50,6 +52,7 @@ export default function Catalogo() {
                 const uniqueMap = new Map();
                 combined.forEach(livro => uniqueMap.set(livro.id, livro));
                 allLivros = Array.from(uniqueMap.values());
+                totalPageCount = Math.ceil(allLivros.length / size);
             } else {
                 // Buscar todos os livros
                 res = await api.get('/livros', {
@@ -57,41 +60,38 @@ export default function Catalogo() {
                 });
                 const data = res.data.livros || res.data.items || res.data.data || [];
                 allLivros = Array.isArray(data) ? data : [];
+                totalPageCount = res?.totalPages || Math.ceil(allLivros.length / size);
             }
 
             // Se tem ambos os filtros, aplicar interseção
             if (categoriaFiltro && currentFiltros.conservacoes.length > 0) {
                 allLivros = allLivros.filter(livro => 
-                    currentFiltros.conservacoes.includes(livro.conservacaoId)
+                    currentFiltros.conservacoes.includes(livro.conservacaoId || livro.estadoConservacao)
                 );
+                totalPageCount = Math.ceil(allLivros.length / size);
             }
 
-            const mapped = allLivros.map(l => ({
-                id: l.id,
-                titulo: l.titulo,
-                autor: l.autor,
-                imagem: l.capa || l.imagem || null,
-                preco: l.preco,
-                ano: l.anoPublicacao || l.ano,
-                categoria: l.nomeCategoria || l.categoria || null,
-                conservacao: l.estadoConservacao || l.conservacao || null,
-                editora: l.editora,
-                paginas: l.paginas,
-                descricao: l.descricao || null
-            }));
+            // Filtrar livros sem reserva + mapear campos
+            const mapped = allLivros
+                .filter(l => !l.hasReserva)
+                .map(l => ({
+                    id: l.id,
+                    titulo: l.titulo,
+                    autor: l.autor,
+                    imagem: l.capa || l.imagem || null,
+                    preco: l.preco,
+                    ano: l.anoPublicacao || l.ano,
+                    categoria: l.nomeCategoria || l.categoria || null,
+                    conservacao: l.estadoConservacao || l.conservacao || null,
+                    conservacaoId: l.conservacaoId || l.estadoConservacao,
+                    editora: l.editora,
+                    paginas: l.paginas,
+                    descricao: l.descricao || null
+                }));
 
-            console.log('CATALOGO mapped livros:', mapped.length, mapped[0]);
             setLivros(mapped);
-            
-            // Se temos dados de paginação da API, usar; senão calcular manualmente
-            if (res?.data?.totalPages) {
-                setPage(res.data.page || pageNumber);
-                setTotalPages(res.data.totalPages);
-            } else {
-                // Para filtros (categoria/conservacao), calcular total de páginas
-                setPage(pageNumber);
-                setTotalPages(Math.ceil(mapped.length / size));
-            }
+            setPage(Math.max(0, pageNumber));
+            setTotalPages(Math.max(1, totalPageCount));
         } catch (err) {
             console.error('Erro ao carregar livros/catalogo:', err);
             setError('Não foi possível carregar os livros');

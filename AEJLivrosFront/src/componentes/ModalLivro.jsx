@@ -10,8 +10,6 @@ const ModalLivro = ({ livro, onClose }) => {
 
     useEffect(() => {
         if (!livro) return;
-        console.log('MODAL received livro:', livro);
-        console.log('MODAL livro keys:', Object.keys(livro));
         document.body.style.overflow = 'hidden';
         return () => {
             document.body.style.overflow = '';
@@ -26,20 +24,14 @@ const ModalLivro = ({ livro, onClose }) => {
                 statusReserva: STATUS.CONFIRMADA
             };
 
-            console.log("Enviando payload:", payload);
-
             const response = await criarReserva(payload);
             
-            console.log('Reserva criada:', {
-                id: response.data.id,
-                dtReserva: response.data.dtReserva,
-                dtLimite: response.data.dtLimite,
-                totalReserva: response.data.totalReserva
-            });
-
             const dtLimiteFormatted = formatDateTimeBR(response.data.dtLimite);
-
-            alert(`Reserva confirmada!\nVálida até: ${dtLimiteFormatted}\nValor: R$ ${response.data.totalReserva}`);
+            alert(
+                `Reserva confirmada!\n` +
+                `Válida até: ${dtLimiteFormatted}\n` +
+                `Valor: R$ ${livro.preco}`
+            );
             onClose();
         } catch (erro) {
             console.error('Erro ao criar reserva:', erro);
