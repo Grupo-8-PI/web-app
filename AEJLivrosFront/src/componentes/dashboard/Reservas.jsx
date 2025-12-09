@@ -128,10 +128,11 @@ const Reservas = ({ onCountChange }) => {
         })
       );
 
-      // Filtrar apenas reservas que devem ser exibidas (CONFIRMADA ou PENDENTE)
-      const reservasVisiveis = reservasEnriquecidas.filter(reserva => 
-        shouldDisplayReservation(reserva.dtLimite)
-      );
+      // Filtrar apenas reservas que devem ser exibidas (CONCLUIDA ou CONFIRMADA)
+      const reservasVisiveis = reservasEnriquecidas.filter(reserva => {
+        const status = (reserva.statusReserva || '').toString().toUpperCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+        return status === 'CONCLUIDA' || status === 'CONFIRMADA';
+      });
       
       setReservas(reservasVisiveis);
       if (onCountChange) {
