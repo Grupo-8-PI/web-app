@@ -56,10 +56,10 @@ export const calculateStatusByDeadline = (dtLimite, currentStatus = 'CONFIRMADA'
 
   // Calculate difference in days
   const diffTime = now - deadline;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
   // Within deadline
-  if (diffDays <= 0) {
+  if (diffDays < 0) {
     return STATUS.CONFIRMADA;
   }
 
@@ -68,7 +68,7 @@ export const calculateStatusByDeadline = (dtLimite, currentStatus = 'CONFIRMADA'
     return STATUS.PENDENTE;
   }
 
-  // 2+ days overdue
+  // 2+ days overdue (3 or more)
   return STATUS.CANCELADA;
 };
 

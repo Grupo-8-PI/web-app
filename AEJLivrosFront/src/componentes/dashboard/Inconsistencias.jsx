@@ -192,7 +192,7 @@ const Inconsistencias = ({ onCountChange }) => {
     const hoje = new Date();
     const limite = parseBackendDate(dataLimite);
     const diffTime = hoje - limite;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays === 0) return 'Vence hoje';
     if (diffDays === 1) return '1 dia atrás';
@@ -316,7 +316,8 @@ const Inconsistencias = ({ onCountChange }) => {
               {currentReservas.map((reserva, index) => {
                 const usuario = reserva.cliente || reserva.usuario;
                 const totalLivros = reserva.quantidadeLivros || reserva.livros?.length || 0;
-                const valorTotal = reserva.totalReserva || reserva.valorTotal || 0;
+                // ✅ Calcular total a partir dos preços dos livros (não confiar em totalReserva do backend)
+                const valorTotal = reserva.livros?.reduce((sum, livro) => sum + (livro.preco || 0), 0) || (reserva.totalReserva || reserva.valorTotal || 0);
                 
                 return (
                   <React.Fragment key={reserva.id || `reserva-${index}`}>
