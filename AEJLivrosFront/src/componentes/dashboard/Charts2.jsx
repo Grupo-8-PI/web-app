@@ -31,7 +31,7 @@ function Charts2() {
           reservasArr = response;
         }
         setReservas(reservasArr);
-      } catch (e) {
+      } catch {
         setErro(true);
         setReservas([]);
       }
