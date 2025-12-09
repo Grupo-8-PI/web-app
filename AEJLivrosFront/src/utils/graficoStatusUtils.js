@@ -1,0 +1,51 @@
+export const STATUS = {
+  CONFIRMADA: 'CONFIRMADA',
+  PENDENTE: 'PENDENTE',
+  CANCELADA: 'CANCELADA'
+};
+
+export function normalizeStatus(status) {
+  if (!status) return null;
+  return status
+    .toString()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+export function classifyReservas(reservas) {
+  let confirmadas = 0;
+  let pendentes = 0;
+  let canceladas = 0;
+
+  reservas.forEach(r => {
+    const statusOriginal = normalizeStatus(r.statusReserva);
+    if (statusOriginal === STATUS.PENDENTE) {
+      pendentes++;
+    } else if (statusOriginal === STATUS.CANCELADA) {
+      canceladas++;
+    } else if (statusOriginal === STATUS.CONFIRMADA) {
+      const now = new Date();
+      const deadline = r.dtLimite ? new Date(r.dtLimite) : null;
+      if (!deadline) {
+        confirmadas++;
+        return;
+      }
+      const diffTime = now - deadline;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays <= 0) {
+        confirmadas++;
+      } else if (diffDays <= 2) {
+        pendentes++;
+      } else {
+        canceladas++;
+      }
+    }
+  });
+
+  return {
+    reservasConfirmadas: confirmadas,
+    reservasPendentes: pendentes,
+    reservasCanceladas: canceladas
+  };
+}

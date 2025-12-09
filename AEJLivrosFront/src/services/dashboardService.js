@@ -1,6 +1,6 @@
 import api from './api';
 import { parseBackendDate } from '../utils/dateUtils';
-import { calculateStatusByDeadline, shouldDisplayReservation, STATUS } from '../utils/statusUtils';
+import { calculateStatusByDeadline, STATUS } from '../utils/statusUtils';
 
 const dashboardService = {
     async getAllLivros(page = 0, size = 1000) {
@@ -176,21 +176,35 @@ const dashboardService = {
         const taxaRetirada = totalReservas > 0 ? ((reservasRetiradas / totalReservas) * 100).toFixed(0) : 0;
         const taxaDesistencia = totalReservas > 0 ? ((reservasNaoRetiradas / totalReservas) * 100).toFixed(0) : 0;
 
-        // Contar reservas por status calculado (baseado em dtLimite)
-        const reservasConfirmadas = reservas.filter(r => {
-            const status = calculateStatusByDeadline(r.dtLimite, r.statusReserva);
-            return status === STATUS.CONFIRMADA;
-        }).length;
+        // Classificação respeitando status original do backend
+        let reservasConfirmadas = 0;
+        let reservasPendentes = 0;
+        let reservasCanceladas = 0;
 
-        const reservasPendentes = reservas.filter(r => {
-            const status = calculateStatusByDeadline(r.dtLimite, r.statusReserva);
-            return status === STATUS.PENDENTE;
-        }).length;
+        reservas.forEach(r => {
+            const statusOriginal = (r.statusReserva || '').toUpperCase();
+            if (statusOriginal === STATUS.PENDENTE) {
+                reservasPendentes++;
+            } else if (statusOriginal === STATUS.CANCELADA) {
+                reservasCanceladas++;
+            } else if (statusOriginal === STATUS.CONFIRMADA) {
+                // Só reclassifica CONFIRMADA conforme prazo
+                const statusFinal = calculateStatusByDeadline(r.dtLimite, r.statusReserva);
+                if (statusFinal === STATUS.CONFIRMADA) {
+                    reservasConfirmadas++;
+                } else if (statusFinal === STATUS.PENDENTE) {
+                    reservasPendentes++;
+                } else if (statusFinal === STATUS.CANCELADA) {
+                    reservasCanceladas++;
+                }
+            }
+        });
 
         console.log('📊 Estatísticas de reservas por status:', {
             total: totalReservas,
             confirmadas: reservasConfirmadas,
-            pendentes: reservasPendentes
+            pendentes: reservasPendentes,
+            canceladas: reservasCanceladas
         });
 
         const tempoCatalogo = this.calculateTempoCatalogo(livros);
@@ -210,9 +224,9 @@ const dashboardService = {
             totalReservas,
             reservasRetiradas,
             reservasNaoRetiradas,
-            // ✅ NOVO: Campos para o gráfico de barras (baseado em status dinâmico)
             reservasConfirmadas,
             reservasPendentes,
+            reservasCanceladas,
             tempoCatalogo,
             totalLivrosFiltrados: livros.length
         };

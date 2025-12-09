@@ -10,10 +10,16 @@ const CONSERVACOES = [
   { id: 4, label: 'Degradado' }
 ];
 
+const ACABAMENTOS = [
+  { id: 1, label: 'Capa Dura', tipo: 'CAPA_DURA' },
+  { id: 2, label: 'Brochura', tipo: 'BROCHURA' }
+];
+
 
 export default function FiltroCatalogo({ onChangeFiltros, filtros }) {
   const [categorias, setCategorias] = useState([]);
   const [conservacoesSelecionadas, setConservacoesSelecionadas] = useState(filtros?.conservacoes || []);
+  const [acabamentosSelecionados, setAcabamentosSelecionados] = useState(filtros?.acabamentos || []);
 
   useEffect(() => {
     const fetchCategorias = async () => {
@@ -56,8 +62,24 @@ export default function FiltroCatalogo({ onChangeFiltros, filtros }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conservacoesSelecionadas]);
 
+  useEffect(() => {
+    // ✅ NOVO: Enviar acabamentos selecionados para o parent
+    if (onChangeFiltros) {
+      onChangeFiltros({ ...filtros, acabamentos: acabamentosSelecionados });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [acabamentosSelecionados]);
+
   const handleConservacaoChange = (id) => {
     setConservacoesSelecionadas(prev =>
+      prev.includes(id)
+        ? prev.filter(item => item !== id)
+        : [...prev, id]
+    );
+  };
+
+  const handleAcabamentoChange = (id) => {
+    setAcabamentosSelecionados(prev =>
       prev.includes(id)
         ? prev.filter(item => item !== id)
         : [...prev, id]
@@ -77,9 +99,11 @@ export default function FiltroCatalogo({ onChangeFiltros, filtros }) {
   const categoriaAtual = filtros?.categoria || '';
 
   const handleLimparFiltros = () => {
+    // ✅ CORRIGIDO: Sincronizar estado local e enviar pro parent (sem flag 'limpar')
     setConservacoesSelecionadas([]);
+    setAcabamentosSelecionados([]);
     if (onChangeFiltros) {
-      onChangeFiltros({ categoria: '', conservacoes: [], limpar: true });
+      onChangeFiltros({ categoria: '', conservacoes: [], acabamentos: [] });
     }
   };
 
@@ -101,8 +125,16 @@ export default function FiltroCatalogo({ onChangeFiltros, filtros }) {
       </div>
       <div className="filtro-bloco">
         <span>Acabamento</span>
-        <label><input type="checkbox" /> Capa Dura</label>
-        <label><input type="checkbox" /> Capa Comum</label>
+        {ACABAMENTOS.map(acabamento => (
+          <label key={acabamento.id}>
+            <input
+              type="checkbox"
+              checked={acabamentosSelecionados.includes(acabamento.id)}
+              onChange={() => handleAcabamentoChange(acabamento.id)}
+            />
+            {acabamento.label}
+          </label>
+        ))}
       </div>
       <div className="filtro-bloco">
         <span>Categoria</span>
