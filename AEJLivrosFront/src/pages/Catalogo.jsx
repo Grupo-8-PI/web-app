@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import api from "../services/api";
 import livroService from "../services/livroService";
 import CardLivro from "../componentes/CardLivro";
@@ -20,9 +20,10 @@ export default function Catalogo() {
     const [filtros, setFiltros] = useState({ categoria: '', conservacoes: [] });
 
     const location = useLocation();
+    const navigate = useNavigate();
+    const vindoDeReserva = location.state?.vindoDeReserva || false;
 
-    const fetchLivros = async (pageNumber = 0, currentFiltros = filtros) => {
-        console.log('CATALOGO fetchLivros called');
+    const fetchLivros = async (pageNumber = 0, currentFiltros = filtros, forceBypassCache = false) => {
         setLoading(true);
         setError(null);
         try {
@@ -31,64 +32,58 @@ export default function Catalogo() {
 
             let res;
             let allLivros = [];
-
-            // Prioridade: filtros do componente > URL params
             const categoriaFiltro = currentFiltros.categoria || categoriaUrl;
 
+            const bypassParam = forceBypassCache ? { 'bypass-cache': 'true' } : {};
+
             if (categoriaFiltro) {
-                // Buscar por categoria
-                const data = await livroService.buscarPorCategoria(categoriaFiltro);
-                allLivros = Array.isArray(data) ? data : [];
+                const data = await api.get(`/livros/categoria/${categoriaFiltro}`, { params: bypassParam });
+                allLivros = Array.isArray(data.data) ? data.data : [];
             } else if (currentFiltros.conservacoes.length > 0) {
-                // Buscar por conservações e combinar resultados
                 const promises = currentFiltros.conservacoes.map(conservacaoId => 
-                    livroService.buscarPorConservacao(conservacaoId)
+                    api.get(`/livros/conservacao/${conservacaoId}`, { params: bypassParam })
                 );
                 const results = await Promise.all(promises);
-                // Flatten e remover duplicatas
-                const combined = results.flat();
                 const uniqueMap = new Map();
-                combined.forEach(livro => uniqueMap.set(livro.id, livro));
+                results
+                    .flatMap(r => Array.isArray(r.data) ? r.data : [])
+                    .forEach(livro => uniqueMap.set(livro.id, livro));
                 allLivros = Array.from(uniqueMap.values());
             } else {
-                // Buscar todos os livros
-                res = await api.get('/livros', {
-                    params: { page: pageNumber, size }
-                });
-                const data = res.data.livros || res.data.items || res.data.data || [];
+                res = await livroService.listarLivros(pageNumber, size, { bypassCache: forceBypassCache });
+                const data = res.livros || res.items || res.data || [];
                 allLivros = Array.isArray(data) ? data : [];
             }
 
-            // Se tem ambos os filtros, aplicar interseção
             if (categoriaFiltro && currentFiltros.conservacoes.length > 0) {
                 allLivros = allLivros.filter(livro => 
                     currentFiltros.conservacoes.includes(livro.conservacaoId)
                 );
             }
 
-            const mapped = allLivros.map(l => ({
-                id: l.id,
-                titulo: l.titulo,
-                autor: l.autor,
-                imagem: l.capa || l.imagem || null,
-                preco: l.preco,
-                ano: l.anoPublicacao || l.ano,
-                categoria: l.nomeCategoria || l.categoria || null,
-                conservacao: l.estadoConservacao || l.conservacao || null,
-                editora: l.editora,
-                paginas: l.paginas,
-                descricao: l.descricao || null
-            }));
 
-            console.log('CATALOGO mapped livros:', mapped.length, mapped[0]);
+            const mapped = allLivros
+                .filter(l => !l.hasReserva)
+                .map(l => ({
+                    id: l.id,
+                    titulo: l.titulo,
+                    autor: l.autor,
+                    imagem: l.capa || l.imagem || null,
+                    preco: l.preco,
+                    ano: l.anoPublicacao || l.ano,
+                    categoria: l.nomeCategoria || l.categoria || null,
+                    conservacao: l.estadoConservacao || l.conservacao || null,
+                    editora: l.editora,
+                    paginas: l.paginas,
+                    descricao: l.descricao || null
+                }));
+
             setLivros(mapped);
             
-            // Se temos dados de paginação da API, usar; senão calcular manualmente
             if (res?.data?.totalPages) {
                 setPage(res.data.page || pageNumber);
                 setTotalPages(res.data.totalPages);
             } else {
-                // Para filtros (categoria/conservacao), calcular total de páginas
                 setPage(pageNumber);
                 setTotalPages(Math.ceil(mapped.length / size));
             }
@@ -100,11 +95,15 @@ export default function Catalogo() {
         }
     };
 
-    // Carregar livros quando mudar a URL
     useEffect(() => {
-        fetchLivros(0);
+        if (vindoDeReserva) {
+            fetchLivros(0, filtros, true);
+            navigate(window.location.pathname, { replace: true });
+        } else {
+            fetchLivros(0);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [location.search]);
+    }, [location.search, vindoDeReserva]);
 
     // Se filtro for limpo, busca todos os livros
     useEffect(() => {
@@ -156,9 +155,15 @@ export default function Catalogo() {
                                 categoria={livro.categoria}
                                 conservacao={livro.conservacao}
                                 paginas={livro.paginas}
-                                onVerDetalhes={() => {
-                                    console.log('CATALOGO setting modalLivro:', livro);
-                                    setModalLivro(livro);
+                                onVerDetalhes={async () => {
+
+                                    try {
+                                        const res = await api.get(`/livros/${livro.id}`);
+                                        setModalLivro(res.data);
+                                    // eslint-disable-next-line no-unused-vars
+                                    } catch (e) {
+                                        setModalLivro(livro); 
+                                    }
                                 }}
                             />
                         ))}
@@ -172,7 +177,7 @@ export default function Catalogo() {
                     </div>
                 </div>
             </div>
-            <ModalLivro livro={modalLivro} onClose={() => setModalLivro(null)} />
+            <ModalLivro livro={modalLivro} onClose={() => setModalLivro(null)} onReservaSucesso={fetchLivros} />
         </div>
     );
 }

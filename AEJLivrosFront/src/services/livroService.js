@@ -2,9 +2,13 @@ import api from './api';
 
 const livroService = {
   // Listar todos os livros (paginado)
-  listarLivros: async (page = 0, size = 9) => {
+  listarLivros: async (page = 0, size = 9, options = {}) => {
     try {
-      const response = await api.get(`/livros?page=${page}&size=${size}`);
+      let url = `/livros?page=${page}&size=${size}`;
+      if (options.bypassCache) {
+        url += '&bypass-cache=true';
+      }
+      const response = await api.get(url);
       return response.data;
     } catch (error) {
       console.error('Erro ao listar livros:', error);
