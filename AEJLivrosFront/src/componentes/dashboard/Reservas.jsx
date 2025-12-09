@@ -7,8 +7,7 @@ import { formatDateBR } from "../../utils/dateUtils";
 import { 
   calculateStatusByDeadline, 
   getStatusDisplay, 
-  getStatusClass,
-  shouldDisplayReservation 
+  getStatusClass 
 } from "../../utils/statusUtils";
 
 const Reservas = ({ onCountChange }) => {
@@ -21,7 +20,6 @@ const Reservas = ({ onCountChange }) => {
   const [filtroStatus, setFiltroStatus] = useState('TODOS');
   const itemsPerPage = 10;
 
-  // Carregar reservas ao montar o componente
   useEffect(() => {
     carregarReservas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -39,10 +37,8 @@ const Reservas = ({ onCountChange }) => {
         response = await reservaService.buscarPorStatus(filtroStatus);
       }
       
-      // Garantir que response seja sempre um array
       console.log('Resposta da API:', response);
       
-      // ✅ Backend retorna estrutura paginada: { reservas: [], totalElements: X, ... }
       let reservasData = [];
       if (response && Array.isArray(response.reservas)) {
         console.log('✅ Encontrou response.reservas');
@@ -66,7 +62,6 @@ const Reservas = ({ onCountChange }) => {
       const reservasEnriquecidas = await Promise.all(
         reservasData.map(async (reserva) => {
           try {
-            // 1️⃣ Buscar dados do cliente
             let clienteCompleto = null;
             if (reserva.usuarioId) {
               console.log(`👤 Buscando cliente ID: ${reserva.usuarioId}`);
@@ -84,19 +79,15 @@ const Reservas = ({ onCountChange }) => {
               }
             }
 
-            // 2️⃣ Buscar dados dos livros
             let livrosCompletos = [];
             
-            // ✅ IMPORTANTE: livroId pode ser NUMBER ou ARRAY
             let livroIds = [];
             
             if (reserva.livroId) {
               if (Array.isArray(reserva.livroId)) {
-                // É array: [10, 15, 20]
                 livroIds = reserva.livroId;
                 console.log(`📚 livroId é ARRAY com ${livroIds.length} livros:`, livroIds);
               } else if (typeof reserva.livroId === 'number') {
-                // É número: 40 → transformar em array [40]
                 livroIds = [reserva.livroId];
                 console.log(`📚 livroId é NUMBER, transformado em array:`, livroIds);
               } else {
@@ -110,7 +101,6 @@ const Reservas = ({ onCountChange }) => {
                 livrosCompletos = await livroService.getLivrosByIds(livroIds);
                 console.log(`✅ Livros encontrados (${livrosCompletos.length}):`, livrosCompletos);
                 
-                // Debug: Verificar estrutura de cada livro
                 livrosCompletos.forEach((livro, idx) => {
                   console.log(`📖 Livro ${idx + 1}:`, {
                     id: livro.id,
@@ -125,7 +115,6 @@ const Reservas = ({ onCountChange }) => {
               } catch (error) {
                 console.error(`❌ Erro ao buscar livros:`, error);
                 console.error(`❌ Detalhes do erro:`, error.response?.data);
-                // Se falhar, criar objetos placeholder
                 livrosCompletos = livroIds.map((id) => ({
                   id: id,
                   titulo: `Livro ID ${id}`,
@@ -141,12 +130,10 @@ const Reservas = ({ onCountChange }) => {
               console.log(`⚠️ Tipo:`, typeof reserva.livroId);
             }
 
-            // 3️⃣ Retornar reserva enriquecida
             return {
               ...reserva,
               cliente: clienteCompleto,
               livros: livrosCompletos,
-              // Quantidade: se for array, pegar length; se for número, é 1 livro
               quantidadeLivros: Array.isArray(reserva.livroId) 
                 ? reserva.livroId.length 
                 : (reserva.livroId ? 1 : 0)
@@ -169,13 +156,11 @@ const Reservas = ({ onCountChange }) => {
 
       console.log('✅ Reservas enriquecidas:', reservasEnriquecidas);
       
-      // Filtrar apenas reservas que devem ser exibidas (CONFIRMADA ou PENDENTE)
-      const reservasVisiveis = reservasEnriquecidas.filter(reserva => 
-        shouldDisplayReservation(reserva.dtLimite)
-      );
-      
-      console.log(`👁️ Reservas visíveis (${reservasVisiveis.length}/${reservasEnriquecidas.length}):`, reservasVisiveis);
-      
+      const reservasVisiveis = reservasEnriquecidas.filter(reserva => {
+        const status = (reserva.statusReserva || '').toString().toUpperCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+        return status === 'CONCLUIDA' || status === 'CONFIRMADA';
+      });
+
       setReservas(reservasVisiveis);
       if (onCountChange) {
         onCountChange(reservasVisiveis.length);
@@ -244,7 +229,6 @@ const Reservas = ({ onCountChange }) => {
     }
   };
 
-  // ✅ Função que aceita ambos os formatos de data do backend
   const calcularDiasRestantes = (dataReserva) => {
     if (!dataReserva) return 'N/A';
     
@@ -259,12 +243,10 @@ const Reservas = ({ onCountChange }) => {
     return `${diffDays} dias`;
   };
 
-  // ✅ Função que aceita ambos os formatos de data do backend
   const formatarData = (data) => {
     return formatDateBR(data);
   };
 
-  // Paginação - garantir que reservas seja array
   const reservasArray = Array.isArray(reservas) ? reservas : [];
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -375,16 +357,13 @@ const Reservas = ({ onCountChange }) => {
             </thead>
             <tbody>
               {currentReservas.map((reserva, index) => {
-                // ✅ Mapear campos do backend (aceita ambos os formatos)
                 const dataReserva = reserva.dtReserva || reserva.dataReserva;
                 const dataRetirada = reserva.dtLimite || reserva.dataRetirada;
                 
-                // ✅ Calcular status dinâmico baseado em dtLimite
                 const status = calculateStatusByDeadline(reserva.dtLimite, reserva.statusReserva);
                 
                 const valorTotal = reserva.totalReserva || reserva.valorTotal || 0;
                 
-                // ✅ Usar quantidadeLivros já calculada no carregarReservas
                 const totalLivros = reserva.quantidadeLivros || 0;
                 const titulosLivros = reserva.livros?.map(l => l.titulo).join(' + ') || 'N/A';
                 

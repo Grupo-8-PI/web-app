@@ -44,25 +44,30 @@ export const normalizeStatus = (status) => {
  * @returns {string} Calculated status
  */
 export const calculateStatusByDeadline = (dtLimite, currentStatus = 'CONFIRMADA') => {
-  if (!dtLimite) return normalizeStatus(currentStatus);
-  
+  const normalizedStatus = normalizeStatus(currentStatus);
+  if (normalizedStatus === STATUS.PENDENTE || normalizedStatus === STATUS.CANCELADA) {
+    return normalizedStatus;
+  }
+  // Só reclassifica CONFIRMADA conforme o prazo
+  if (!dtLimite) return normalizedStatus;
+
   const now = new Date();
   const deadline = new Date(dtLimite);
-  
+
   // Calculate difference in days
   const diffTime = now - deadline;
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   // Within deadline
   if (diffDays <= 0) {
     return STATUS.CONFIRMADA;
   }
-  
+
   // 1-2 days overdue
   if (diffDays <= 2) {
     return STATUS.PENDENTE;
   }
-  
+
   // 2+ days overdue
   return STATUS.CANCELADA;
 };

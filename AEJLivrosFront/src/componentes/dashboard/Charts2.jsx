@@ -1,4 +1,7 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell, ResponsiveContainer } from "recharts";
+import { useEffect, useState } from "react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from "recharts";
+import { classifyReservas } from '../../utils/graficoStatusUtils';
+import dashboardService from '../../services/dashboardService';
 import "./Charts.css";
 
 const COLORS = {
@@ -8,7 +11,35 @@ const COLORS = {
   aprovadas: "#3498db"      
 };
 
-function Charts2({ stats, loading }) {
+function Charts2() {
+  const [reservas, setReservas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(false);
+
+  useEffect(() => {
+    async function fetchReservas() {
+      setLoading(true);
+      setErro(false);
+      try {
+        const response = await dashboardService.getAllReservas(0, 1000);
+        let reservasArr = [];
+        if (response.reservas && Array.isArray(response.reservas)) {
+          reservasArr = response.reservas;
+        } else if (response.content && Array.isArray(response.content)) {
+          reservasArr = response.content;
+        } else if (Array.isArray(response)) {
+          reservasArr = response;
+        }
+        setReservas(reservasArr);
+      } catch (e) {
+        setErro(true);
+        setReservas([]);
+      }
+      setLoading(false);
+    }
+    fetchReservas();
+  }, []);
+
   if (loading) {
     return (
       <div className="charts">
@@ -21,7 +52,7 @@ function Charts2({ stats, loading }) {
     );
   }
 
-  if (!stats) {
+  if (erro || !reservas || !Array.isArray(reservas)) {
     return (
       <div className="charts">
         <div className="box">
@@ -33,31 +64,32 @@ function Charts2({ stats, loading }) {
     );
   }
 
+  const statusCounts = classifyReservas(reservas);
   const dataReservas = [
     {
       name: "Concluídas",
-      quantidade: stats.reservasConcluidas || 0,
+      quantidade: statusCounts.reservasConfirmadas,
       color: COLORS.concluidas,
       icon: "✅"
     },
     {
       name: "Canceladas",
-      quantidade: stats.reservasCanceladas || 0,
+      quantidade: statusCounts.reservasCanceladas,
       color: COLORS.canceladas,
       icon: "❌"
     },
     {
       name: "Pendentes",
-      quantidade: stats.reservasPendentes || 0,
+      quantidade: statusCounts.reservasPendentes,
       color: COLORS.pendentes,
       icon: "⏳"
     }
   ];
 
   const totalReservas = dataReservas.reduce((sum, item) => sum + item.quantidade, 0);
-  
+
   const taxaSucesso = totalReservas > 0 
-    ? ((stats.reservasConcluidas || 0) / totalReservas * 100).toFixed(1)
+    ? ((statusCounts.reservasConfirmadas) / totalReservas * 100).toFixed(1)
     : 0;
 
   const CustomTooltip = ({ active, payload }) => {
@@ -157,7 +189,6 @@ function Charts2({ stats, loading }) {
               </BarChart>
             </ResponsiveContainer>
 
-            {/* Cards Informativos */}
             <div style={{ 
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
@@ -183,7 +214,7 @@ function Charts2({ stats, loading }) {
                   color: COLORS.concluidas,
                   marginBottom: '5px'
                 }}>
-                  {stats.reservasConcluidas || 0}
+                  {statusCounts.reservasConfirmadas}
                 </div>
                 <div style={{ 
                   fontSize: '11px', 
@@ -214,7 +245,7 @@ function Charts2({ stats, loading }) {
                   color: COLORS.canceladas,
                   marginBottom: '5px'
                 }}>
-                  {stats.reservasCanceladas || 0}
+                  {statusCounts.reservasCanceladas}
                 </div>
                 <div style={{ 
                   fontSize: '11px', 
@@ -245,7 +276,7 @@ function Charts2({ stats, loading }) {
                   color: COLORS.pendentes,
                   marginBottom: '5px'
                 }}>
-                  {stats.reservasPendentes || 0}
+                  {statusCounts.reservasPendentes}
                 </div>
                 <div style={{ 
                   fontSize: '11px', 
