@@ -5,13 +5,22 @@ import { criarReserva } from '../services/api';
 import { formatDateTimeBR } from '../utils/dateUtils';
 import { STATUS } from '../utils/statusUtils';
 
-const ModalLivro = ({ livro, onClose }) => {
+const ModalLivro = ({ livro, onClose, onReservaSucesso }) => {
     const [loading, setLoading] = useState(false);
+    const [erroReserva, setErroReserva] = useState("");
 
     useEffect(() => {
         if (!livro) return;
-        console.log('MODAL received livro:', livro);
-        console.log('MODAL livro keys:', Object.keys(livro));
+        // Força atualização do livro ao abrir o modal
+        if (livro.id) {
+            import('../services/api').then(({ buscarLivroPorId }) => {
+                buscarLivroPorId(livro.id).then(resp => {
+                    if (resp && resp.data && resp.data.hasReserva !== undefined) {
+                        livro.hasReserva = resp.data.hasReserva;
+                    }
+                });
+            });
+        }
         document.body.style.overflow = 'hidden';
         return () => {
             document.body.style.overflow = '';
@@ -19,6 +28,11 @@ const ModalLivro = ({ livro, onClose }) => {
     }, [livro]);
 
     const handleReservarLivro = async () => {
+        setErroReserva("");
+        if (livro.hasReserva) {
+            setErroReserva("Este livro já está reservado e não pode ser reservado novamente.");
+            return;
+        }
         setLoading(true);
         try {
             const payload = {
@@ -41,10 +55,12 @@ const ModalLivro = ({ livro, onClose }) => {
 
             alert(`Reserva confirmada!\nVálida até: ${dtLimiteFormatted}\nValor: R$ ${response.data.totalReserva}`);
             onClose();
+            // Força recarregamento do catálogo com bypass-cache
+            if (onReservaSucesso) onReservaSucesso(0, undefined, true);
         } catch (erro) {
             console.error('Erro ao criar reserva:', erro);
             const errorMsg = erro.response?.data?.message || 'Erro ao criar reserva. Verifique os dados ou tente novamente.';
-            alert(errorMsg);
+            setErroReserva(errorMsg);
         } finally {
             setLoading(false);
         }
@@ -78,10 +94,11 @@ const ModalLivro = ({ livro, onClose }) => {
                         <p><b>Sinopse:</b> {livro.descricao || 'Descrição não disponível.'}</p>
 
                         <div className="buttonsArea">
-                            <button onClick={handleReservarLivro} disabled={loading}>
-                                {loading ? 'Reservando...' : 'Reservar Livro'}
+                            <button onClick={handleReservarLivro} disabled={loading || livro.hasReserva}>
+                                {livro.hasReserva ? 'Livro já reservado' : (loading ? 'Reservando...' : 'Reservar Livro')}
                             </button>
                         </div>
+                        {erroReserva && <div style={{color: 'red', marginTop: 8}}>{erroReserva}</div>}
                     </div>
                 </div>
 
