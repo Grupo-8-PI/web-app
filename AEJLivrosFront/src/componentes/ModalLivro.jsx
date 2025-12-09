@@ -68,7 +68,17 @@ const ModalLivro = ({ livro, onClose, onReservaSucesso }) => {
 
     if (!livro) return null;
 
-    const { imagem, titulo, preco, autor, ano, categoria, conservacao, editora, paginas, descricao } = livro;
+    // Map backend fields to display fields
+    const imagem = livro.capa || livro.imagem || null;
+    const titulo = livro.titulo;
+    const preco = livro.preco;
+    const autor = livro.autor;
+    const ano = livro.anoPublicacao || livro.ano;
+    const categoria = livro.nomeCategoria || livro.categoria;
+    const conservacao = livro.estadoConservacao || livro.conservacao;
+    const editora = livro.editora;
+    const paginas = livro.paginas;
+    const descricao = livro.descricao;
 
     return ReactDOM.createPortal(
         <div className="modalLivro-overlay" onClick={onClose}>
