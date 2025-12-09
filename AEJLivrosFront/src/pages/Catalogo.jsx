@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import api from "../services/api";
+import livroService from "../services/livroService";
 import CardLivro from "../componentes/CardLivro";
 import FiltroCatalogo from "../componentes/FiltroCatalogo";
 import ModalLivro from "../componentes/ModalLivro";
@@ -19,9 +20,10 @@ export default function Catalogo() {
     const [filtros, setFiltros] = useState({ categoria: '', conservacoes: [] });
 
     const location = useLocation();
+    const navigate = useNavigate();
+    const vindoDeReserva = location.state?.vindoDeReserva || false;
 
     const fetchLivros = async (pageNumber = 0, currentFiltros = filtros, forceBypassCache = false) => {
-        console.log('CATALOGO fetchLivros called');
         setLoading(true);
         setError(null);
         try {
@@ -30,27 +32,26 @@ export default function Catalogo() {
 
             let res;
             let allLivros = [];
-
             const categoriaFiltro = currentFiltros.categoria || categoriaUrl;
 
             const bypassParam = forceBypassCache ? { 'bypass-cache': 'true' } : {};
+
             if (categoriaFiltro) {
-                const data = await api.get(`/livros/categoria/${categoriaFiltro}`, { params: { ...bypassParam } });
+                const data = await api.get(`/livros/categoria/${categoriaFiltro}`, { params: bypassParam });
                 allLivros = Array.isArray(data.data) ? data.data : [];
             } else if (currentFiltros.conservacoes.length > 0) {
                 const promises = currentFiltros.conservacoes.map(conservacaoId => 
-                    api.get(`/livros/conservacao/${conservacaoId}`, { params: { ...bypassParam } })
+                    api.get(`/livros/conservacao/${conservacaoId}`, { params: bypassParam })
                 );
                 const results = await Promise.all(promises);
-                const combined = results.flatMap(r => Array.isArray(r.data) ? r.data : []);
                 const uniqueMap = new Map();
-                combined.forEach(livro => uniqueMap.set(livro.id, livro));
+                results
+                    .flatMap(r => Array.isArray(r.data) ? r.data : [])
+                    .forEach(livro => uniqueMap.set(livro.id, livro));
                 allLivros = Array.from(uniqueMap.values());
             } else {
-                res = await api.get('/livros', {
-                    params: { page: pageNumber, size, ...bypassParam }
-                });
-                const data = res.data.livros || res.data.items || res.data.data || [];
+                res = await livroService.listarLivros(pageNumber, size, { bypassCache: forceBypassCache });
+                const data = res.livros || res.items || res.data || [];
                 allLivros = Array.isArray(data) ? data : [];
             }
 
@@ -61,10 +62,8 @@ export default function Catalogo() {
             }
 
 
-
-            console.log('CATALOGO allLivros hasReserva:', allLivros.map(l => ({id: l.id, hasReserva: l.hasReserva})));
             const mapped = allLivros
-                .filter(l => l.hasReserva === false || l.hasReserva === undefined || l.hasReserva === null || l.hasReserva === 'false' || l.hasReserva === 'False' || l.hasReserva === 'FALSE')
+                .filter(l => !l.hasReserva)
                 .map(l => ({
                     id: l.id,
                     titulo: l.titulo,
@@ -79,7 +78,6 @@ export default function Catalogo() {
                     descricao: l.descricao || null
                 }));
 
-            console.log('CATALOGO mapped livros:', mapped.length, mapped[0]);
             setLivros(mapped);
             
             if (res?.data?.totalPages) {
@@ -97,11 +95,15 @@ export default function Catalogo() {
         }
     };
 
-    // Carregar livros quando mudar a URL
     useEffect(() => {
-        fetchLivros(0);
+        if (vindoDeReserva) {
+            fetchLivros(0, filtros, true);
+            navigate(window.location.pathname, { replace: true });
+        } else {
+            fetchLivros(0);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [location.search]);
+    }, [location.search, vindoDeReserva]);
 
     // Se filtro for limpo, busca todos os livros
     useEffect(() => {
